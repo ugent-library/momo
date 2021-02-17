@@ -1,0 +1,6 @@
+github.com/go-chi/chi v1.5.2 h1:YcLIBANL4OTaAOcTdp//sskGa0yGACQMCtbnr7YEn0Q=
+github.com/go-chi/chi v1.5.2/go.mod h1:REp24E+25iKvxgeTfHmdUoL5x15kBiDBlnIl5bCwe2k=
+github.com/go-webpack/webpack v1.5.0 h1:No6zPXZk00JUlW5S1j3G6FqoWVy7PJ4zElnDIeWoypM=
+github.com/go-webpack/webpack v1.5.0/go.mod h1:wRQfNvPzxky/Y2JxiKRNrxYHc5+cQXGgpkTt4dPDK+A=
+github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
