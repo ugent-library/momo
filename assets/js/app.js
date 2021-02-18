@@ -1,2 +1,1 @@
-alert("hello");
-console.log("hello");
+console.log('Momo says hello again')
