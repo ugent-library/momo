@@ -1,0 +1,1 @@
+catmandu import to es --bag rec -v

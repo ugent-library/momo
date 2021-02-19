@@ -1,0 +1,9 @@
+store:
+  es:
+    package: ElasticSearch
+    options:
+      client: 6_0::Direct
+      bags:
+        rec:
+          index: momo_rec
+          type: _doc

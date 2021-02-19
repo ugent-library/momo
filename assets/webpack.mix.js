@@ -3,8 +3,10 @@ let mix = require('laravel-mix');
 mix.js('./js/app.js', 'js')
     .sass('./css/app.scss', 'css')
     .setPublicPath('../static')
-    .version();
+    .vue();
 
-// if (mix.inProduction) {
-// } else {
-// }
+if (mix.inProduction()) {
+    mix.version()
+} else {
+    mix.sourceMaps();
+}

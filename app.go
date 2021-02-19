@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 
+	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
 )
@@ -36,19 +38,32 @@ func (a *App) assetPath(asset string) (string, error) {
 	if a.isDev {
 		a.loadAssetManifest()
 	}
-	path, ok := a.assetManifest[asset]
+	p, ok := a.assetManifest[asset]
 	if !ok {
 		err := fmt.Errorf("Asset %s not found in manifest %s", asset, a.assetManifest)
 		log.Println(err)
 		return "", err
 	}
-	return path.Join(a.staticPath, path), nil
+	return path.Join(a.staticPath, p), nil
 }
 
 func (a *App) Start() {
 	a.isDev = true
 	a.staticPath = "/s/"
 	a.loadAssetManifest()
+
+	es, err := elasticsearch.NewDefaultClient()
+	if err == nil {
+		// log.Println(elasticsearch.Version)
+		// log.Println(es.Info())
+	} else {
+		log.Fatalf("Can't create es client: %s", err)
+	}
+
+	recs := &Recs{
+		es:    es,
+		index: "momo_rec",
+	}
 
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -66,9 +81,10 @@ func (a *App) Start() {
 	})
 	// rendering test
 
-	r.Mount("/v/orpheus", ViewpointService{}.Handler())
+	r.Mount("/v/orpheus", (&ViewpointHandler{recs: recs, funcs: funcs}).Handler())
 
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 
+	fmt.Println("The momo server is running at http://localhost:3000.")
 	http.ListenAndServe(":3000", r)
 }

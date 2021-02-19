@@ -1,0 +1,30 @@
+# id
+cp(_id, r.id)
+cp(r.id, r._id)
+
+# collection
+add(r.collection.$append, vlerick)
+
+# type
+cp(format, r.type)
+lookup(r.type, lludss_type_mapping.csv, delete: 1)
+unless exists(r.type)
+    reject()
+end
+
+# title
+cp(title_display, r.title)
+
+# author
+cp(author_display.*, r.author.$append.name)
+
+# abstract
+cp(summary_t.*, r.abstract.$append.text)
+set(abstract.*.lang, und)
+
+# isbn
+cp(isbn_t, r.isbn)
+
+# recs
+cp(r, recs.$append)
+retain(recs)

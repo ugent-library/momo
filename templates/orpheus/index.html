@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{ assetPath "/css/app.css" }}">
+  </head>
+  <body>
+    <h1>{{.Title}}</h1>
+    total: {{.Hits.total}}
+    <ul>
+    {{- range .Hits.hits -}}
+        <li>{{._source.title}}</li>
+    {{- end}}
+    </ul>
+    <script type="application/javascript" src="{{ assetPath "/js/app.js" }}"></script>
+</body>
+</html>

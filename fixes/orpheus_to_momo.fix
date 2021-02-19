@@ -1,0 +1,42 @@
+# id
+marc_map(999c, r.id)
+prepend(r.id, 'orpheus:')
+cp(r.id, r._id)
+
+# collection
+add(r.collection.$append, orpheus)
+
+# title
+marc_map(245a, r.title)
+
+# authors
+do marc_each()
+    marc_map(100a, r.author.$append.name)
+end
+
+# edition
+marc_map(250, r.edition, join: " ")
+
+# placeOfPublication
+marc_map(260a, r.placeOfPublication)
+
+# publisher
+marc_map(260b, r.publisher)
+
+# publicationDate
+marc_map(260c, r.publicationDate)
+
+# note
+do marc_each()
+    marc_map(500a, r.note.$append.text)
+end
+set(r.note.*.lang, und)
+
+# iiif manifest
+if any_equal(r.id, 'orpheus:105')
+    add(r.iiif.manifest, 'https://sharedcanvas.be/IIIF/manifests/315E3B36-453B-11EB-A063-6F5AACE1713C')
+end
+
+# recs
+cp(r, recs.$append)
+retain(recs)

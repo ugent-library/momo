@@ -5,13 +5,29 @@
 * elasticsearch 6.8
 * npm
 
-## Start in development
+## Start development server
 
 ```
-go run cmd/momo-app/main.go
+go run cmd/momo-app/main.go server
 ```
 
-## Assets
+## Search index
+
+To create the index:
+
+```
+go run cmd/momo-app/main.go index create
+```
+
+To delete the index:
+
+```
+go run cmd/momo-app/main.go index delete
+```
+
+See `fixes/README.md` on how to index data.
+
+## Generate assets
 
 ```
 cd assets

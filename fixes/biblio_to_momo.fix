@@ -1,0 +1,39 @@
+unless any_match(status, public)
+    reject()
+end
+
+# id
+cp(_id, r.id)
+prepend(r.id, 'biblio:')
+cp(r.id, r._id)
+
+# collection
+add(r.collection.$append, biblio)
+
+# type
+cp(type, r.type)
+lookup(r.type, biblio_type_mapping.csv, delete: 1)
+unless exists(r.type)
+    reject()
+end
+
+# title
+cp(title, r.title)
+
+# author
+cp(author.*.name, r.author.$append.name)
+
+# abstract
+# TODO abstract lang
+cp(abstract.*, r.abstract.$append.text)
+set(r.abstract.*.lang, und)
+
+# doi
+cp(doi, r.doi)
+
+# isbn
+cp(isbn, r.isbn)
+
+# recs
+cp(r, recs.$append)
+retain(recs)
