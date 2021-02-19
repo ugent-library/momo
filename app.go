@@ -86,5 +86,5 @@ func (a *App) Start() {
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 
 	fmt.Println("The momo server is running at http://localhost:3000.")
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe("localhost:3000", r)
 }

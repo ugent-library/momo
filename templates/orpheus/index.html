@@ -7,7 +7,12 @@
   </head>
   <body>
     <h1>{{.Title}}</h1>
-    total: {{.Hits.total}}
+
+    <div>
+      <b-form-input v-model="text" placeholder="Enter your query here"></b-form-input>
+      <div class="mt-2">total: {{.Hits.total}}</div>
+    </div>
+
     <ul>
     {{- range .Hits.hits -}}
         <li>{{._source.title}}</li>
