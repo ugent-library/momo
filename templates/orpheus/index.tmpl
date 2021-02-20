@@ -1,0 +1,22 @@
+<h1>{{.Title}}</h1>
+
+<div>total: {{.Hits.total}}</div>
+
+<ul>
+{{- range .Hits.hits -}}
+    <li>{{._source.title}}</li>
+{{- end}}
+</ul>
+
+<div v-bind:class="{loading:state.loading}" id="search" v-cloak>
+  <div id="search-form">
+    <form v-on:submit.prevent="">
+      <input v-model.lazy="query" class="form-control" type="text" size="50" placeholder="Search...">
+    </form>
+    <p class="total"><span class="label"># results/</span><span class="content">${ total }</span></p>
+  </div>
+
+  <div v-if="total < 1 && !state.loading" class="no-results">
+    <p>Sorry, no results for your query&hellip;</p>
+  </div>
+</div>

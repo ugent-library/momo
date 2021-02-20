@@ -13,9 +13,9 @@ bin = "tmp/bin"
 # Customize binary.
 full_bin = "./tmp/bin/momo server"
 # Watch these filename extensions.
-include_ext = ["go", "tpl", "tmpl", "html"]
+include_ext = ["go"]
 # Ignore these filename extensions or directories.
-exclude_dir = ["assets", "tmp"]
+exclude_dir = ["assets", "templates", "tmp"]
 # Watch these directories if you specified.
 include_dir = []
 # Exclude files.

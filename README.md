@@ -11,7 +11,9 @@
 go run cmd/momo-app/main.go server
 ```
 
-With live reload:
+In development mode templates and asset paths will be reloaded on every request.
+
+If you also want your go code to live reload:
 
 ```
 go get -u github.com/cosmtrek/air
