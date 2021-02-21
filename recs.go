@@ -52,6 +52,6 @@ func (r *Recs) AutocompleteSearch(qs string) map[string]interface{} {
 	if err = json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	log.Printf("es response: %s", resData)
+	// log.Printf("es response: %s", resData)
 	return resData["hits"].(map[string]interface{})
 }

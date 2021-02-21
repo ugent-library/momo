@@ -37,6 +37,7 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 		hits := s.recs.AutocompleteSearch(q)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(200)
+		// TODO write template to a buffer first so we can show an error page
 		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Orpheus", Hits: hits}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -47,17 +48,20 @@ func (s *ViewpointHandler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
 		hits := s.recs.AutocompleteSearch(q)
-
-		buf := &bytes.Buffer{}
-		enc := json.NewEncoder(buf)
-		enc.SetEscapeHTML(true)
-		if err := enc.Encode(hits); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
-		w.Write(buf.Bytes())
+		renderJSON(w, 200, hits)
 	}
+}
+
+func renderJSON(w http.ResponseWriter, status int, data interface{}) {
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(true)
+	if err := enc.Encode(data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	w.Write(buf.Bytes())
 }
