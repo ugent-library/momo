@@ -30,15 +30,12 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 	}
 	type data struct {
 		Title string
-		Hits  map[string]interface{}
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query().Get("q")
-		hits := s.recs.AutocompleteSearch(q)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(200)
 		// TODO write template to a buffer first so we can show an error page
-		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Orpheus", Hits: hits}); err != nil {
+		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Orpheus"}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}

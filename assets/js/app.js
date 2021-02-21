@@ -10,16 +10,16 @@ var vSearch = new Vue({
     el: '#search',
     data: {
         state: {
-        //   error: null,
+          error: null,
           loading: true,
-        //   fetching: false,
-        //   replaceResults: true
+          fetching: false,
+          replaceResults: true
         },
   
         // isBottom: false,
   
         query: '',
-        // results: [],
+        results: [],
         total: 0,
         // search_after: []
     },
@@ -27,8 +27,8 @@ var vSearch = new Vue({
         loadResults: function () {
           var self = this
   
-        //   if (self.state.fetching) { return }
-        //   self.state.fetching = true
+          if (self.state.fetching) { return }
+          self.state.fetching = true
   
           if (self.query === '') {
             window.history.pushState({}, '', '?')
@@ -45,20 +45,17 @@ var vSearch = new Vue({
               return response.json()
             })
             .then(function (response) {
-            //   var results = []
+              var results = []
   
-            //   response.hits.forEach(function (r) {
-            //     var result = {
-            //       id: r.id,
-            //       url: r.url,
-            //       image_url: r.image_url,
-            //       published: r.published
-            //     }
+              response.hits.forEach(function (r) {
+                var result = {
+                    title: r._source.title
+                }
   
             //     if (r.highlights && r.highlights.title) {
             //       result.title = r.highlights.title[0]
             //     } else {
-            //       result.title = r.title
+                //   result.title = r.title
             //     }
   
             //     if (r.highlights && r.highlights.alt) {
@@ -69,16 +66,16 @@ var vSearch = new Vue({
             //       result.transcript = r.highlights.transcript.join('&hellip;')
             //     }
   
-            //     results.push(result)
-            //   })
+                results.push(result)
+              })
   
               self.total = response.total
   
-            //   if (self.state.replaceResults) {
-            //     self.results = results
+              if (self.state.replaceResults) {
+                self.results = results
             //   } else {
             //     self.results = self.results.concat(results)
-            //   }
+              }
   
             //   if (response.hits.length > 0) {
             //     self.search_after = response.hits[response.hits.length - 1].sort
@@ -86,22 +83,19 @@ var vSearch = new Vue({
             })
             .then(function () {
               self.state.loading = false
-            //   self.state.fetching = false
+              self.state.fetching = false
             })
             .catch(function (response) {
               self.state.loading = false
-            //   self.state.fetching = false
-            //   self.state.error = response
+              self.state.fetching = false
+              self.state.error = response
             })
         },
-        // toggle: function (event) {
-        //   event.currentTarget.closest('div.result').classList.toggle('expanded')
-        // }
     },
   
     watch: {
         query: function () {
-        //   this.state.replaceResults = true
+          this.state.replaceResults = true
           this.loadResults()
         },
   
