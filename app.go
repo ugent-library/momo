@@ -12,17 +12,14 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
-	"github.com/unrolled/render"
 )
 
 type App struct {
-	isDev         bool
 	assetManifest map[string]string
 	staticPath    string
-	r             *render.Render
+	funcs         template.FuncMap
 }
 
-// TODO mutex
 func (a *App) loadAssetManifest() {
 	path := "static/mix-manifest.json"
 	data, err := ioutil.ReadFile(path)
@@ -38,9 +35,6 @@ func (a *App) loadAssetManifest() {
 }
 
 func (a *App) assetPath(asset string) (string, error) {
-	if a.isDev {
-		a.loadAssetManifest()
-	}
 	p, ok := a.assetManifest[asset]
 	if !ok {
 		err := fmt.Errorf("Asset %s not found in manifest %s", asset, a.assetManifest)
@@ -51,16 +45,10 @@ func (a *App) assetPath(asset string) (string, error) {
 }
 
 func (a *App) Start() {
-	a.isDev = true
 	a.staticPath = "/s/"
-	a.r = render.New(render.Options{
-		IsDevelopment: a.isDev,
-		Layout:        "layout",
-		Funcs: []template.FuncMap{template.FuncMap{
-			"assetPath": a.assetPath,
-		}},
-		XMLContentType: "application/xml",
-	})
+	a.funcs = template.FuncMap{
+		"assetPath": a.assetPath,
+	}
 	a.loadAssetManifest()
 
 	es, err := elasticsearch.NewDefaultClient()
@@ -82,17 +70,7 @@ func (a *App) Start() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 
-	// rendering test
-	// funcs := template.FuncMap{
-	// 	"assetPath": a.assetPath,
-	// }
-	// tmpl := template.Must(template.New("layout.html").Funcs(funcs).ParseFiles("templates/layout.html"))
-	// r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	tmpl.Execute(w, struct{ Title string }{"My Title"})
-	// })
-	// rendering test
-
-	r.Mount("/v/orpheus", (&ViewpointHandler{r: a.r, recs: recs}).Handler())
+	r.Mount("/v/orpheus", (&ViewpointHandler{funcs: a.funcs, recs: recs}).Handler())
 
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 

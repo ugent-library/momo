@@ -1,12 +1,14 @@
+{{define "layout"}}
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="{{ assetPath "/css/app.css" }}">
+    <link rel="stylesheet" href="{{assetPath "/css/app.css"}}">
   </head>
   <body>
-    {{ yield }}
-    <script type="application/javascript" src="{{ assetPath "/js/app.js" }}"></script>
+    {{template "content" .}}
+    <script type="application/javascript" src="{{assetPath "/js/app.js"}}"></script>
   </body>
 </html>
+{{end}}
