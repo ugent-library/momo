@@ -4,10 +4,10 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/Universiteitsbibliotheek/momo"
+	"github.com/Universiteitsbibliotheek/momo/store"
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo"
-	"github.com/ugent-library/momo/store"
 )
 
 func main() {

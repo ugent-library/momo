@@ -1,4 +1,4 @@
-module github.com/ugent-library/momo
+module github.com/Universiteitsbibliotheek/momo
 
 go 1.15
 

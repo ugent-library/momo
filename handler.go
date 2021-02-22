@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Universiteitsbibliotheek/momo/store"
 	"github.com/go-chi/chi"
-	"github.com/ugent-library/momo/store"
 )
 
 type ViewpointHandler struct {
