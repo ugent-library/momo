@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/Universiteitsbibliotheek/momo/listing"
 	"github.com/Universiteitsbibliotheek/momo/store"
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
@@ -72,8 +73,7 @@ func (a *App) Start() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 
-	r.Mount("/v/orpheus", (&ViewpointHandler{store: esStore, funcs: a.funcs}).Handler())
-
+	r.Mount("/v/orpheus", (&ViewpointHandler{ls: listing.NewService(esStore), funcs: a.funcs}).Handler())
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 
 	fmt.Println("The momo server is running at http://localhost:3000.")

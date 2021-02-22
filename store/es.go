@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/Universiteitsbibliotheek/momo/listing"
 	"github.com/elastic/go-elasticsearch/v6"
 )
 
@@ -39,7 +40,7 @@ func (s *Es) DeleteIndex() error {
 	return nil
 }
 
-func (s *Es) SearchRecs(qs string) (map[string]interface{}, error) {
+func (s *Es) SearchRecs(qs string) (*listing.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
@@ -81,10 +82,55 @@ func (s *Es) SearchRecs(qs string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
 	}
 
-	var resData map[string]interface{}
-	if err = json.NewDecoder(res.Body).Decode(&resData); err != nil {
+	type resEnvelope struct {
+		Took int
+		Hits struct {
+			Total int
+			Hits  []struct {
+				ID     string          `json:"_id"`
+				Source json.RawMessage `json:"_source"`
+				// Highlights json.RawMessage `json:"highlight"`
+				// Sort []interface{} `json:"sort"`
+			}
+		}
+	}
+
+	type resHit struct {
+		Title string `json:"title"`
+	}
+
+	var r resEnvelope
+	if err = json.NewDecoder(res.Body).Decode(&r); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	// log.Printf("es response: %s", resData)
-	return resData["hits"].(map[string]interface{}), nil
+
+	hits := listing.RecHits{}
+	hits.Total = r.Hits.Total
+
+	if len(r.Hits.Hits) == 0 {
+		hits.Hits = []*listing.RecHit{}
+		return &hits, nil
+	}
+
+	for _, hit := range r.Hits.Hits {
+		var rh resHit
+		var h listing.RecHit
+		h.ID = hit.ID
+
+		if err := json.Unmarshal(hit.Source, &rh); err != nil {
+			return nil, err
+		}
+
+		h.Title = rh.Title
+
+		// if len(hit.Highlights) > 0 {
+		// 	if err := json.Unmarshal(hit.Highlights, &h.Highlights); err != nil {
+		// 		return &results, err
+		// 	}
+		// }
+
+		hits.Hits = append(hits.Hits, &h)
+	}
+
+	return &hits, nil
 }

@@ -49,7 +49,7 @@ var vSearch = new Vue({
   
               response.hits.forEach(function (r) {
                 var result = {
-                    title: r._source.title
+                    title: r.title
                 }
   
             //     if (r.highlights && r.highlights.title) {

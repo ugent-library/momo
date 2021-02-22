@@ -7,13 +7,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Universiteitsbibliotheek/momo/store"
+	"github.com/Universiteitsbibliotheek/momo/listing"
 	"github.com/go-chi/chi"
 )
 
 type ViewpointHandler struct {
+	ls    listing.Service
 	funcs template.FuncMap
-	store *store.Es
 }
 
 func (s *ViewpointHandler) Handler() http.Handler {
@@ -45,7 +45,7 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 func (s *ViewpointHandler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
-		hits, err := s.store.SearchRecs(q)
+		hits, err := s.ls.SearchRecs(q)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
