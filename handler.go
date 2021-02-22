@@ -8,11 +8,12 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/ugent-library/momo/store"
 )
 
 type ViewpointHandler struct {
 	funcs template.FuncMap
-	recs  *Recs
+	store *store.Es
 }
 
 func (s *ViewpointHandler) Handler() http.Handler {
@@ -44,7 +45,11 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 func (s *ViewpointHandler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
-		hits := s.recs.AutocompleteSearch(q)
+		hits, err := s.store.SearchRecs(q)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		renderJSON(w, 200, hits)
 	}
 }

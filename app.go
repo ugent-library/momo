@@ -12,6 +12,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
+	"github.com/ugent-library/momo/store"
 )
 
 type App struct {
@@ -51,17 +52,18 @@ func (a *App) Start() {
 	}
 	a.loadAssetManifest()
 
-	es, err := elasticsearch.NewDefaultClient()
-	if err == nil {
-		// log.Println(elasticsearch.Version)
-		// log.Println(es.Info())
-	} else {
-		log.Fatalf("Can't create es client: %s", err)
+	client, err := elasticsearch.NewDefaultClient()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	recs := &Recs{
-		es:    es,
-		index: "momo_rec",
+	mapping, err := ioutil.ReadFile("etc/es/rec_mapping.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	esStore := &store.Es{
+		Client:       client,
+		IndexName:    "momo_rec",
+		IndexMapping: string(mapping),
 	}
 
 	r := chi.NewRouter()
@@ -70,7 +72,7 @@ func (a *App) Start() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 
-	r.Mount("/v/orpheus", (&ViewpointHandler{funcs: a.funcs, recs: recs}).Handler())
+	r.Mount("/v/orpheus", (&ViewpointHandler{store: esStore, funcs: a.funcs}).Handler())
 
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 
