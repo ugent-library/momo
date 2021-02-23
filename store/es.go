@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/Universiteitsbibliotheek/momo/listing"
 	"github.com/elastic/go-elasticsearch/v6"
+	"github.com/ugent-library/momo/listing"
 )
 
 type Es struct {

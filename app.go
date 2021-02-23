@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/Universiteitsbibliotheek/momo/listing"
-	"github.com/Universiteitsbibliotheek/momo/store"
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
+	"github.com/ugent-library/momo/listing"
+	"github.com/ugent-library/momo/store"
 )
 
 type App struct {
