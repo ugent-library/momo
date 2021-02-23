@@ -37,6 +37,7 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 		w.WriteHeader(200)
 		// TODO write template to a buffer first so we can show an error page
 		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Orpheus"}); err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -47,6 +48,7 @@ func (s *ViewpointHandler) Search() http.HandlerFunc {
 		q := r.URL.Query().Get("q")
 		hits, err := s.ls.SearchRecs(q)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -59,6 +61,7 @@ func renderJSON(w http.ResponseWriter, status int, data interface{}) {
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(true)
 	if err := enc.Encode(data); err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

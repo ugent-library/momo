@@ -11,10 +11,33 @@ import (
 	"github.com/ugent-library/momo/listing"
 )
 
+// type SearchScope struct {
+// 	field string
+// 	value []interface{}
+// }
+
+// type SearchOptions struct {
+// 	query  string
+// 	scopes []SearchScope
+// }
+
+// func (s SearchOptions) WithScope(field string, values ...interface{}) SearchOptions {
+// 	return s
+// }
+
 type Es struct {
 	Client       *elasticsearch.Client
 	IndexName    string
 	IndexMapping string
+}
+
+type EsViewpoint struct {
+	Store *Es
+	Scope map[string]interface{}
+}
+
+func (v *EsViewpoint) SearchRecs(q string, _ ...map[string]interface{}) (*listing.RecHits, error) {
+	return v.Store.SearchRecs(q, v.Scope)
 }
 
 func (s *Es) CreateIndex() error {
@@ -40,7 +63,7 @@ func (s *Es) DeleteIndex() error {
 	return nil
 }
 
-func (s *Es) SearchRecs(qs string) (*listing.RecHits, error) {
+func (s *Es) SearchRecs(qs string, scope ...map[string]interface{}) (*listing.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
@@ -55,6 +78,17 @@ func (s *Es) SearchRecs(qs string) (*listing.RecHits, error) {
 			"query": map[string]interface{}{
 				"match": map[string]interface{}{
 					"ac": qs,
+				},
+			},
+		}
+	}
+
+	if len(scope) > 0 && scope[0] != nil {
+		query = map[string]interface{}{
+			"query": map[string]interface{}{
+				"bool": map[string]interface{}{
+					"must":   query["query"],
+					"filter": scope,
 				},
 			},
 		}

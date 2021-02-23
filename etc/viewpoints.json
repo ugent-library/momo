@@ -1,0 +1,30 @@
+{
+    "orpheus": {
+        "es_filter": {
+            "term": {
+                "collection": "orpheus"
+            }
+        },
+        "layout": "orpheus/layout.tmpl",
+        "templates": {}
+    },
+    "biblio": {
+        "es_filter": {
+            "term": {
+                "collection": "biblio"
+            }
+        },
+        "templates": {}
+    },
+    "vlerick": {
+        "es_filter": {
+            "term": {
+                "collection": "vlerick"
+            }
+        },
+        "templates": {}
+    },
+    "all": {
+        "templates": {}
+    }
+}

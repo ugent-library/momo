@@ -37,8 +37,8 @@ var vSearch = new Vue({
           }
   
         //   if (self.state.replaceResults) { self.search_after = [] }
-  
-            window.fetch(`/v/orpheus/search?q=${encodeURIComponent(self.query)}`)
+            var p = window.location.pathname
+            window.fetch(p+`/search?q=${encodeURIComponent(self.query)}`)
         //   window.fetch(`/v/orpheus/search?q=${encodeURIComponent(self.query)}&a=${self.search_after.join(',')}`)
             .then(function (response) {
               if (!response.ok) { return Promise.reject(response) }
