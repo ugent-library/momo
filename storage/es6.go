@@ -1,4 +1,4 @@
-package store
+package storage
 
 import (
 	"bytes"
@@ -11,36 +11,13 @@ import (
 	"github.com/ugent-library/momo/listing"
 )
 
-// type SearchScope struct {
-// 	field string
-// 	value []interface{}
-// }
-
-// type SearchOptions struct {
-// 	query  string
-// 	scopes []SearchScope
-// }
-
-// func (s SearchOptions) WithScope(field string, values ...interface{}) SearchOptions {
-// 	return s
-// }
-
-type Es struct {
+type Es6 struct {
 	Client       *elasticsearch.Client
 	IndexName    string
 	IndexMapping string
 }
 
-type EsViewpoint struct {
-	Store *Es
-	Scope map[string]interface{}
-}
-
-func (v *EsViewpoint) SearchRecs(q string, _ ...map[string]interface{}) (*listing.RecHits, error) {
-	return v.Store.SearchRecs(q, v.Scope)
-}
-
-func (s *Es) CreateIndex() error {
+func (s *Es6) CreateIndex() error {
 	r := strings.NewReader(s.IndexMapping)
 	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
 	if err != nil {
@@ -52,7 +29,7 @@ func (s *Es) CreateIndex() error {
 	return nil
 }
 
-func (s *Es) DeleteIndex() error {
+func (s *Es6) DeleteIndex() error {
 	res, err := s.Client.Indices.Delete([]string{s.IndexName})
 	if err != nil {
 		return err
@@ -63,11 +40,11 @@ func (s *Es) DeleteIndex() error {
 	return nil
 }
 
-func (s *Es) SearchRecs(qs string, scope ...map[string]interface{}) (*listing.RecHits, error) {
+func (s *Es6) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
-	if len(qs) == 0 {
+	if len(args.Query) == 0 {
 		query = map[string]interface{}{
 			"query": map[string]interface{}{
 				"match_all": map[string]interface{}{},
@@ -77,20 +54,29 @@ func (s *Es) SearchRecs(qs string, scope ...map[string]interface{}) (*listing.Re
 		query = map[string]interface{}{
 			"query": map[string]interface{}{
 				"match": map[string]interface{}{
-					"ac": qs,
+					"ac": args.Query,
 				},
 			},
 		}
 	}
 
-	if len(scope) > 0 && scope[0] != nil {
-		query = map[string]interface{}{
-			"query": map[string]interface{}{
-				"bool": map[string]interface{}{
-					"must":   query["query"],
-					"filter": scope,
+	// clear as mud
+	if args.Scope != nil {
+		terms := make([]map[string]interface{}, len(args.Scope))
+		for k, v := range args.Scope {
+			terms = append(terms, map[string]interface{}{"terms": map[string]interface{}{k: v}})
+			query = map[string]interface{}{
+				"query": map[string]interface{}{
+					"bool": map[string]interface{}{
+						"must": query["query"],
+						"filter": map[string]interface{}{
+							"bool": map[string]interface{}{
+								"must": terms,
+							},
+						},
+					},
 				},
-			},
+			}
 		}
 	}
 

@@ -46,7 +46,7 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 func (s *ViewpointHandler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
-		hits, err := s.ls.SearchRecs(q)
+		hits, err := s.ls.SearchRecs(listing.SearchArgs{Query: q})
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

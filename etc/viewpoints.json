@@ -1,30 +1,30 @@
-{
-    "orpheus": {
-        "es_filter": {
-            "term": {
-                "collection": "orpheus"
-            }
+[
+    {
+        "name": "orpheus",
+        "searchScope": {
+            "collection": [
+                "orpheus"
+            ]
         },
-        "layout": "orpheus/layout.tmpl",
-        "templates": {}
+        "layout": "orpheus/layout.tmpl"
     },
-    "biblio": {
-        "es_filter": {
-            "term": {
-                "collection": "biblio"
-            }
-        },
-        "templates": {}
+    {
+        "name": "biblio",
+        "searchScope": {
+            "collection": [
+                "biblio"
+            ]
+        }
     },
-    "vlerick": {
-        "es_filter": {
-            "term": {
-                "collection": "vlerick"
-            }
-        },
-        "templates": {}
+    {
+        "name": "vlerick",
+        "searchScope": {
+            "collection": [
+                "vlerick"
+            ]
+        }
     },
-    "all": {
-        "templates": {}
+    {
+        "name": "all"
     }
-}
+]

@@ -14,8 +14,14 @@ import (
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
 	"github.com/ugent-library/momo/listing"
-	"github.com/ugent-library/momo/store"
+	"github.com/ugent-library/momo/storage"
 )
+
+type Viewpoint struct {
+	Name        string
+	SearchScope listing.SearchScope
+	Layout      string
+}
 
 type App struct {
 	assetManifest map[string]string
@@ -58,11 +64,11 @@ func (a *App) Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mapping, err := ioutil.ReadFile("etc/es/rec_mapping.json")
+	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	esStore := &store.Es{
+	store := &storage.Es6{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
@@ -74,15 +80,12 @@ func (a *App) Start() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 
-	viewpoints := loadViewpoints()
-	for k, conf := range viewpoints {
-		var s listing.Storage
-		if scope, ok := conf["es_filter"]; ok {
-			s = &store.EsViewpoint{Store: esStore, Scope: scope.(map[string]interface{})}
-		} else {
-			s = esStore
-		}
-		r.Mount("/v/"+k, (&ViewpointHandler{ls: listing.NewService(s), funcs: a.funcs}).Handler())
+	for _, v := range loadViewpoints() {
+		log.Println(v)
+		path := "/v/" + v.Name
+		listingService := listing.NewService(store, v.SearchScope)
+		handler := &ViewpointHandler{ls: listingService, funcs: a.funcs}
+		r.Mount(path, handler.Handler())
 	}
 
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
@@ -91,15 +94,16 @@ func (a *App) Start() {
 	http.ListenAndServe("localhost:3000", r)
 }
 
-func loadViewpoints() map[string]map[string]interface{} {
+func loadViewpoints() []Viewpoint {
 	jsonFile, err := os.Open("etc/viewpoints.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	var e map[string]map[string]interface{}
-	if err := json.NewDecoder(jsonFile).Decode(&e); err != nil {
+	v := make([]Viewpoint, 0)
+	if err := json.NewDecoder(jsonFile).Decode(&v); err != nil {
 		log.Fatal(err)
 	}
-	return e
+	log.Println(fmt.Sprintf("%#v", v))
+	return v
 }

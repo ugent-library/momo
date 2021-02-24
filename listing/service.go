@@ -1,21 +1,22 @@
 package listing
 
 type Storage interface {
-	SearchRecs(string, ...map[string]interface{}) (*RecHits, error)
+	SearchRecs(SearchArgs) (*RecHits, error)
 }
 
 type Service interface {
-	SearchRecs(string, ...map[string]interface{}) (*RecHits, error)
+	SearchRecs(SearchArgs) (*RecHits, error)
 }
 
 type service struct {
 	store Storage
+	scope SearchScope
 }
 
-func NewService(s Storage) Service {
-	return &service{s}
+func NewService(store Storage, scope SearchScope) Service {
+	return &service{store: store, scope: scope}
 }
 
-func (s *service) SearchRecs(q string, _ ...map[string]interface{}) (*RecHits, error) {
-	return s.store.SearchRecs(q)
+func (s *service) SearchRecs(args SearchArgs) (*RecHits, error) {
+	return s.store.SearchRecs(args.WithScope(s.scope))
 }

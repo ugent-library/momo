@@ -7,7 +7,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
 	"github.com/ugent-library/momo"
-	"github.com/ugent-library/momo/store"
+	"github.com/ugent-library/momo/storage"
 )
 
 func main() {
@@ -15,11 +15,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mapping, err := ioutil.ReadFile("etc/es/rec_mapping.json")
+	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	esStore := &store.Es{
+	store := &storage.Es6{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
@@ -47,7 +47,7 @@ func main() {
 		Use:   "create",
 		Short: "Create the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := esStore.CreateIndex()
+			err := store.CreateIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -57,7 +57,7 @@ func main() {
 		Use:   "delete",
 		Short: "Delete the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := esStore.DeleteIndex()
+			err := store.DeleteIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
