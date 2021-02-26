@@ -1,26 +1,5 @@
 {{define "content"}}
 <h1>{{.Title}}</h1>
 
-<div v-bind:class="{loading:state.loading}" id="search" v-cloak>
-  <div id="search-form">
-    <form v-on:submit.prevent="">
-      <input v-model.lazy="query" class="form-control" type="text" size="50" placeholder="Search...">
-    </form>
-    <p class="total"><span class="label">total: </span><span class="content">${total}</span></p>
-  </div>
-
-  <div v-if="total < 1 && !state.loading" class="no-results">
-    <p>Sorry, no results for your query&hellip;</p>
-  </div>
-
-  <ul v-for="result in results" v-bind:id="result.id" :key="result.id" class="result">
-    <li>
-      <span v-html="result.title" class="title"></span>
-    </li>
-  </ul>
-
-  <p v-show="state.fetching" id="loading-results">Loading results...</p>
-  <p v-show="state.loading" id="loading-app">Loading the application...</p>
-  <p v-if="state.error" id="app-error">[${state.error.status}] ${state.error.statusText}</p>
-</div>
+<div id="search"></div>
 {{end}}

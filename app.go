@@ -81,7 +81,6 @@ func (a *App) Start() {
 	r.Use(chimw.Recoverer)
 
 	for _, v := range loadViewpoints() {
-		log.Println(v)
 		path := "/v/" + v.Name
 		listingService := listing.NewService(store, v.SearchScope)
 		handler := &ViewpointHandler{ls: listingService, funcs: a.funcs}
@@ -104,6 +103,5 @@ func loadViewpoints() []Viewpoint {
 	if err := json.NewDecoder(jsonFile).Decode(&v); err != nil {
 		log.Fatal(err)
 	}
-	log.Println(fmt.Sprintf("%#v", v))
 	return v
 }
