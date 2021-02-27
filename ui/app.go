@@ -1,4 +1,4 @@
-package momo
+package ui
 
 import (
 	"encoding/json"

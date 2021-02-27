@@ -6,8 +6,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo"
 	"github.com/ugent-library/momo/storage"
+	"github.com/ugent-library/momo/ui"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 		Use:   "server",
 		Short: "The momo webserver",
 		Run: func(cmd *cobra.Command, args []string) {
-			app := &momo.App{}
+			app := &ui.App{}
 			app.Start()
 		},
 	}
