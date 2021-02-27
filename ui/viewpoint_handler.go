@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path"
 
 	"github.com/gorilla/schema"
 	"github.com/ugent-library/momo/listing"
@@ -13,11 +14,16 @@ import (
 
 type ViewpointHandler struct {
 	listingService listing.Service
+	layout         string
 	funcs          template.FuncMap
 }
 
 func (s *ViewpointHandler) Index() http.HandlerFunc {
-	tmpl, err := template.New("layout.tmpl").Funcs(s.funcs).ParseFiles("templates/layout.tmpl", "templates/orpheus/index.tmpl")
+	layout := s.layout
+	if layout == "" {
+		layout = "layout.tmpl"
+	}
+	tmpl, err := template.New("layout.tmpl").Funcs(s.funcs).ParseFiles(path.Join("templates", layout), "templates/index.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,7 +34,7 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(200)
 		// TODO write template to a buffer first so we can show an error page
-		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Orpheus"}); err != nil {
+		if err := tmpl.ExecuteTemplate(w, "layout", data{Title: "Search"}); err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

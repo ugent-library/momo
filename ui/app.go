@@ -17,7 +17,7 @@ import (
 	"github.com/ugent-library/momo/storage"
 )
 
-type Viewpoint struct {
+type viewpoint struct {
 	Name        string
 	SearchScope listing.SearchScope
 	Layout      string
@@ -82,7 +82,7 @@ func (a *App) Start() {
 
 	for _, v := range loadViewpoints() {
 		listingService := listing.NewService(store, v.SearchScope)
-		handler := &ViewpointHandler{listingService: listingService, funcs: a.funcs}
+		handler := &ViewpointHandler{listingService: listingService, layout: v.Layout, funcs: a.funcs}
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())
 			r.Get("/search", handler.Search())
@@ -95,13 +95,13 @@ func (a *App) Start() {
 	http.ListenAndServe("localhost:3000", r)
 }
 
-func loadViewpoints() []Viewpoint {
+func loadViewpoints() []viewpoint {
 	jsonFile, err := os.Open("etc/viewpoints.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	v := make([]Viewpoint, 0)
+	v := make([]viewpoint, 0)
 	if err := json.NewDecoder(jsonFile).Decode(&v); err != nil {
 		log.Fatal(err)
 	}
