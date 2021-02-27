@@ -80,6 +80,9 @@ func (s *Es6) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
 		}
 	}
 
+	query["size"] = args.Size
+	query["from"] = args.Skip
+
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, err
 	}

@@ -13,9 +13,9 @@
         <p>Sorry, no results for your query&hellip;</p>
     </div>
 
-    <ul v-for="result in results" v-bind:id="result.id" :key="result.id" id="search-results" class="result">
+    <ul v-for="hit in hits" v-bind:id="hit.id" :key="hit.id" id="search-results" class="result">
         <li>
-        <span v-html="result.title" class="title"></span>
+        <span v-html="hit.title" class="title"></span>
         </li>
     </ul>
 
@@ -26,7 +26,7 @@
     <b-pagination
         v-model="page"
         :total-rows="total"
-        :per-page="perPage"
+        :per-page="size"
         aria-controls="search-results"
     ></b-pagination>
   </div>
@@ -37,17 +37,16 @@ export default {
     data() {
         return {
             state: {
-            error: null,
-            loading: true,
-            fetching: false,
-            replaceResults: true
+                error: null,
+                loading: true,
+                fetching: false
             },
     
             query: '',
-            results: [],
+            hits: [],
             total: 0,
             page: 1,
-            perPage: 10
+            size: 10
         };
     },
     methods: {
@@ -55,33 +54,35 @@ export default {
           var self = this
   
           if (self.state.fetching) { return }
-          self.state.fetching = true
+            self.state.fetching = true
   
-            var queryParams = `?page=${encodeURIComponent(self.page)}&q=${encodeURIComponent(self.query)}`
-            window.history.pushState({}, '', queryParams)
-  
-            var p = window.location.pathname
-            window.fetch(`${p}/search${queryParams}`)
-            .then(function (response) {
-              if (!response.ok) { return Promise.reject(response) }
-              return response.json()
+            var path = window.location.pathname
+            var p = (new URL(window.location)).searchParams;
+            p.set('q', self.query)
+            p.set('skip', (self.page-1)*self.size)
+            p.set('size', self.size)
+            var pStr = '?'+p.toString()
+
+            window.history.pushState({}, '', pStr)
+
+            window.fetch(`${path}/search${pStr}`)
+            .then(function (res) {
+              if (!res.ok) { return Promise.reject(res) }
+              return res.json()
             })
-            .then(function (response) {
-              var results = []
+            .then(function (res) {
+              var hits = []
   
-              response.hits.forEach(function (r) {
-                var result = {
-                    title: r.title
+              res.hits.forEach(function (h) {
+                var hit = {
+                    title: h.title
                 }
   
-                results.push(result)
+                hits.push(hit)
               })
   
-              self.total = response.total
-  
-              if (self.state.replaceResults) {
-                self.results = results
-              }
+              self.total = res.total
+              self.hits = hits
             })
             .then(function () {
               self.state.loading = false
@@ -97,22 +98,27 @@ export default {
   
     watch: {
         query: function () {
-          this.state.replaceResults = true
           this.loadResults()
         },
         page: function () {
-          this.state.replaceResults = true
           this.loadResults()
         },
     },
   
     created: function () {
         var self = this
-  
-        var q = document.location.search.split('q=')[1]
-        var p = document.location.search.split('page=')[1]
-        if (q) { self.query = decodeURIComponent(q) }
-        if (p) { self.page = decodeURIComponent(p) }
+
+        var p = (new URL(window.location)).searchParams;
+        if (p.has('q')) {
+            self.query = p.get('q')
+        }
+        if (p.has('size')) { 
+            self.size = parseInt(p.get('size'), 10) 
+        }
+        if (p.has('skip')) {
+            self.page = Math.ceil((parseInt(p.get('skip'), 10)+1)/self.size) 
+        }
+
         self.loadResults()
     }
 };

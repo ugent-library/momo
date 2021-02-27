@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/schema"
 	"github.com/ugent-library/momo/listing"
 )
 
@@ -45,8 +46,17 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 
 func (s *ViewpointHandler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query().Get("q")
-		hits, err := s.ls.SearchRecs(listing.SearchArgs{Query: q})
+		searchArgs := listing.SearchArgs{}
+		decoder := schema.NewDecoder()
+		err := decoder.Decode(&searchArgs, r.URL.Query())
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// searchArgs.Query = r.URL.Query().Get("q")
+		log.Println(searchArgs)
+		hits, err := s.ls.SearchRecs(searchArgs)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
