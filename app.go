@@ -81,10 +81,12 @@ func (a *App) Start() {
 	r.Use(chimw.Recoverer)
 
 	for _, v := range loadViewpoints() {
-		path := "/v/" + v.Name
 		listingService := listing.NewService(store, v.SearchScope)
-		handler := &ViewpointHandler{ls: listingService, funcs: a.funcs}
-		r.Mount(path, handler.Handler())
+		handler := &ViewpointHandler{listingService: listingService, funcs: a.funcs}
+		r.Route("/v/"+v.Name, func(r chi.Router) {
+			r.Get("/", handler.Index())
+			r.Get("/search", handler.Search())
+		})
 	}
 
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))

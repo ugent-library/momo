@@ -7,22 +7,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/gorilla/schema"
 	"github.com/ugent-library/momo/listing"
 )
 
 type ViewpointHandler struct {
-	ls    listing.Service
-	funcs template.FuncMap
-}
-
-func (s *ViewpointHandler) Handler() http.Handler {
-
-	r := chi.NewRouter()
-	r.Get("/", s.Index())
-	r.Get("/search", s.Search())
-	return r
+	listingService listing.Service
+	funcs          template.FuncMap
 }
 
 func (s *ViewpointHandler) Index() http.HandlerFunc {
@@ -54,9 +45,7 @@ func (s *ViewpointHandler) Search() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// searchArgs.Query = r.URL.Query().Get("q")
-		log.Println(searchArgs)
-		hits, err := s.ls.SearchRecs(searchArgs)
+		hits, err := s.listingService.SearchRecs(searchArgs)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
