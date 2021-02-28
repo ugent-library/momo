@@ -30,14 +30,16 @@ func main() {
 		Short: "The momo CLI",
 	}
 
+	var serverPort int
 	serverCmd := &cobra.Command{
 		Use:   "server",
 		Short: "The momo webserver",
 		Run: func(cmd *cobra.Command, args []string) {
-			app := &ui.App{}
+			app := &ui.App{Port: serverPort}
 			app.Start()
 		},
 	}
+	serverCmd.Flags().IntVarP(&serverPort, "port", "p", 3000, "bind to this TCP port")
 
 	indexCmd := &cobra.Command{
 		Use:   "index [command]",
