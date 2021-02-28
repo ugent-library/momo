@@ -1,4 +1,3 @@
-{{define "layout"}}
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,8 +7,7 @@
   </head>
   <body>
     [ORPHEUS LAYOUT]
-    {{template "content" .}}
+    {{yield}}
     <script type="application/javascript" src="{{assetPath "/js/app.js"}}"></script>
   </body>
 </html>
-{{end}}

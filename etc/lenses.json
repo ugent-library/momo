@@ -6,7 +6,7 @@
                 "orpheus"
             ]
         },
-        "layout": "orpheus/layout.tmpl"
+        "layout": "orpheus/layout"
     },
     {
         "name": "biblio",
