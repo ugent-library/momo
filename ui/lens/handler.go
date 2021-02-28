@@ -1,4 +1,4 @@
-package viewpoint
+package lens
 
 import (
 	"bytes"

@@ -15,10 +15,10 @@ import (
 	chimw "github.com/go-chi/chi/middleware"
 	"github.com/ugent-library/momo/listing"
 	"github.com/ugent-library/momo/storage"
-	"github.com/ugent-library/momo/ui/viewpoint"
+	"github.com/ugent-library/momo/ui/lens"
 )
 
-type Viewpoint struct {
+type Lens struct {
 	Name        string
 	SearchScope listing.SearchScope
 	Layout      string
@@ -81,9 +81,9 @@ func (a *App) Start() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 
-	for _, v := range loadViewpoints() {
+	for _, v := range loadLenses() {
 		listingService := listing.NewService(store, v.SearchScope)
-		handler := viewpoint.NewHandler(listingService, v.Layout, a.funcs)
+		handler := lens.NewHandler(listingService, v.Layout, a.funcs)
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())
 			r.Get("/search", handler.Search())
@@ -96,13 +96,13 @@ func (a *App) Start() {
 	http.ListenAndServe("localhost:3000", r)
 }
 
-func loadViewpoints() []Viewpoint {
-	jsonFile, err := os.Open("etc/viewpoints.json")
+func loadLenses() []Lens {
+	jsonFile, err := os.Open("etc/lenses.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	v := make([]Viewpoint, 0)
+	v := make([]Lens, 0)
 	if err := json.NewDecoder(jsonFile).Decode(&v); err != nil {
 		log.Fatal(err)
 	}
