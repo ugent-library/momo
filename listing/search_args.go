@@ -3,10 +3,10 @@ package listing
 type SearchScope map[string][]string
 
 type SearchArgs struct {
-	Scope SearchScope `schema:"-"`
-	Query string      `schema:"q"`
-	Size  int         `schema:"size"`
-	Skip  int         `schema:"skip"`
+	Scope SearchScope `form:"-"`
+	Query string      `form:"q"`
+	Size  int         `form:"size"`
+	Skip  int         `form:"skip"`
 }
 
 // TODO merge scope new scope with old scope

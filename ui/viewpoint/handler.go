@@ -1,4 +1,4 @@
-package ui
+package viewpoint
 
 import (
 	"bytes"
@@ -8,17 +8,28 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/gorilla/schema"
+	"github.com/go-playground/form/v4"
 	"github.com/ugent-library/momo/listing"
 )
 
-type ViewpointHandler struct {
+type Handler struct {
 	listingService listing.Service
 	layout         string
 	funcs          template.FuncMap
+	formDecoder    *form.Decoder
 }
 
-func (s *ViewpointHandler) Index() http.HandlerFunc {
+func NewHandler(listingService listing.Service, layout string, funcs template.FuncMap) *Handler {
+	h := &Handler{
+		listingService: listingService,
+		layout:         layout,
+		funcs:          funcs,
+		formDecoder:    form.NewDecoder(),
+	}
+	return h
+}
+
+func (s *Handler) Index() http.HandlerFunc {
 	layout := s.layout
 	if layout == "" {
 		layout = "layout.tmpl"
@@ -41,11 +52,10 @@ func (s *ViewpointHandler) Index() http.HandlerFunc {
 	}
 }
 
-func (s *ViewpointHandler) Search() http.HandlerFunc {
+func (s *Handler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		searchArgs := listing.SearchArgs{}
-		decoder := schema.NewDecoder()
-		err := decoder.Decode(&searchArgs, r.URL.Query())
+		err := s.formDecoder.Decode(&searchArgs, r.URL.Query())
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
