@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo/storage"
+	"github.com/ugent-library/momo/storage/es6"
 	"github.com/ugent-library/momo/ui"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := &storage.Es6{
+	store := &es6.Store{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),

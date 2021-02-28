@@ -1,4 +1,4 @@
-package storage
+package es6
 
 import (
 	"bytes"
@@ -11,13 +11,13 @@ import (
 	"github.com/ugent-library/momo/listing"
 )
 
-type Es6 struct {
+type Store struct {
 	Client       *elasticsearch.Client
 	IndexName    string
 	IndexMapping string
 }
 
-func (s *Es6) CreateIndex() error {
+func (s *Store) CreateIndex() error {
 	r := strings.NewReader(s.IndexMapping)
 	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
 	if err != nil {
@@ -29,7 +29,7 @@ func (s *Es6) CreateIndex() error {
 	return nil
 }
 
-func (s *Es6) DeleteIndex() error {
+func (s *Store) DeleteIndex() error {
 	res, err := s.Client.Indices.Delete([]string{s.IndexName})
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (s *Es6) DeleteIndex() error {
 	return nil
 }
 
-func (s *Es6) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
+func (s *Store) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 

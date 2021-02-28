@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
 	"github.com/ugent-library/momo/listing"
-	"github.com/ugent-library/momo/storage"
+	"github.com/ugent-library/momo/storage/es6"
 	"github.com/ugent-library/momo/ui/lens"
 )
 
@@ -69,7 +69,7 @@ func (a *App) Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := &storage.Es6{
+	store := &es6.Store{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
