@@ -1,3 +1,5 @@
+:warning: EXPERIMENTAL AND UNDER HEAVY DEVELOPMENT :warning:
+
 ## Requirements
 
 * go
@@ -21,7 +23,7 @@ go run cmd/momo-app/main.go index delete
 
 See `fixes/README.md` on how to index data.
 
-## Generate assets
+## Compile assets
 
 ```
 cd assets
