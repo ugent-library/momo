@@ -13,9 +13,9 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
+	"github.com/ugent-library/momo/http/ui/lens"
 	"github.com/ugent-library/momo/listing"
 	"github.com/ugent-library/momo/storage/es6"
-	"github.com/ugent-library/momo/ui/lens"
 )
 
 type Lens struct {

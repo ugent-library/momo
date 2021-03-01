@@ -6,8 +6,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
+	"github.com/ugent-library/momo/http/ui"
 	"github.com/ugent-library/momo/storage/es6"
-	"github.com/ugent-library/momo/ui"
 )
 
 func main() {
