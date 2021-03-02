@@ -14,13 +14,13 @@ import (
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
 	"github.com/ugent-library/momo/http/ui/lens"
-	"github.com/ugent-library/momo/listing"
+	"github.com/ugent-library/momo/records"
 	"github.com/ugent-library/momo/storage/es6"
 )
 
 type Lens struct {
 	Name   string
-	Scope  listing.Scope
+	Scope  records.Scope
 	Layout string
 }
 
@@ -83,8 +83,8 @@ func (a *App) Start() {
 	r.Use(chimw.Recoverer)
 
 	for _, v := range loadLenses() {
-		listingService := listing.NewService(store, v.Scope)
-		handler := lens.NewHandler(listingService, v.Layout, a.funcs)
+		service := records.NewSearchService(store, v.Scope)
+		handler := lens.NewHandler(service, v.Layout, a.funcs)
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())
 			r.Get("/search", handler.Search())

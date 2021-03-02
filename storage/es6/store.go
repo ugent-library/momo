@@ -2,13 +2,15 @@ package es6
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v6"
-	"github.com/ugent-library/momo/listing"
+	"github.com/ugent-library/momo/records"
 )
 
 type Store struct {
@@ -40,7 +42,34 @@ func (s *Store) DeleteIndex() error {
 	return nil
 }
 
-func (s *Store) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
+func (s *Store) AddRec(rec *records.Rec) error {
+	payload, err := json.Marshal(rec)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	res, err := esapi.CreateRequest{
+		Index:      s.IndexName,
+		DocumentID: rec.ID,
+		Body:       bytes.NewReader(payload),
+	}.Do(ctx, s.Client)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return err
+		}
+		return fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
+	}
+
+	return nil
+}
+
+func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
@@ -127,17 +156,17 @@ func (s *Store) SearchRecs(args listing.SearchArgs) (*listing.RecHits, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	hits := listing.RecHits{}
+	hits := records.Hits{}
 	hits.Total = r.Hits.Total
 
 	if len(r.Hits.Hits) == 0 {
-		hits.Hits = []*listing.RecHit{}
+		hits.Hits = []*records.Rec{}
 		return &hits, nil
 	}
 
 	for _, hit := range r.Hits.Hits {
 		var rh resHit
-		var h listing.RecHit
+		var h records.Rec
 		h.ID = hit.ID
 
 		if err := json.Unmarshal(hit.Source, &rh); err != nil {

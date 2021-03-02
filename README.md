@@ -21,7 +21,13 @@ To delete the index:
 go run cmd/momo-app/main.go index delete
 ```
 
-See `fixes/README.md` on how to index data.
+Index records:
+
+```
+go run cmd/momo-app/main.go rec add myrecs.json
+```
+
+See `fixes/README.md` on how to convert data.
 
 ## Compile assets
 

@@ -1,17 +1,8 @@
-These instructions assume Elasticsearch 6.x running on `localhost:9200`.
+## Dependencies
 
-## Index recs
-
-Dependencies:
 * perl >= 5.10
 * cpanm Catmandu
-* cpanm Catmandu::Store::ElasticSearch
 * cpanm Catmandu::MARC
-
-```
-cd fixes
-cat recs.json | ./index_recs.sh
-```
 
 ## Convert biblio data
 

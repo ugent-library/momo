@@ -9,8 +9,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo/adding"
 	"github.com/ugent-library/momo/http/ui"
+	"github.com/ugent-library/momo/records"
 	"github.com/ugent-library/momo/storage/es6"
 	"github.com/ugent-library/momo/storage/pg"
 )
@@ -30,6 +30,11 @@ func main() {
 		IndexMapping: string(mapping),
 	}
 
+	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	rootCmd := &cobra.Command{
 		Use:   "momo [command]",
 		Short: "The momo CLI",
@@ -44,6 +49,7 @@ func main() {
 			app.Start()
 		},
 	}
+	// TODO use env vars instead of flags
 	serverCmd.Flags().IntVarP(&serverPort, "port", "p", 3000, "bind to this TCP port")
 
 	indexCmd := &cobra.Command{
@@ -82,11 +88,7 @@ func main() {
 		Short: "Add recs",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
-			if err != nil {
-				log.Fatal(err)
-			}
-			service := adding.NewService(store)
+			service := records.NewService(store, searchStore)
 			for _, path := range args {
 				file, err := os.Open(path)
 				if err != nil {
@@ -94,7 +96,7 @@ func main() {
 				}
 				dec := json.NewDecoder(file)
 				for {
-					var r adding.Rec
+					var r records.Rec
 					if err := dec.Decode(&r); err == io.EOF {
 						break
 					} else if err != nil {

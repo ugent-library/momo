@@ -8,8 +8,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/ugent-library/momo/adding"
-	"github.com/ugent-library/momo/listing"
+	"github.com/ugent-library/momo/records"
 )
 
 type Base struct {
@@ -22,7 +21,7 @@ type Base struct {
 type Rec struct {
 	Base
 	RecID string `gorm:"uniqueIndex"`
-	// Collections []string
+	// Collection []string
 	Type     string
 	Title    string
 	Metadata datatypes.JSON
@@ -42,11 +41,11 @@ func New(dsn string) (*Store, error) {
 	return s, nil
 }
 
-func (s *Store) GetRec(id string) (*listing.Rec, error) {
+func (s *Store) GetRec(id string) (*records.Rec, error) {
 	return nil, nil
 }
 
-func (s *Store) AddRec(rec *adding.Rec) error {
+func (s *Store) AddRec(rec *records.Rec) error {
 	r := Rec{
 		RecID:    rec.ID,
 		Type:     rec.Type,

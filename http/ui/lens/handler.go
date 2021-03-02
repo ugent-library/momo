@@ -6,17 +6,17 @@ import (
 	"net/http"
 
 	"github.com/go-playground/form/v4"
-	"github.com/ugent-library/momo/listing"
+	"github.com/ugent-library/momo/records"
 	"github.com/unrolled/render"
 )
 
 type Handler struct {
-	listingService listing.Service
-	render         *render.Render
-	formDecoder    *form.Decoder
+	searchService records.SearchService
+	render        *render.Render
+	formDecoder   *form.Decoder
 }
 
-func NewHandler(listingService listing.Service, layout string, funcs template.FuncMap) *Handler {
+func NewHandler(searchService records.SearchService, layout string, funcs template.FuncMap) *Handler {
 	if layout == "" {
 		layout = "layout"
 	}
@@ -25,9 +25,9 @@ func NewHandler(listingService listing.Service, layout string, funcs template.Fu
 		Funcs:  []template.FuncMap{funcs},
 	})
 	h := &Handler{
-		listingService: listingService,
-		render:         r,
-		formDecoder:    form.NewDecoder(),
+		searchService: searchService,
+		render:        r,
+		formDecoder:   form.NewDecoder(),
 	}
 	return h
 }
@@ -43,14 +43,14 @@ func (s *Handler) Index() http.HandlerFunc {
 
 func (s *Handler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		searchArgs := listing.SearchArgs{}
+		searchArgs := records.SearchArgs{}
 		err := s.formDecoder.Decode(&searchArgs, r.URL.Query())
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		hits, err := s.listingService.SearchRecs(searchArgs)
+		hits, err := s.searchService.Search(searchArgs)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
