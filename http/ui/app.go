@@ -19,9 +19,9 @@ import (
 )
 
 type Lens struct {
-	Name        string
-	SearchScope listing.SearchScope
-	Layout      string
+	Name   string
+	Scope  listing.Scope
+	Layout string
 }
 
 type App struct {
@@ -83,7 +83,7 @@ func (a *App) Start() {
 	r.Use(chimw.Recoverer)
 
 	for _, v := range loadLenses() {
-		listingService := listing.NewService(store, v.SearchScope)
+		listingService := listing.NewService(store, v.Scope)
 		handler := lens.NewHandler(listingService, v.Layout, a.funcs)
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())

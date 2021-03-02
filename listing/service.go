@@ -10,10 +10,10 @@ type Service interface {
 
 type service struct {
 	store Storage
-	scope SearchScope
+	scope Scope
 }
 
-func NewService(store Storage, scope SearchScope) Service {
+func NewService(store Storage, scope Scope) Service {
 	return &service{store: store, scope: scope}
 }
 

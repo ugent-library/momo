@@ -46,48 +46,50 @@
                     "type": "text",
                     "copy_to": "ac"
                 },
-                "author": {
-                    "properties": {
-                        "name": {
-                            "type": "text"
+                "metadata": {
+                    "author": {
+                        "properties": {
+                            "name": {
+                                "type": "text"
+                            }
                         }
-                    }
-                },
-                "abstract": {
-                    "properties": {
-                        "lang": {
-                            "type": "keyword"
-                        },
-                        "text": {
-                            "type": "text"
+                    },
+                    "abstract": {
+                        "properties": {
+                            "lang": {
+                                "type": "keyword"
+                            },
+                            "text": {
+                                "type": "text"
+                            }
                         }
-                    }
-                },
-                "edition": {
-                    "enabled": "false"
-                },
-                "publisher": {
-                    "type": "text"
-                },
-                "placeOfPublication": {
-                    "type": "text"
-                },
-                "publicationDate": {
-                    "type": "text"
-                },
-                "doi": {
-                    "type": "keyword"
-                },
-                "isbn": {
-                    "type": "keyword"
-                },
-                "note": {
-                    "properties": {
-                        "lang": {
-                            "type": "keyword"
-                        },
-                        "text": {
-                            "type": "text"
+                    },
+                    "edition": {
+                        "enabled": "false"
+                    },
+                    "publisher": {
+                        "type": "text"
+                    },
+                    "placeOfPublication": {
+                        "type": "text"
+                    },
+                    "publicationDate": {
+                        "type": "text"
+                    },
+                    "doi": {
+                        "type": "keyword"
+                    },
+                    "isbn": {
+                        "type": "keyword"
+                    },
+                    "note": {
+                        "properties": {
+                            "lang": {
+                                "type": "keyword"
+                            },
+                            "text": {
+                                "type": "text"
+                            }
                         }
                     }
                 }

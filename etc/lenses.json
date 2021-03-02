@@ -1,7 +1,7 @@
 [
     {
         "name": "orpheus",
-        "searchScope": {
+        "scope": {
             "collection": [
                 "orpheus"
             ]
@@ -10,7 +10,7 @@
     },
     {
         "name": "biblio",
-        "searchScope": {
+        "scope": {
             "collection": [
                 "biblio"
             ]
@@ -18,7 +18,7 @@
     },
     {
         "name": "vlerick",
-        "searchScope": {
+        "scope": {
             "collection": [
                 "vlerick"
             ]

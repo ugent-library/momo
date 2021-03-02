@@ -16,14 +16,14 @@ end
 cp(title_display, r.title)
 
 # author
-cp(author_display.*, r.author.$append.name)
+cp(author_display.*, r.metadata.author.$append.name)
 
 # abstract
-cp(summary_t.*, r.abstract.$append.text)
-set(abstract.*.lang, und)
+cp(summary_t.*, r.metadata.abstract.$append.text)
+set(r.metadata.abstract.*.lang, und)
 
 # isbn
-cp(isbn_t, r.isbn)
+cp(isbn_t, r.metadata.isbn)
 
 # recs
 cp(r, recs.$append)

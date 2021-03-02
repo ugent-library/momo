@@ -1,13 +1,18 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
+	"github.com/ugent-library/momo/adding"
 	"github.com/ugent-library/momo/http/ui"
 	"github.com/ugent-library/momo/storage/es6"
+	"github.com/ugent-library/momo/storage/pg"
 )
 
 func main() {
@@ -19,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := &es6.Store{
+	searchStore := &es6.Store{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
@@ -43,13 +48,13 @@ func main() {
 
 	indexCmd := &cobra.Command{
 		Use:   "index [command]",
-		Short: "Control the search index",
+		Short: "Search index operations",
 	}
 	indexCreateCmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := store.CreateIndex()
+			err := searchStore.CreateIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -59,7 +64,7 @@ func main() {
 		Use:   "delete",
 		Short: "Delete the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := store.DeleteIndex()
+			err := searchStore.DeleteIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -68,7 +73,42 @@ func main() {
 	indexCmd.AddCommand(indexCreateCmd)
 	indexCmd.AddCommand(indexDeleteCmd)
 
+	recCmd := &cobra.Command{
+		Use:   "rec [command]",
+		Short: "Rec operations",
+	}
+	recAddCmd := &cobra.Command{
+		Use:   "add [file.json ...]",
+		Short: "Add recs",
+		Args:  cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
+			if err != nil {
+				log.Fatal(err)
+			}
+			service := adding.NewService(store)
+			for _, path := range args {
+				file, err := os.Open(path)
+				if err != nil {
+					log.Fatal(err)
+				}
+				dec := json.NewDecoder(file)
+				for {
+					var r adding.Rec
+					if err := dec.Decode(&r); err == io.EOF {
+						break
+					} else if err != nil {
+						log.Fatal(err)
+					}
+					service.AddRec(&r)
+				}
+			}
+		},
+	}
+	recCmd.AddCommand(recAddCmd)
+
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(indexCmd)
+	rootCmd.AddCommand(recCmd)
 	rootCmd.Execute()
 }

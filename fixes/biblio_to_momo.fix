@@ -21,18 +21,18 @@ end
 cp(title, r.title)
 
 # author
-cp(author.*.name, r.author.$append.name)
+cp(author.*.name, r.metadata.author.$append.name)
 
 # abstract
 # TODO abstract lang
-cp(abstract.*, r.abstract.$append.text)
-set(r.abstract.*.lang, und)
+cp(abstract.*, r.metadata.abstract.$append.text)
+set(r.metadata.abstract.*.lang, und)
 
 # doi
-cp(doi, r.doi)
+cp(doi, r.metadata.doi)
 
 # isbn
-cp(isbn, r.isbn)
+cp(isbn, r.metadata.isbn)
 
 # recs
 cp(r, recs.$append)
