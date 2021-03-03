@@ -93,33 +93,37 @@ func main() {
 			service := records.NewService(store)
 			searchservice := records.NewService(searchStore)
 
-			saveRec := func(in <-chan *records.Rec, out chan<- *records.Rec, wg *sync.WaitGroup) {
+			addRec := func(in <-chan *records.Rec, out chan<- *records.Rec, wg *sync.WaitGroup) {
 				defer wg.Done()
 
 				for r := range in {
 					service.AddRec(r)
+					// index after storing in db
 					out <- r
-
 				}
 			}
 
-			saveC := make(chan *records.Rec)
+			storeC := make(chan *records.Rec)
 			indexC := make(chan *records.Rec)
 
 			var wg sync.WaitGroup
 
+			// close indexer channel when all db workers are finished
 			go func() {
 				wg.Wait()
 				close(indexC)
 			}()
 
+			// start bulk indexer
 			go searchservice.AddRecs(indexC)
 
-			for i := 0; i < 4; i++ {
+			// start db workers
+			for i := 0; i < 4; i++ { // TODO make n workers configurable
 				wg.Add(1)
-				go saveRec(saveC, indexC, &wg)
+				go addRec(storeC, indexC, &wg)
 			}
 
+			// parse json files
 			for _, path := range args {
 				file, err := os.Open(path)
 				if err != nil {
@@ -133,12 +137,13 @@ func main() {
 					} else if err != nil {
 						log.Fatal(err)
 					}
-
-					saveC <- &r
+					// send rec to db workers
+					storeC <- &r
 				}
 			}
 
-			close(saveC)
+			// close store channel
+			close(storeC)
 
 			// TODO flush stdio or send output over channel?
 			time.Sleep(5 * time.Second)
