@@ -6,6 +6,7 @@ import (
 )
 
 // TODO make a struct for new recs without timestamps?
+
 type Rec struct {
 	ID         string   `json:"id"`
 	Type       string   `json:"type"`

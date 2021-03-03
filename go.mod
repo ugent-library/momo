@@ -3,6 +3,7 @@ module github.com/ugent-library/momo
 go 1.15
 
 require (
+	github.com/dustin/go-humanize v1.0.0
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-chi/chi v1.5.4

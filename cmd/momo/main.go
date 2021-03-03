@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
@@ -88,7 +90,36 @@ func main() {
 		Short: "Add recs",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			service := records.NewService(store, searchStore)
+			service := records.NewService(store)
+			searchservice := records.NewService(searchStore)
+
+			saveRec := func(in <-chan *records.Rec, out chan<- *records.Rec, wg *sync.WaitGroup) {
+				defer wg.Done()
+
+				for r := range in {
+					service.AddRec(r)
+					out <- r
+
+				}
+			}
+
+			saveC := make(chan *records.Rec)
+			indexC := make(chan *records.Rec)
+
+			var wg sync.WaitGroup
+
+			go func() {
+				wg.Wait()
+				close(indexC)
+			}()
+
+			go searchservice.AddRecs(indexC)
+
+			for i := 0; i < 4; i++ {
+				wg.Add(1)
+				go saveRec(saveC, indexC, &wg)
+			}
+
 			for _, path := range args {
 				file, err := os.Open(path)
 				if err != nil {
@@ -102,9 +133,15 @@ func main() {
 					} else if err != nil {
 						log.Fatal(err)
 					}
-					service.AddRec(&r)
+
+					saveC <- &r
 				}
 			}
+
+			close(saveC)
+
+			// TODO flush stdio or send output over channel?
+			time.Sleep(5 * time.Second)
 		},
 	}
 	recCmd.AddCommand(recAddCmd)

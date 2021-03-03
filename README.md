@@ -21,7 +21,7 @@ To delete the index:
 go run cmd/momo-app/main.go index delete
 ```
 
-Index records:
+## Import records
 
 ```
 go run cmd/momo-app/main.go rec add myrecs.json

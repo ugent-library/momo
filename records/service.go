@@ -2,28 +2,29 @@ package records
 
 type Storage interface {
 	AddRec(*Rec) error
+	AddRecs(<-chan *Rec)
 }
 
 type Service interface {
 	AddRec(*Rec) error
+	AddRecs(<-chan *Rec)
 }
 
 type service struct {
-	store       Storage
-	searchStore Storage
+	store Storage
 }
 
-func NewService(store Storage, searchStore Storage) Service {
-	return &service{store: store, searchStore: searchStore}
+func NewService(store Storage) Service {
+	return &service{store: store}
 }
 
-// TODO decouple indexing
 func (s *service) AddRec(rec *Rec) error {
 	if err := s.store.AddRec(rec); err != nil {
 		return err
 	}
-	if err := s.searchStore.AddRec(rec); err != nil {
-		return err
-	}
 	return nil
+}
+
+func (s *service) AddRecs(c <-chan *Rec) {
+	s.store.AddRecs(c)
 }

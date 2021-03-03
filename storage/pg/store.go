@@ -55,3 +55,6 @@ func (s *Store) AddRec(rec *records.Rec) error {
 	res := s.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&r)
 	return res.Error
 }
+
+func (s *Store) AddRecs(c <-chan *records.Rec) {
+}
