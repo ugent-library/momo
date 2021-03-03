@@ -57,4 +57,5 @@ func (s *Store) AddRec(rec *records.Rec) error {
 }
 
 func (s *Store) AddRecs(c <-chan *records.Rec) {
+	// TODO move code from cmd/momo/main.go here
 }
