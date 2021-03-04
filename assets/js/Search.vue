@@ -24,7 +24,7 @@
     <p v-if="state.error" id="app-error">[{{state.error.status}}] {{state.error.statusText}}</p>
 
     <b-pagination
-        v-if="!state.loading"
+        v-if="state.initialized"
         v-model="page"
         :total-rows="total"
         :per-page="size"
@@ -38,9 +38,10 @@ export default {
     data() {
         return {
             state: {
-                error: null,
+                initialized: false,
                 loading: true,
-                fetching: false
+                fetching: false,
+                error: null
             },
     
             query: '',
@@ -76,6 +77,7 @@ export default {
               self.hits = res.hits
             })
             .then(function () {
+              self.state.initialized = true
               self.state.loading = false
               self.state.fetching = false
             })
