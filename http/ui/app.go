@@ -10,13 +10,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
 	"github.com/ugent-library/momo/http/ui/lens"
 	"github.com/ugent-library/momo/records"
-	"github.com/ugent-library/momo/storage/es6"
-	"github.com/ugent-library/momo/storage/pg"
 )
 
 type Lens struct {
@@ -26,10 +23,51 @@ type Lens struct {
 }
 
 type App struct {
+	store         records.Storage
+	searchStore   records.SearchStorage
 	Port          int
 	assetManifest map[string]string
 	staticPath    string
 	funcs         template.FuncMap
+}
+
+func New(store records.Storage, searchStore records.SearchStorage) *App {
+	a := &App{
+		store:       store,
+		searchStore: searchStore,
+		staticPath:  "/s/",
+	}
+	a.loadAssetManifest()
+	a.funcs = template.FuncMap{
+		"assetPath": a.assetPath,
+	}
+	return a
+}
+func (a *App) Start() {
+	fmt.Println(fmt.Sprintf("The momo server is running at http://localhost:%d.", a.Port))
+	http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), a.router())
+}
+
+func (a *App) router() *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(chimw.RequestID)
+	r.Use(chimw.RealIP)
+	r.Use(chimw.Logger)
+	r.Use(chimw.Recoverer)
+
+	for _, v := range loadLenses() {
+		service := records.NewService(a.store, a.searchStore, v.Scope)
+		handler := lens.NewHandler(service, v.Layout, a.funcs)
+		r.Route("/v/"+v.Name, func(r chi.Router) {
+			r.Get("/", handler.Index())
+			r.Get("/search", handler.Search())
+			r.Get("/{recID}", handler.Get())
+		})
+	}
+
+	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
+
+	return r
 }
 
 func (a *App) loadAssetManifest() {
@@ -54,53 +92,6 @@ func (a *App) assetPath(asset string) (string, error) {
 		return "", err
 	}
 	return path.Join(a.staticPath, p), nil
-}
-
-func (a *App) Start() {
-	a.staticPath = "/s/"
-	a.funcs = template.FuncMap{
-		"assetPath": a.assetPath,
-	}
-	a.loadAssetManifest()
-
-	client, err := elasticsearch.NewDefaultClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	searchStore := &es6.Store{
-		Client:       client,
-		IndexName:    "momo_rec",
-		IndexMapping: string(mapping),
-	}
-	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r := chi.NewRouter()
-	r.Use(chimw.RequestID)
-	r.Use(chimw.RealIP)
-	r.Use(chimw.Logger)
-	r.Use(chimw.Recoverer)
-
-	for _, v := range loadLenses() {
-		service := records.NewService(store, searchStore, v.Scope)
-		handler := lens.NewHandler(service, v.Layout, a.funcs)
-		r.Route("/v/"+v.Name, func(r chi.Router) {
-			r.Get("/", handler.Index())
-			r.Get("/search", handler.Search())
-			r.Get("/{recID}", handler.Get())
-		})
-	}
-
-	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
-
-	fmt.Println(fmt.Sprintf("The momo server is running at http://localhost:%d.", a.Port))
-	http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), r)
 }
 
 func loadLenses() []Lens {

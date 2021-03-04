@@ -8,6 +8,8 @@ type Storage interface {
 }
 
 type SearchStorage interface {
+	CreateIndex() error
+	DeleteIndex() error
 	AddRecs(<-chan *Rec)
 	SearchRecs(SearchArgs) (*Hits, error)
 }

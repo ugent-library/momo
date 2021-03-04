@@ -16,25 +16,32 @@ import (
 	"github.com/ugent-library/momo/storage/pg"
 )
 
-func main() {
+func newRecordsStore() (records.Storage, error) {
+	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
+	if err != nil {
+		return nil, err
+	}
+	return store, nil
+}
+
+func newRecordsSearchStore() (records.SearchStorage, error) {
 	client, err := elasticsearch.NewDefaultClient()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	searchStore := &es6.Store{
+	store := &es6.Store{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
 	}
-	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	return store, nil
+}
 
+func main() {
 	rootCmd := &cobra.Command{
 		Use:   "momo [command]",
 		Short: "The momo CLI",
@@ -45,7 +52,16 @@ func main() {
 		Use:   "server",
 		Short: "The momo webserver",
 		Run: func(cmd *cobra.Command, args []string) {
-			app := &ui.App{Port: serverPort}
+			store, err := newRecordsStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			searchStore, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			app := ui.New(store, searchStore)
+			app.Port = serverPort
 			app.Start()
 		},
 	}
@@ -60,7 +76,11 @@ func main() {
 		Use:   "create",
 		Short: "Create the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := searchStore.CreateIndex()
+			store, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = store.CreateIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -70,7 +90,11 @@ func main() {
 		Use:   "delete",
 		Short: "Delete the search index",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := searchStore.DeleteIndex()
+			store, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = store.DeleteIndex()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -88,6 +112,14 @@ func main() {
 		Short: "Add recs",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			store, err := newRecordsStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			searchStore, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
 			service := records.NewService(store, searchStore)
 			out := make(chan *records.Rec)
 			service.AddRecs(out)
