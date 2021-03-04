@@ -25,6 +25,11 @@ set(r.metadata.abstract.*.lang, und)
 # isbn
 cp(isbn_t, r.metadata.isbn)
 
+# ensure metadata hash exists
+unless exists(r.metadata)
+    set_hash(r.metadata)
+end
+
 # recs
 cp(r, recs.$append)
 retain(recs)

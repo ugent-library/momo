@@ -34,6 +34,11 @@ cp(doi, r.metadata.doi)
 # isbn
 cp(isbn, r.metadata.isbn)
 
+# ensure metadata hash exists
+unless exists(r.metadata)
+    set_hash(r.metadata)
+end
+
 # recs
 cp(r, recs.$append)
 retain(recs)

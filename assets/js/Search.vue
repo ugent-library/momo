@@ -71,20 +71,8 @@ export default {
               return res.json()
             })
             .then(function (res) {
-              var hits = []
-  
-              res.hits.forEach(function (h) {
-                console.log(h)
-                var hit = {
-                    id: h.id,
-                    title: h.title
-                }
-  
-                hits.push(hit)
-              })
-  
               self.total = res.total
-              self.hits = hits
+              self.hits = res.hits
             })
             .then(function () {
               self.state.loading = false

@@ -113,7 +113,7 @@ func main() {
 			close(out)
 
 			// TODO flush stdio or send output back over channel?
-			time.Sleep(2 * time.Second)
+			time.Sleep(5 * time.Second)
 		},
 	}
 	recCmd.AddCommand(recAddCmd)

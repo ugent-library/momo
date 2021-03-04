@@ -37,6 +37,11 @@ if any_equal(r.id, 'orpheus:105')
     add(r.metadata.iiif.manifest, 'https://sharedcanvas.be/IIIF/manifests/315E3B36-453B-11EB-A063-6F5AACE1713C')
 end
 
+# ensure metadata hash exists
+unless exists(r.metadata)
+    set_hash(r.metadata)
+end
+
 # recs
 cp(r, recs.$append)
 retain(recs)

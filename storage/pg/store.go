@@ -9,23 +9,24 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/lib/pq"
 	"github.com/ugent-library/momo/records"
 )
 
-type Base struct {
+type Model struct {
 	ID        int64          `gorm:"primaryKey"`
-	CreatedAt time.Time      `gorm:"index"`
-	UpdatedAt time.Time      `gorm:"index"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	CreatedAt time.Time      `gorm:"autoCreateTime:milli;type:timestamp;index"`
+	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli;type:timestamp;index"`
+	DeletedAt gorm.DeletedAt `gorm:"type:timestamp;index"`
 }
 
 type Rec struct {
-	Base
-	RecID string `gorm:"uniqueIndex"`
-	// Collection []string
-	Type     string
-	Title    string
-	Metadata datatypes.JSON
+	Model
+	RecID      string         `gorm:"not null;uniqueIndex"`
+	Type       string         `gorm:"not null;index"`
+	Collection pq.StringArray `gorm:"type:text[];not null;index"`
+	Title      string         `gorm:"not null"`
+	Metadata   datatypes.JSON `gorm:"not null"`
 }
 
 type Store struct {
@@ -49,22 +50,24 @@ func (s *Store) GetRec(id string) (*records.Rec, error) {
 		return nil, res.Error
 	}
 	rec := records.Rec{
-		ID:        r.RecID,
-		Type:      r.Type,
-		Title:     r.Title,
-		Metadata:  json.RawMessage(r.Metadata),
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		ID:         r.RecID,
+		Type:       r.Type,
+		Collection: r.Collection,
+		Title:      r.Title,
+		Metadata:   json.RawMessage(r.Metadata),
+		CreatedAt:  r.CreatedAt,
+		UpdatedAt:  r.UpdatedAt,
 	}
 	return &rec, nil
 }
 
 func (s *Store) AddRec(rec *records.Rec) error {
 	r := Rec{
-		RecID:    rec.ID,
-		Type:     rec.Type,
-		Title:    rec.Title,
-		Metadata: datatypes.JSON(rec.Metadata),
+		RecID:      rec.ID,
+		Type:       rec.Type,
+		Collection: pq.StringArray(rec.Collection),
+		Title:      rec.Title,
+		Metadata:   datatypes.JSON(rec.Metadata),
 	}
 	// TODO upsert
 	res := s.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&r)
