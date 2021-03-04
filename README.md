@@ -12,22 +12,36 @@
 To create the index:
 
 ```
-go run cmd/momo-app/main.go index create
+go run cmd/momo-app/main.go rec create-index
 ```
 
 To delete the index:
 
 ```
-go run cmd/momo-app/main.go index delete
+go run cmd/momo-app/main.go rec delete-index
 ```
 
 ## Import records
 
 ```
-go run cmd/momo-app/main.go rec add myrecs.json
+go run cmd/momo-app/main.go rec add myrecs1.json myrecs2.json
 ```
 
 See `fixes/README.md` on how to convert data.
+
+## Configuration
+
+Configuration can be passed as an argument:
+
+```
+go run cmd/momo-app/main.go server --port 4000
+```
+
+Or as an env variable:
+
+```
+MOMO_PORT=4000 go run cmd/momo-app/main.go server
+```
 
 ## Compile assets
 

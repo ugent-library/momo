@@ -6,18 +6,25 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/http/ui"
 	"github.com/ugent-library/momo/records"
 	"github.com/ugent-library/momo/storage/es6"
 	"github.com/ugent-library/momo/storage/pg"
 )
 
+const (
+	pgConnDefault = "host=localhost dbname=momo_dev sslmode=disable"
+	portDefault   = 3000
+)
+
 func newRecordsStore() (records.Storage, error) {
-	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
+	store, err := pg.New(viper.GetString("pg-conn"))
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +49,21 @@ func newRecordsSearchStore() (records.SearchStorage, error) {
 }
 
 func main() {
+	viper.SetEnvPrefix("momo")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
+
 	rootCmd := &cobra.Command{
 		Use:   "momo [command]",
-		Short: "The momo CLI",
+		Short: "the momo CLI",
 	}
+	rootCmd.PersistentFlags().String("pg-conn", pgConnDefault, "PostgreSQL connection string")
+	viper.BindPFlag("pg-conn", rootCmd.PersistentFlags().Lookup("pg-conn"))
+	viper.SetDefault("pg-conn", pgConnDefault)
 
-	var serverPort int
 	serverCmd := &cobra.Command{
 		Use:   "server",
-		Short: "The momo webserver",
+		Short: "the momo HTTP server",
 		Run: func(cmd *cobra.Command, args []string) {
 			store, err := newRecordsStore()
 			if err != nil {
@@ -61,47 +74,13 @@ func main() {
 				log.Fatal(err)
 			}
 			app := ui.New(store, searchStore)
-			app.Port = serverPort
+			app.Port = viper.GetInt("port")
 			app.Start()
 		},
 	}
-	// TODO use env vars instead of flags
-	serverCmd.Flags().IntVarP(&serverPort, "port", "p", 3000, "bind to this TCP port")
-
-	indexCmd := &cobra.Command{
-		Use:   "index [command]",
-		Short: "Search index operations",
-	}
-	indexCreateCmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create the search index",
-		Run: func(cmd *cobra.Command, args []string) {
-			store, err := newRecordsSearchStore()
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = store.CreateIndex()
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-	var indexDeleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete the search index",
-		Run: func(cmd *cobra.Command, args []string) {
-			store, err := newRecordsSearchStore()
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = store.DeleteIndex()
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-	indexCmd.AddCommand(indexCreateCmd)
-	indexCmd.AddCommand(indexDeleteCmd)
+	serverCmd.Flags().Int("port", portDefault, "server port")
+	viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
+	viper.SetDefault("port", portDefault)
 
 	recCmd := &cobra.Command{
 		Use:   "rec [command]",
@@ -125,6 +104,7 @@ func main() {
 			service.AddRecs(out)
 
 			// parse json files
+			// TODO read json files concurrently?
 			for _, path := range args {
 				file, err := os.Open(path)
 				if err != nil {
@@ -148,10 +128,40 @@ func main() {
 			time.Sleep(5 * time.Second)
 		},
 	}
+
+	recIndexCreateCmd := &cobra.Command{
+		Use:   "create-index",
+		Short: "Create the search index",
+		Run: func(cmd *cobra.Command, args []string) {
+			store, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = store.CreateIndex()
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	recIndexDeleteCmd := &cobra.Command{
+		Use:   "delete-index",
+		Short: "Delete the search index",
+		Run: func(cmd *cobra.Command, args []string) {
+			store, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = store.DeleteIndex()
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	recCmd.AddCommand(recIndexCreateCmd)
+	recCmd.AddCommand(recIndexDeleteCmd)
 	recCmd.AddCommand(recAddCmd)
 
 	rootCmd.AddCommand(serverCmd)
-	rootCmd.AddCommand(indexCmd)
 	rootCmd.AddCommand(recCmd)
 	rootCmd.Execute()
 }

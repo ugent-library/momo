@@ -3,7 +3,6 @@ module github.com/ugent-library/momo
 go 1.15
 
 require (
-	github.com/dustin/go-humanize v1.0.0
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-chi/chi v1.5.4
@@ -12,6 +11,7 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/unrolled/render v1.0.3
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
