@@ -24,6 +24,7 @@
     <p v-if="state.error" id="app-error">[{{state.error.status}}] {{state.error.statusText}}</p>
 
     <b-pagination
+        v-if="!state.loading"
         v-model="page"
         :total-rows="total"
         :per-page="size"
@@ -95,7 +96,7 @@ export default {
         },
     },
   
-    created: function () {
+    mounted: function () {
         var self = this
 
         var p = (new URL(window.location)).searchParams;
