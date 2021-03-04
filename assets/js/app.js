@@ -7,7 +7,9 @@ Vue.use(BootstrapVue)
 
 import Search from "../js/Search";
 
-new Vue({
-  el: "#search",
-  render: h => h(Search)
-});
+if (document.getElementById("search")) {
+  new Vue({
+    el: "#search",
+    render: h => h(Search)
+  })
+}

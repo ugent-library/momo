@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
@@ -31,7 +30,6 @@ func main() {
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
 	}
-
 	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
@@ -90,38 +88,9 @@ func main() {
 		Short: "Add recs",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			service := records.NewService(store)
-			searchservice := records.NewService(searchStore)
-
-			addRec := func(in <-chan *records.Rec, out chan<- *records.Rec, wg *sync.WaitGroup) {
-				defer wg.Done()
-
-				for r := range in {
-					service.AddRec(r)
-					// index after storing in db
-					out <- r
-				}
-			}
-
-			storeC := make(chan *records.Rec)
-			indexC := make(chan *records.Rec)
-
-			var wg sync.WaitGroup
-
-			// close indexer channel when all db workers are finished
-			go func() {
-				wg.Wait()
-				close(indexC)
-			}()
-
-			// start bulk indexer
-			go searchservice.AddRecs(indexC)
-
-			// start db workers
-			for i := 0; i < 4; i++ { // TODO make n workers configurable
-				wg.Add(1)
-				go addRec(storeC, indexC, &wg)
-			}
+			service := records.NewService(store, searchStore)
+			out := make(chan *records.Rec)
+			service.AddRecs(out)
 
 			// parse json files
 			for _, path := range args {
@@ -137,16 +106,14 @@ func main() {
 					} else if err != nil {
 						log.Fatal(err)
 					}
-					// send rec to db workers
-					storeC <- &r
+					out <- &r
 				}
 			}
 
-			// close store channel
-			close(storeC)
+			close(out)
 
-			// TODO flush stdio or send output over channel?
-			time.Sleep(5 * time.Second)
+			// TODO flush stdio or send output back over channel?
+			time.Sleep(2 * time.Second)
 		},
 	}
 	recCmd.AddCommand(recAddCmd)

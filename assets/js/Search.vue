@@ -15,7 +15,7 @@
 
     <ul v-for="hit in hits" v-bind:id="hit.id" :key="hit.id" id="search-results" class="result">
         <li>
-        <span v-html="hit.title" class="title"></span>
+          <a :href="'/v/all/'+hit.id"><span v-html="hit.title" class="title"></span></a>
         </li>
     </ul>
 
@@ -74,7 +74,9 @@ export default {
               var hits = []
   
               res.hits.forEach(function (h) {
+                console.log(h)
                 var hit = {
+                    id: h.id,
                     title: h.title
                 }
   

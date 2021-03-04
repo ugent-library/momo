@@ -16,6 +16,7 @@ import (
 	"github.com/ugent-library/momo/http/ui/lens"
 	"github.com/ugent-library/momo/records"
 	"github.com/ugent-library/momo/storage/es6"
+	"github.com/ugent-library/momo/storage/pg"
 )
 
 type Lens struct {
@@ -70,10 +71,14 @@ func (a *App) Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := &es6.Store{
+	searchStore := &es6.Store{
 		Client:       client,
 		IndexName:    "momo_rec",
 		IndexMapping: string(mapping),
+	}
+	store, err := pg.New("host=localhost user=nsteenla dbname=momo_dev sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	r := chi.NewRouter()
@@ -83,11 +88,12 @@ func (a *App) Start() {
 	r.Use(chimw.Recoverer)
 
 	for _, v := range loadLenses() {
-		service := records.NewSearchService(store, v.Scope)
+		service := records.NewService(store, searchStore, v.Scope)
 		handler := lens.NewHandler(service, v.Layout, a.funcs)
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())
 			r.Get("/search", handler.Search())
+			r.Get("/{recID}", handler.Get())
 		})
 	}
 

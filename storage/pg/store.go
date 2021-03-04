@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/datatypes"
@@ -42,7 +43,20 @@ func New(dsn string) (*Store, error) {
 }
 
 func (s *Store) GetRec(id string) (*records.Rec, error) {
-	return nil, nil
+	r := Rec{}
+	res := s.db.Where("rec_id = ?", id).First(&r)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	rec := records.Rec{
+		ID:        r.RecID,
+		Type:      r.Type,
+		Title:     r.Title,
+		Metadata:  json.RawMessage(r.Metadata),
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
+	}
+	return &rec, nil
 }
 
 func (s *Store) AddRec(rec *records.Rec) error {
@@ -52,10 +66,7 @@ func (s *Store) AddRec(rec *records.Rec) error {
 		Title:    rec.Title,
 		Metadata: datatypes.JSON(rec.Metadata),
 	}
+	// TODO upsert
 	res := s.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&r)
 	return res.Error
-}
-
-func (s *Store) AddRecs(c <-chan *records.Rec) {
-	// TODO move code from cmd/momo/main.go here
 }

@@ -173,7 +173,6 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		}
 	}
 
-	// clear as mud
 	if args.Scope != nil {
 		terms := make([]map[string]interface{}, len(args.Scope))
 		for k, v := range args.Scope {
@@ -200,7 +199,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		return nil, err
 	}
 	res, err := s.Client.Search(
-		// s.Es.Search.WithContext(context.Background()),
+		s.Client.Search.WithContext(context.Background()),
 		s.Client.Search.WithIndex(s.IndexName),
 		s.Client.Search.WithBody(&buf),
 		s.Client.Search.WithTrackTotalHits(true),
@@ -219,20 +218,16 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	type resEnvelope struct {
-		Took int
+		// Took int
 		Hits struct {
 			Total int
 			Hits  []struct {
-				ID     string          `json:"_id"`
+				// ID     string
 				Source json.RawMessage `json:"_source"`
-				// Highlights json.RawMessage `json:"highlight"`
-				// Sort []interface{} `json:"sort"`
+				// Highlights json.RawMessage
+				// Sort []interface{}
 			}
 		}
-	}
-
-	type resHit struct {
-		Title string `json:"title"`
 	}
 
 	var r resEnvelope
@@ -249,15 +244,11 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	for _, hit := range r.Hits.Hits {
-		var rh resHit
-		var h records.Rec
-		h.ID = hit.ID
+		var rec records.Rec
 
-		if err := json.Unmarshal(hit.Source, &rh); err != nil {
+		if err := json.Unmarshal(hit.Source, &rec); err != nil {
 			return nil, err
 		}
-
-		h.Title = rh.Title
 
 		// if len(hit.Highlights) > 0 {
 		// 	if err := json.Unmarshal(hit.Highlights, &h.Highlights); err != nil {
@@ -265,7 +256,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		// 	}
 		// }
 
-		hits.Hits = append(hits.Hits, &h)
+		hits.Hits = append(hits.Hits, &rec)
 	}
 
 	return &hits, nil

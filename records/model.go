@@ -8,13 +8,13 @@ import (
 // TODO make a struct for new recs without timestamps?
 
 type Rec struct {
-	ID         string   `json:"id"`
-	Type       string   `json:"type"`
-	Collection []string `json:"collection"`
-	Title      string   `json:"title"`
-	Metadata   json.RawMessage
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         string          `json:"id"`
+	Type       string          `json:"type"`
+	Collection []string        `json:"collection"`
+	Title      string          `json:"title"`
+	Metadata   json.RawMessage `json:"metadata"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
 }
 
 type Scope map[string][]string

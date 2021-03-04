@@ -5,18 +5,19 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/go-playground/form/v4"
 	"github.com/ugent-library/momo/records"
 	"github.com/unrolled/render"
 )
 
 type Handler struct {
-	searchService records.SearchService
-	render        *render.Render
-	formDecoder   *form.Decoder
+	service     records.Service
+	render      *render.Render
+	formDecoder *form.Decoder
 }
 
-func NewHandler(searchService records.SearchService, layout string, funcs template.FuncMap) *Handler {
+func NewHandler(service records.Service, layout string, funcs template.FuncMap) *Handler {
 	if layout == "" {
 		layout = "layout"
 	}
@@ -25,9 +26,9 @@ func NewHandler(searchService records.SearchService, layout string, funcs templa
 		Funcs:  []template.FuncMap{funcs},
 	})
 	h := &Handler{
-		searchService: searchService,
-		render:        r,
-		formDecoder:   form.NewDecoder(),
+		service:     service,
+		render:      r,
+		formDecoder: form.NewDecoder(),
 	}
 	return h
 }
@@ -41,6 +42,23 @@ func (s *Handler) Index() http.HandlerFunc {
 	}
 }
 
+func (s *Handler) Get() http.HandlerFunc {
+	type data struct {
+		Rec *records.Rec
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		recID := chi.URLParam(r, "recID")
+		rec, err := s.service.GetRec(recID)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 404)
+			return
+		}
+		s.render.HTML(w, http.StatusOK, "show", data{Rec: rec})
+	}
+}
+
+// TODO move route to api
 func (s *Handler) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		searchArgs := records.SearchArgs{}
@@ -50,7 +68,7 @@ func (s *Handler) Search() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		hits, err := s.searchService.Search(searchArgs)
+		hits, err := s.service.SearchRecs(searchArgs)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
