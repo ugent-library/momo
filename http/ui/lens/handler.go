@@ -1,13 +1,13 @@
 package lens
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/form/v4"
 	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/view"
 	"github.com/unrolled/render"
 )
 
@@ -17,17 +17,11 @@ type Handler struct {
 	formDecoder *form.Decoder
 }
 
-func NewHandler(service records.Service, layout string, funcs template.FuncMap) *Handler {
-	if layout == "" {
-		layout = "layout"
-	}
-	r := render.New(render.Options{
-		Layout: layout,
-		Funcs:  []template.FuncMap{funcs},
-	})
+func NewHandler(service records.Service, theme string) *Handler {
+	r := view.NewRenderer(theme)
 	h := &Handler{
 		service:     service,
-		render:      r,
+		render:      r.Create(),
 		formDecoder: form.NewDecoder(),
 	}
 	return h

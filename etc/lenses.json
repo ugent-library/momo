@@ -6,6 +6,7 @@
                 "orpheus"
             ]
         },
+        "theme" : "orpheus",
         "layout": "orpheus/layout"
     },
     {

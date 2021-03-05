@@ -3,12 +3,9 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/go-chi/chi"
 	chimw "github.com/go-chi/chi/middleware"
@@ -20,15 +17,14 @@ type Lens struct {
 	Name   string
 	Scope  records.Scope
 	Layout string
+	Theme  string
 }
 
 type App struct {
 	store         records.Storage
 	searchStore   records.SearchStorage
 	Port          int
-	assetManifest map[string]string
 	staticPath    string
-	funcs         template.FuncMap
 }
 
 func New(store records.Storage, searchStore records.SearchStorage) *App {
@@ -36,10 +32,6 @@ func New(store records.Storage, searchStore records.SearchStorage) *App {
 		store:       store,
 		searchStore: searchStore,
 		staticPath:  "/s/",
-	}
-	a.loadAssetManifest()
-	a.funcs = template.FuncMap{
-		"assetPath": a.assetPath,
 	}
 	return a
 }
@@ -57,7 +49,7 @@ func (a *App) router() *chi.Mux {
 
 	for _, v := range loadLenses() {
 		service := records.NewService(a.store, a.searchStore, v.Scope)
-		handler := lens.NewHandler(service, v.Layout, a.funcs)
+		handler := lens.NewHandler(service, v.Theme)
 		r.Route("/v/"+v.Name, func(r chi.Router) {
 			r.Get("/", handler.Index())
 			r.Get("/search", handler.Search())
@@ -68,30 +60,6 @@ func (a *App) router() *chi.Mux {
 	r.Mount(a.staticPath, http.StripPrefix(a.staticPath, http.FileServer(http.Dir("static"))))
 
 	return r
-}
-
-func (a *App) loadAssetManifest() {
-	path := "static/mix-manifest.json"
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatalf("Couldn't read %s: %s", path, err)
-	}
-	manifest := make(map[string]string)
-	err = json.Unmarshal(data, &manifest)
-	if err != nil {
-		log.Fatalf("Couldn't parse %s: %s", path, err)
-	}
-	a.assetManifest = manifest
-}
-
-func (a *App) assetPath(asset string) (string, error) {
-	p, ok := a.assetManifest[asset]
-	if !ok {
-		err := fmt.Errorf("Asset %s not found in manifest %s", asset, a.assetManifest)
-		log.Println(err)
-		return "", err
-	}
-	return path.Join(a.staticPath, p), nil
 }
 
 func loadLenses() []Lens {

@@ -43,12 +43,26 @@ Or as an env variable:
 MOMO_PORT=4000 go run cmd/momo/main.go server
 ```
 
-## Compile assets
+## Themes
+
+Install node dependencies:
+
+```bash
+npm install
+```
+
+Momo contains a default theme called Opale. This theme will be compiled and installed during installation.
+
+Compile a theme manually. Replace THEME with the name of your theme:
 
 ```
-cd assets
-npm install
-npx mix watch # live reload in development
+npx mix --mix-config themes/THEME/webpack.mix.js
+```
+
+Watching:
+
+```
+npx mix --mix-config themes/opale/webpack.mix.js watch # live reload in development
 npx mix --production # production
 ```
 

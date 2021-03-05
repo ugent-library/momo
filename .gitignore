@@ -1,7 +1,5 @@
 .DS_Store
-assets/node_modules
-static/css/*
-static/js/*
-static/mix-manifest.json
+node_modules
+static/*
 tmp/*
 !.gitkeep
