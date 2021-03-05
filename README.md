@@ -4,7 +4,7 @@
 
 * go
 * postgresql
-* elasticsearch 6.8
+* elasticsearch 6.x
 * npm
 
 ## Search index
