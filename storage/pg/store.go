@@ -69,7 +69,11 @@ func (s *Store) AddRec(rec *records.Rec) error {
 		Title:      rec.Title,
 		Metadata:   datatypes.JSON(rec.Metadata),
 	}
-	// TODO upsert
-	res := s.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&r)
+
+	res := s.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "rec_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"type", "collection", "title", "metadata", "updated_at"}),
+	}).Create(&r)
+
 	return res.Error
 }
