@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"html/template"
+
 	"github.com/unrolled/render"
 )
 
@@ -20,7 +21,7 @@ type renderer struct {
 }
 
 type Renderer interface {
-	Create() (*render.Render)
+	Create() *render.Render
 }
 
 func NewRenderer(theme string) Renderer {
@@ -33,8 +34,8 @@ func NewRenderer(theme string) Renderer {
 	}
 	options := render.Options{
 		Directory: fmt.Sprintf("themes/%s/templates", theme),
-		Layout: "layout",
-		Funcs:  []template.FuncMap{r.Funcs},
+		Layout:    "layout",
+		Funcs:     []template.FuncMap{r.Funcs},
 	}
 	r.Options = options
 	r.Theme = theme
@@ -43,7 +44,7 @@ func NewRenderer(theme string) Renderer {
 	return r
 }
 
-func (r *renderer) Create() (*render.Render) {
+func (r *renderer) Create() *render.Render {
 	return render.New(r.Options)
 }
 
@@ -68,5 +69,5 @@ func (r *renderer) assetPath(asset string) (string, error) {
 		log.Println(err)
 		return "", err
 	}
-	return path.Join(r.StaticPath, p), nil
+	return path.Join(r.StaticPath, r.Theme, p), nil
 }
