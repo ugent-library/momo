@@ -45,7 +45,10 @@ func New(store records.Storage, searchStore records.SearchStorage) *App {
 }
 func (a *App) Start() {
 	fmt.Println(fmt.Sprintf("The momo server is running at http://localhost:%d.", a.Port))
-	http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), a.router())
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), a.router())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *App) router() *chi.Mux {
