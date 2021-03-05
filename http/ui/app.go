@@ -14,17 +14,16 @@ import (
 )
 
 type Lens struct {
-	Name   string
-	Scope  records.Scope
-	Layout string
-	Theme  string
+	Name  string
+	Scope records.Scope
+	Theme string
 }
 
 type App struct {
-	store         records.Storage
-	searchStore   records.SearchStorage
-	Port          int
-	staticPath    string
+	store       records.Storage
+	searchStore records.SearchStorage
+	Port        int
+	staticPath  string
 }
 
 func New(store records.Storage, searchStore records.SearchStorage) *App {
@@ -35,6 +34,7 @@ func New(store records.Storage, searchStore records.SearchStorage) *App {
 	}
 	return a
 }
+
 func (a *App) Start() {
 	fmt.Println(fmt.Sprintf("The momo server is running at http://localhost:%d.", a.Port))
 	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), a.router())
