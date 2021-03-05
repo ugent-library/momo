@@ -75,7 +75,7 @@ export default {
             .then(function (res) {
               var hits = []
               res.hits.forEach(function (h) {
-                var hit = {}
+                var hit = {id: h.id}
                 console.log(h)
                 if (h.highlight && h.highlight["title.ngram"]) {
                   hit.title = h.highlight["title.ngram"][0]
