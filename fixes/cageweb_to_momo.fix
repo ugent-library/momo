@@ -3,14 +3,11 @@ cp(_id, r.id)
 cp(r.id, r._id)
 
 # collection
-add(r.collection.$append, vlerick)
+add(r.collection.$append, cageweb)
 
 # type
 cp(format, r.type)
-lookup(r.type, lludss_type_mapping.csv, delete: 1)
-unless exists(r.type)
-    reject()
-end
+lookup(r.type, aleph_type_mapping.csv)
 
 # title
 cp(title_display, r.title)
