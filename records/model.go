@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-// TODO make a struct for new recs without timestamps?
-
 type Rec struct {
 	ID         string          `json:"id"`
 	Type       string          `json:"type"`
@@ -26,9 +24,14 @@ type SearchArgs struct {
 	Skip  int    `form:"skip"`
 }
 
+type Hit struct {
+	Rec
+	Highlight json.RawMessage `json:"highlight"`
+}
+
 type Hits struct {
 	Total int    `json:"total"`
-	Hits  []*Rec `json:"hits"`
+	Hits  []*Hit `json:"hits"`
 }
 
 // TODO merge scope new scope with old scope

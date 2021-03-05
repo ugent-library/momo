@@ -166,8 +166,10 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	} else {
 		query = map[string]interface{}{
 			"query": map[string]interface{}{
-				"match": map[string]interface{}{
-					"ac": args.Query,
+				"multi_match": map[string]interface{}{
+					"query":    args.Query,
+					"fields":   []string{"title^100", "title.ngram"},
+					"operator": "and",
 				},
 			},
 		}
@@ -194,6 +196,14 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 
 	query["size"] = args.Size
 	query["from"] = args.Skip
+	query["highlight"] = map[string]interface{}{
+		"require_field_match": false,
+		"pre_tags":            []string{"<mark>"},
+		"post_tags":           []string{"</mark>"},
+		"fields": map[string]interface{}{
+			"title.ngram": map[string]interface{}{},
+		},
+	}
 
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, err
@@ -218,14 +228,11 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	type resEnvelope struct {
-		// Took int
 		Hits struct {
 			Total int
 			Hits  []struct {
-				// ID     string
-				Source json.RawMessage `json:"_source"`
-				// Highlights json.RawMessage
-				// Sort []interface{}
+				Source    json.RawMessage `json:"_source"`
+				Highlight json.RawMessage
 			}
 		}
 	}
@@ -235,28 +242,25 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	hits := records.Hits{}
+	hits := records.Hits{Hits: []*records.Hit{}}
 	hits.Total = r.Hits.Total
 
 	if len(r.Hits.Hits) == 0 {
-		hits.Hits = []*records.Rec{}
 		return &hits, nil
 	}
 
-	for _, hit := range r.Hits.Hits {
-		var rec records.Rec
+	for _, h := range r.Hits.Hits {
+		var hit records.Hit
 
-		if err := json.Unmarshal(hit.Source, &rec); err != nil {
+		if err := json.Unmarshal(h.Source, &hit); err != nil {
 			return nil, err
 		}
 
-		// if len(hit.Highlights) > 0 {
-		// 	if err := json.Unmarshal(hit.Highlights, &h.Highlights); err != nil {
-		// 		return &results, err
-		// 	}
-		// }
+		if len(h.Highlight) > 0 {
+			hit.Highlight = h.Highlight
+		}
 
-		hits.Hits = append(hits.Hits, &rec)
+		hits.Hits = append(hits.Hits, &hit)
 	}
 
 	return &hits, nil
