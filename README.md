@@ -12,19 +12,19 @@
 To create the index:
 
 ```
-go run cmd/momo-app/main.go rec create-index
+go run cmd/momo/main.go rec create-index
 ```
 
 To delete the index:
 
 ```
-go run cmd/momo-app/main.go rec delete-index
+go run cmd/momo/main.go rec delete-index
 ```
 
 ## Import records
 
 ```
-go run cmd/momo-app/main.go rec add myrecs1.json myrecs2.json
+go run cmd/momo/main.go rec add myrecs1.json myrecs2.json
 ```
 
 See `fixes/README.md` on how to convert data.
@@ -34,13 +34,13 @@ See `fixes/README.md` on how to convert data.
 Configuration can be passed as an argument:
 
 ```
-go run cmd/momo-app/main.go server --port 4000
+go run cmd/momo/main.go server --port 4000
 ```
 
 Or as an env variable:
 
 ```
-MOMO_PORT=4000 go run cmd/momo-app/main.go server
+MOMO_PORT=4000 go run cmd/momo/main.go server
 ```
 
 ## Compile assets
@@ -49,7 +49,7 @@ MOMO_PORT=4000 go run cmd/momo-app/main.go server
 cd assets
 npm install
 npx mix watch # live reload in development
-npx mix --production # production 
+npx mix --production # production
 ```
 
 Laravel Mix [documentation](https://laravel.com/docs/8.x).
@@ -57,7 +57,7 @@ Laravel Mix [documentation](https://laravel.com/docs/8.x).
 ## Start server
 
 ```
-go run cmd/momo-app/main.go server
+go run cmd/momo/main.go server
 ```
 
 To run the server with live reload:
