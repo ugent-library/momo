@@ -11,11 +11,11 @@ cd fixes
 cat biblio-export.json | ./biblio_to_momo.sh > momo_biblio.json
 ```
 
-## Convert vlerick data
+## Convert cageweb data
 
 ```
 cd fixes
-cat vlerick-export.json | ./vlerick_to_momo.sh > momo_biblio.json
+cat cageweb-export.json | ./cageweb_to_momo.sh > momo_cageweb.json
 ```
 
 ## Convert orpheus data

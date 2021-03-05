@@ -12,10 +12,7 @@ add(r.collection.$append, biblio)
 
 # type
 cp(type, r.type)
-lookup(r.type, biblio_type_mapping.csv, delete: 1)
-unless exists(r.type)
-    reject()
-end
+lookup(r.type, biblio_type_mapping.csv)
 
 # title
 cp(title, r.title)

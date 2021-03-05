@@ -15,7 +15,7 @@
 
     <ul v-for="hit in hits" v-bind:id="hit.id" :key="hit.id" id="search-results" class="result">
         <li>
-          <a :href="'/v/all/'+hit.id"><span v-html="hit.title" class="title"></span></a>
+          <a :href="'/v/all/'+hit.id"><span class="title" v-html="hit.title"></span></a>
         </li>
     </ul>
 
@@ -73,8 +73,19 @@ export default {
               return res.json()
             })
             .then(function (res) {
+              var hits = []
+              res.hits.forEach(function (h) {
+                var hit = {id: h.id}
+                if (h.highlight && h.highlight["title.ngram"]) {
+                  hit.title = h.highlight["title.ngram"][0]
+                } else {
+                  hit.title = h.title
+                }
+                hits.push(hit)
+              })
+
               self.total = res.total
-              self.hits = res.hits
+              self.hits = hits
             })
             .then(function () {
               self.state.initialized = true
@@ -86,7 +97,7 @@ export default {
               self.state.fetching = false
               self.state.error = response
             })
-        },
+        }
     },
   
     watch: {

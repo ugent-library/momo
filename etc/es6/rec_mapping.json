@@ -4,21 +4,25 @@
             "number_of_replicas": 0,
             "number_of_shards": 1,
             "analysis": {
-                "filter": {
-                    "autocomplete": {
+                "tokenizer": {
+                    "ngram": {
                         "type": "edge_ngram",
                         "min_gram": 1,
-                        "max_gram": 20
+                        "max_gram": 20,
+                        "token_chars": [
+                            "letter"
+                        ]
                     }
                 },
                 "analyzer": {
-                    "autocomplete": {
-                        "type": "custom",
-                        "tokenizer": "standard",
+                    "ngram": {
+                        "tokenizer": "ngram",
                         "filter": [
-                            "lowercase",
-                            "autocomplete"
+                            "lowercase"
                         ]
+                    },
+                    "lowercase": {
+                        "tokenizer": "lowercase"
                     }
                 }
             }
@@ -28,11 +32,6 @@
         "_doc": {
             "dynamic": false,
             "properties": {
-                "ac": {
-                    "type": "text",
-                    "analyzer": "autocomplete",
-                    "search_analyzer": "standard"
-                },
                 "id": {
                     "type": "keyword"
                 },
@@ -44,7 +43,13 @@
                 },
                 "title": {
                     "type": "text",
-                    "copy_to": "ac"
+                    "fields": {
+                        "ngram": {
+                            "type": "text",
+                            "analyzer": "ngram",
+                            "search_analyzer": "lowercase"
+                        }
+                    }
                 },
                 "metadata": {
                     "type": "object",
