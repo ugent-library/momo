@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	pgConnDefault = "host=localhost user=momo_dev password=momo_dev dbname=momo_dev sslmode=disable"
+	pgConnDefault = "host=localhost dbname=momo_dev sslmode=disable"
 	portDefault   = 3000
 )
 
