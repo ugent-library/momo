@@ -5,6 +5,7 @@ import "sync"
 type Storage interface {
 	AddRec(*Rec) error
 	GetRec(string) (*Rec, error)
+	AllRecs(chan<- *Rec) error
 }
 
 type SearchStorage interface {
@@ -15,10 +16,10 @@ type SearchStorage interface {
 }
 
 type Service interface {
-	AddRec(*Rec) error
-	AddRecs(<-chan *Rec)
 	GetRec(string) (*Rec, error)
 	SearchRecs(SearchArgs) (*Hits, error)
+	AddRecs(<-chan *Rec)
+	IndexRecs() error
 }
 
 type service struct {
@@ -33,13 +34,6 @@ func NewService(store Storage, searchStore SearchStorage, scopes ...Scope) Servi
 		scope = scopes[0]
 	}
 	return &service{store, searchStore, scope}
-}
-
-func (s *service) AddRec(rec *Rec) error {
-	if err := s.store.AddRec(rec); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *service) AddRecs(in <-chan *Rec) {
@@ -80,4 +74,12 @@ func (s *service) GetRec(id string) (*Rec, error) {
 
 func (s *service) SearchRecs(args SearchArgs) (*Hits, error) {
 	return s.searchStore.SearchRecs(args.WithScope(s.scope))
+}
+
+func (s *service) IndexRecs() error {
+	c := make(chan *Rec)
+	defer close(c)
+	go s.searchStore.AddRecs(c)
+	err := s.store.AllRecs(c)
+	return err
 }

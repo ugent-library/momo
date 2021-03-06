@@ -84,11 +84,11 @@ func main() {
 
 	recCmd := &cobra.Command{
 		Use:   "rec [command]",
-		Short: "Rec operations",
+		Short: "rec operations",
 	}
 	recAddCmd := &cobra.Command{
 		Use:   "add [file.json ...]",
-		Short: "Add recs",
+		Short: "store and index recs",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			store, err := newRecordsStore()
@@ -128,10 +128,28 @@ func main() {
 			time.Sleep(3 * time.Second)
 		},
 	}
-
+	recIndexCmd := &cobra.Command{
+		Use:   "index",
+		Short: "index all stored recs",
+		Run: func(cmd *cobra.Command, args []string) {
+			store, err := newRecordsStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			searchStore, err := newRecordsSearchStore()
+			if err != nil {
+				log.Fatal(err)
+			}
+			service := records.NewService(store, searchStore)
+			err = service.IndexRecs()
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
 	recIndexCreateCmd := &cobra.Command{
 		Use:   "create-index",
-		Short: "Create the search index",
+		Short: "create rec search index",
 		Run: func(cmd *cobra.Command, args []string) {
 			store, err := newRecordsSearchStore()
 			if err != nil {
@@ -145,7 +163,7 @@ func main() {
 	}
 	recIndexDeleteCmd := &cobra.Command{
 		Use:   "delete-index",
-		Short: "Delete the search index",
+		Short: "delete rec search index",
 		Run: func(cmd *cobra.Command, args []string) {
 			store, err := newRecordsSearchStore()
 			if err != nil {
@@ -157,9 +175,10 @@ func main() {
 			}
 		},
 	}
+	recCmd.AddCommand(recAddCmd)
+	recCmd.AddCommand(recIndexCmd)
 	recCmd.AddCommand(recIndexCreateCmd)
 	recCmd.AddCommand(recIndexDeleteCmd)
-	recCmd.AddCommand(recAddCmd)
 
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(recCmd)

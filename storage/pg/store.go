@@ -49,16 +49,25 @@ func (s *Store) GetRec(id string) (*records.Rec, error) {
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	rec := records.Rec{
-		ID:         r.RecID,
-		Type:       r.Type,
-		Collection: r.Collection,
-		Title:      r.Title,
-		Metadata:   json.RawMessage(r.Metadata),
-		CreatedAt:  r.CreatedAt,
-		UpdatedAt:  r.UpdatedAt,
+	return reifyRec(&r), nil
+}
+
+func (s *Store) AllRecs(c chan<- *records.Rec) error {
+	rows, err := s.db.Model(&Rec{}).Rows()
+	defer rows.Close()
+	if err != nil {
+		return err
 	}
-	return &rec, nil
+
+	for rows.Next() {
+		r := Rec{}
+		if err := s.db.ScanRows(rows, &r); err != nil {
+			return err
+		}
+		c <- reifyRec(&r)
+	}
+
+	return nil
 }
 
 func (s *Store) AddRec(rec *records.Rec) error {
@@ -76,4 +85,16 @@ func (s *Store) AddRec(rec *records.Rec) error {
 	}).Create(&r)
 
 	return res.Error
+}
+
+func reifyRec(r *Rec) *records.Rec {
+	return &records.Rec{
+		ID:         r.RecID,
+		Type:       r.Type,
+		Collection: r.Collection,
+		Title:      r.Title,
+		Metadata:   json.RawMessage(r.Metadata),
+		CreatedAt:  r.CreatedAt,
+		UpdatedAt:  r.UpdatedAt,
+	}
 }
