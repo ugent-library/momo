@@ -13,3 +13,12 @@ if (document.getElementById("search")) {
     render: h => h(Search)
   })
 }
+
+/// IIIF
+import 'leaflet/dist/leaflet.css'
+import IIIFViewer from './IIIFViewer.vue'
+if (document.getElementById("iiif-viewer")) {
+  new Vue({
+    render: h => h(IIIFViewer),
+  }).$mount('#iiif-viewer')
+}
