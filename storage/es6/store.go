@@ -77,8 +77,8 @@ func (s *Store) AddRecs(c <-chan *records.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.IndexName,
 		Client: s.Client,
-		// NumWorkers: 4,           // The number of worker goroutines (default NumCPU)
-		// FlushBytes:    int(flushBytes),  // The flush threshold in bytes (default 5MB)
+		// NumWorkers: 4, // The number of worker goroutines (default NumCPU)
+		// FlushBytes: int(flushBytes), // The flush threshold in bytes (default 5MB)
 		// FlushInterval: 30 * time.Second, // The periodic flush interval (default 30S)
 		OnError: func(c context.Context, e error) {
 			log.Printf("ERROR: %s", e)
