@@ -22,6 +22,7 @@ type Lens struct {
 type App struct {
 	store       records.Storage
 	searchStore records.SearchStorage
+	Host        string
 	Port        int
 	staticPath  string
 }
@@ -36,8 +37,8 @@ func New(store records.Storage, searchStore records.SearchStorage) *App {
 }
 
 func (a *App) Start() {
-	fmt.Println(fmt.Sprintf("The momo server is running at http://localhost:%d.", a.Port))
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", a.Port), a.router())
+	fmt.Println(fmt.Sprintf("The momo server is running at http://%s:%d.", a.Host, a.Port))
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", a.Host, a.Port), a.router())
 	if err != nil {
 		log.Fatal(err)
 	}

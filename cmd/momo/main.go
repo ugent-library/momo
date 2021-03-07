@@ -20,6 +20,7 @@ import (
 
 const (
 	pgConnDefault = "host=localhost dbname=momo_dev sslmode=disable"
+	hostDefault   = "localhost"
 	portDefault   = 3000
 )
 
@@ -74,10 +75,14 @@ func main() {
 				log.Fatal(err)
 			}
 			app := ui.New(store, searchStore)
+			app.Host = viper.GetString("host")
 			app.Port = viper.GetInt("port")
 			app.Start()
 		},
 	}
+	serverCmd.Flags().String("host", hostDefault, "server host")
+	viper.BindPFlag("host", serverCmd.Flags().Lookup("host"))
+	viper.SetDefault("host", hostDefault)
 	serverCmd.Flags().Int("port", portDefault, "server port")
 	viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
 	viper.SetDefault("port", portDefault)
