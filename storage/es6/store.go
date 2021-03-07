@@ -257,7 +257,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		}
 
 		if len(h.Highlight) > 0 {
-			hit.Highlight = h.Highlight
+			hit.RawHighlight = h.Highlight
 		}
 
 		hits.Hits = append(hits.Hits, &hit)

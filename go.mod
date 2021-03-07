@@ -3,7 +3,6 @@ module github.com/ugent-library/momo
 go 1.15
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-chi/chi v1.5.4
 	github.com/go-playground/form/v4 v4.1.1
@@ -13,6 +12,8 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/tidwall/gjson v1.6.8
+	github.com/tidwall/pretty v1.1.0 // indirect
 	github.com/unrolled/render v1.0.3
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 	golang.org/x/text v0.3.5 // indirect

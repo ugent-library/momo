@@ -6,13 +6,13 @@ import (
 )
 
 type Rec struct {
-	ID         string          `json:"id"`
-	Type       string          `json:"type"`
-	Collection []string        `json:"collection"`
-	Title      string          `json:"title"`
-	Metadata   json.RawMessage `json:"metadata"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  time.Time       `json:"updated_at"`
+	ID          string          `json:"id"`
+	Type        string          `json:"type"`
+	Collection  []string        `json:"collection"`
+	Title       string          `json:"title"`
+	RawMetadata json.RawMessage `json:"metadata"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
 type Scope map[string][]string
@@ -26,7 +26,7 @@ type SearchArgs struct {
 
 type Hit struct {
 	Rec
-	Highlight json.RawMessage `json:"highlight"`
+	RawHighlight json.RawMessage `json:"highlight"`
 }
 
 type Hits struct {
@@ -34,8 +34,8 @@ type Hits struct {
 	Hits  []*Hit `json:"hits"`
 }
 
-// TODO merge scope new scope with old scope
 func (s SearchArgs) WithScope(scope Scope) SearchArgs {
+	// TODO merge scope new scope with old scope
 	s.Scope = scope
 	return s
 }

@@ -17,25 +17,25 @@ type renderer struct {
 	Theme         string
 	AssetManifest map[string]string
 	StaticPath    string
-	Funcs         template.FuncMap
+	Funcs         []template.FuncMap
 }
 
 type Renderer interface {
 	Create() *render.Render
 }
 
-func NewRenderer(theme string) Renderer {
+func NewRenderer(theme string, funcs ...template.FuncMap) Renderer {
 	r := &renderer{}
 	if theme == "" {
 		theme = "opale" // default theme: Opale
 	}
-	r.Funcs = template.FuncMap{
+	r.Funcs = []template.FuncMap{template.FuncMap{
 		"assetPath": r.assetPath,
-	}
+	}}
 	options := render.Options{
 		Directory: fmt.Sprintf("themes/%s/templates", theme),
 		Layout:    "layout",
-		Funcs:     []template.FuncMap{r.Funcs},
+		Funcs:     append(r.Funcs, funcs...),
 	}
 	r.Options = options
 	r.Theme = theme

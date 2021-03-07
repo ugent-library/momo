@@ -76,7 +76,7 @@ func (s *Store) AddRec(rec *records.Rec) error {
 		Type:       rec.Type,
 		Collection: pq.StringArray(rec.Collection),
 		Title:      rec.Title,
-		Metadata:   datatypes.JSON(rec.Metadata),
+		Metadata:   datatypes.JSON(rec.RawMetadata),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
@@ -89,12 +89,12 @@ func (s *Store) AddRec(rec *records.Rec) error {
 
 func reifyRec(r *Rec) *records.Rec {
 	return &records.Rec{
-		ID:         r.RecID,
-		Type:       r.Type,
-		Collection: r.Collection,
-		Title:      r.Title,
-		Metadata:   json.RawMessage(r.Metadata),
-		CreatedAt:  r.CreatedAt,
-		UpdatedAt:  r.UpdatedAt,
+		ID:          r.RecID,
+		Type:        r.Type,
+		Collection:  r.Collection,
+		Title:       r.Title,
+		RawMetadata: json.RawMessage(r.Metadata),
+		CreatedAt:   r.CreatedAt,
+		UpdatedAt:   r.UpdatedAt,
 	}
 }
