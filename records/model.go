@@ -13,6 +13,7 @@ type Rec struct {
 	RawMetadata json.RawMessage `json:"metadata"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
+	RawSource   json.RawMessage `json:"source"`
 }
 
 type Scope map[string][]string

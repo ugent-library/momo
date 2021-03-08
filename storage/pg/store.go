@@ -27,6 +27,7 @@ type Rec struct {
 	Collection pq.StringArray `gorm:"type:text[];not null;index"`
 	Title      string         `gorm:"not null"`
 	Metadata   datatypes.JSON `gorm:"not null"`
+	Source     datatypes.JSON
 }
 
 type Store struct {
@@ -77,11 +78,13 @@ func (s *Store) AddRec(rec *records.Rec) error {
 		Collection: pq.StringArray(rec.Collection),
 		Title:      rec.Title,
 		Metadata:   datatypes.JSON(rec.RawMetadata),
+		Source:     datatypes.JSON(rec.RawSource),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "rec_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"type", "collection", "title", "metadata", "updated_at"}),
+		Columns: []clause.Column{{Name: "rec_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"type", "collection", "title",
+			"metadata", "source", "updated_at"}),
 	}).Create(&r)
 
 	return res.Error

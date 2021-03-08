@@ -15,7 +15,7 @@ full_bin = "./tmp/bin/momo server"
 # Watch these filename extensions.
 include_ext = ["go", "tmpl"]
 # Ignore these filename extensions or directories.
-exclude_dir = ["node_modules", "static", "tmp"]
+exclude_dir = ["fixes", "node_modules", "static", "tmp"]
 # Watch these directories if you specified.
 include_dir = []
 # Exclude files.

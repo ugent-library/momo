@@ -42,6 +42,12 @@ unless exists(r.metadata)
     set_hash(r.metadata)
 end
 
+# source
+use(momo, as: momo)
+add(r.source.0.metadata_format, marc-in-json)
+momo.marc_in_json()
+cp(record, r.source.0.metadata)
+
 # recs
 cp(r, recs.$append)
 retain(recs)
