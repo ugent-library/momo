@@ -5,7 +5,7 @@ import '../css/app.scss'
 
 Vue.use(BootstrapVue)
 
-import Search from "../js/Search";
+import Search from "../../_common/js/Search";
 
 if (document.getElementById("search")) {
   new Vue({

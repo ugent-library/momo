@@ -5,7 +5,7 @@ import '../css/app.scss'
 
 Vue.use(BootstrapVue)
 
-import Search from "../js/Search";
+import Search from "../../_common/js/Search";
 
 if (document.getElementById("search")) {
   new Vue({
@@ -16,7 +16,7 @@ if (document.getElementById("search")) {
 
 /// IIIF
 import 'leaflet/dist/leaflet.css'
-import IIIFViewer from './IIIFViewer.vue'
+import IIIFViewer from "../../_common/js/IIIFViewer";
 if (document.getElementById("iiif-viewer")) {
   new Vue({
     render: h => h(IIIFViewer),
