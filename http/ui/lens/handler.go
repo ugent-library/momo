@@ -124,7 +124,7 @@ func renderSource(j json.RawMessage) template.HTML {
 					b.WriteString(`<td>` + f.Get(`ind1`).String() + `</td>`)
 					b.WriteString(`<td>` + f.Get(`ind2`).String() + `</td>`)
 					b.WriteString(`<td>`)
-					v.Get(`subfields`).ForEach(func(_, subfield gjson.Result) bool {
+					f.Get(`subfields`).ForEach(func(_, subfield gjson.Result) bool {
 						subfield.ForEach(func(code, sf gjson.Result) bool {
 							b.WriteString(`<span class="text-muted">` + code.String() + `</span> ` + sf.String() + ` `)
 							return false
