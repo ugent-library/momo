@@ -1,0 +1,56 @@
+from_json(json)
+from_json(marc_display)
+
+# id
+cp(_id, r.id)
+cp(r.id, r._id)
+
+# collection
+add(r.collection.$append, lludss)
+
+# type
+cp(type, r.type)
+lookup(r.type, aleph_type_mapping.csv)
+
+# title
+cp(json.title, r.title)
+
+# author
+cp(json.author.*, r.metadata.author.$append.name)
+
+# abstract
+cp(json.summary.*, r.metadata.abstract.$append.text)
+set(r.metadata.abstract.*.lang, und)
+
+# publicationDate
+cp(year, r.metadata.publicationDate)
+
+# note
+cp(marc_display.*.note, r.metadata.note.$append.text)
+set(r.metadata.note.*.lang, und)
+
+# isbn
+cp(isbn, r.metadata.isbn)
+
+# issn
+cp(issn, r.metadata.issn)
+
+# doi
+cp(doi, r.metadata.doi.$append)
+
+# ensure metadata hash exists
+unless exists(r.metadata)
+    set_hash(r.metadata)
+end
+
+# source
+use(momo, as: momo)
+add(r.source.0.metadata_format, marc-in-json)
+import_from_string('fXML','MARC', type: XML)
+cp(fXML.0.record, record)
+momo.marc_in_json(record)
+cp(record, r.source.0.metadata)
+
+# recs
+cp(r, recs.$append)
+retain(recs)

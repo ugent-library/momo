@@ -45,7 +45,7 @@ end
 # source
 use(momo, as: momo)
 add(r.source.0.metadata_format, marc-in-json)
-momo.marc_in_json()
+momo.marc_in_json(record)
 cp(record, r.source.0.metadata)
 
 # recs

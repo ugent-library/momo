@@ -2,12 +2,15 @@ package Momo::marc_in_json;
 
 use Catmandu::Sane;
 use Moo;
+use Catmandu::Fix::Has;
+
+has key => (fix_arg => 1);
 
 sub fix {
     my ($self, $data) = @_;
 
-    if (my $marc = delete $data->{record}) {
-        my $mij = $data->{record} = {};
+    if (my $marc = delete $data->{$self->key}) {
+        my $mij = $data->{$self->key} = {};
         for my $field (@$marc) {
             my ($tag, $ind1, $ind2, @subfields) = @$field;
  
