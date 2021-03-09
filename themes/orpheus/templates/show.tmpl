@@ -3,3 +3,8 @@
 <div id="iiif-viewer"></div>
 
 {{renderMetadata .Rec.RawMetadata}}
+
+{{if .Rec.RawSource }}
+<h3>Librarian view</h3>
+{{renderSource .Rec.RawSource}}
+{{end}}

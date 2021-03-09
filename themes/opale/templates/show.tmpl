@@ -1,1 +1,8 @@
 <h1>{{.Rec.Title}}</h1>
+
+{{renderMetadata .Rec.RawMetadata}}
+
+{{if .Rec.RawSource }}
+<h3>Librarian view</h3>
+{{renderSource .Rec.RawSource}}
+{{end}}

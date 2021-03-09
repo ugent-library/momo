@@ -25,6 +25,7 @@ type Handler struct {
 func NewHandler(service records.Service, theme string) *Handler {
 	funcs := template.FuncMap{
 		"renderMetadata": renderMetadata,
+		"renderSource":   renderSource,
 	}
 	r := view.NewRenderer(theme, funcs)
 	h := &Handler{
@@ -85,20 +86,20 @@ func renderMetadata(j json.RawMessage) template.HTML {
 	var b strings.Builder
 	m := gjson.ParseBytes(j)
 	b.WriteString("<dl>")
-	renderDtDd(&b, &m, "author.#.name", "Authors")
-	renderDtDd(&b, &m, "abstract.#.text", "Abstract")
-	renderDtDd(&b, &m, "edition", "Edition")
-	renderDtDd(&b, &m, "publisher", "Publisher")
-	renderDtDd(&b, &m, "placeOfPublication", "Place of publication")
-	renderDtDd(&b, &m, "publicationDate", "Date published")
-	renderDtDd(&b, &m, "doi", "DOI")
-	renderDtDd(&b, &m, "isbn", "ISBN")
-	renderDtDd(&b, &m, "note.#.text", "Note")
+	renderMetadataField(&b, &m, "author.#.name", "Authors")
+	renderMetadataField(&b, &m, "abstract.#.text", "Abstract")
+	renderMetadataField(&b, &m, "edition", "Edition")
+	renderMetadataField(&b, &m, "publisher", "Publisher")
+	renderMetadataField(&b, &m, "placeOfPublication", "Place of publication")
+	renderMetadataField(&b, &m, "publicationDate", "Date published")
+	renderMetadataField(&b, &m, "doi", "DOI")
+	renderMetadataField(&b, &m, "isbn", "ISBN")
+	renderMetadataField(&b, &m, "note.#.text", "Note")
 	b.WriteString("</dl>")
 	return template.HTML(b.String())
 }
 
-func renderDtDd(b *strings.Builder, m *gjson.Result, path string, dt string) {
+func renderMetadataField(b *strings.Builder, m *gjson.Result, path string, dt string) {
 	res := m.Get(path)
 	if res.Exists() {
 		b.WriteString("<dt>" + html.EscapeString(dt) + "</dt>")
@@ -107,4 +108,40 @@ func renderDtDd(b *strings.Builder, m *gjson.Result, path string, dt string) {
 			return true
 		})
 	}
+}
+
+func renderSource(j json.RawMessage) template.HTML {
+	var b strings.Builder
+	m := gjson.ParseBytes(j)
+	marc := m.Get(`@this.#(metadata_format=="marc-in-json").metadata`)
+	if marc.Exists() {
+		b.WriteString(`<table class="table table-sm table-striped">`)
+		b.WriteString(`<tr><th colspan="4">` + marc.Get(`leader`).String() + `</th></tr>`)
+		marc.Get(`fields`).ForEach(func(_, field gjson.Result) bool {
+			field.ForEach(func(code, f gjson.Result) bool {
+				b.WriteString(`<tr><th class="table-active">` + code.String() + `</th>`)
+				if f.IsObject() {
+					b.WriteString(`<td>` + f.Get(`ind1`).String() + `</td>`)
+					b.WriteString(`<td>` + f.Get(`ind2`).String() + `</td>`)
+					b.WriteString(`<td>`)
+					v.Get(`subfields`).ForEach(func(_, subfield gjson.Result) bool {
+						subfield.ForEach(func(code, sf gjson.Result) bool {
+							b.WriteString(`<span class="text-muted">` + code.String() + `</span> ` + sf.String() + ` `)
+							return false
+						})
+						return true
+					})
+					b.WriteString(`</td>`)
+				} else {
+					b.WriteString(`<td colspan="3">` + f.String() + `</td>`)
+				}
+				b.WriteString(`</tr>`)
+				return false
+			})
+			return true
+		})
+
+		b.WriteString(`</table>`)
+	}
+	return template.HTML(b.String())
 }

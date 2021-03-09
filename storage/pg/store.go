@@ -97,6 +97,7 @@ func reifyRec(r *Rec) *records.Rec {
 		Collection:  r.Collection,
 		Title:       r.Title,
 		RawMetadata: json.RawMessage(r.Metadata),
+		RawSource:   json.RawMessage(r.Source),
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
 	}
