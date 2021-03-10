@@ -11,7 +11,7 @@ cmd = "go build -o ./tmp/bin/momo cmd/momo/main.go"
 # Binary file yields from `cmd`.
 bin = "tmp/bin"
 # Customize binary.
-full_bin = "./tmp/bin/momo server"
+full_bin = "./tmp/bin/momo server start"
 # Watch these filename extensions.
 include_ext = ["go", "tmpl"]
 # Ignore these filename extensions or directories.
