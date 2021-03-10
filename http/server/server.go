@@ -34,6 +34,10 @@ func Start(opts Options) error {
 	router.Use(chimw.Logger)
 	router.Use(chimw.Recoverer)
 
+	router.Get("/robots.txt", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "User-agent: *\nDisallow: /\n")
+	})
+
 	for _, v := range loadLenses() {
 		service := records.NewService(opts.Store, opts.SearchStore, v.Scope)
 		handler := ui.NewSearch(service, v.Theme)
