@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ugent-library/momo/http/ui"
+	"github.com/ugent-library/momo/http/server"
 )
 
 func init() {
@@ -30,17 +30,14 @@ var serverStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start the http server",
 	Run: func(cmd *cobra.Command, args []string) {
-		store, err := newRecordsStore()
+		err := server.Start(server.Options{
+			Store:       newRecordsStore(),
+			SearchStore: newRecordsSearchStore(),
+			Host:        viper.GetString("host"),
+			Port:        viper.GetInt("port"),
+		})
 		if err != nil {
 			log.Fatal(err)
 		}
-		searchStore, err := newRecordsSearchStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		app := ui.New(store, searchStore)
-		app.Host = viper.GetString("host")
-		app.Port = viper.GetInt("port")
-		app.Start()
 	},
 }

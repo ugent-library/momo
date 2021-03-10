@@ -34,35 +34,36 @@ func init() {
 	viper.SetDefault("es6-index", defaultEs6Index)
 }
 
+// Execute the momo CLI
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func newRecordsStore() (records.Storage, error) {
+func newRecordsStore() records.Storage {
 	store, err := pg.New(viper.GetString("pg-conn"))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	return store, nil
+	return store
 }
 
-func newRecordsSearchStore() (records.SearchStorage, error) {
+func newRecordsSearchStore() records.SearchStorage {
 	client, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: strings.Split(viper.GetString("es6-url"), ","),
 	})
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	store := &es6.Store{
 		Client:       client,
 		IndexName:    viper.GetString("es6-index"),
 		IndexMapping: string(mapping),
 	}
-	return store, nil
+	return store
 }

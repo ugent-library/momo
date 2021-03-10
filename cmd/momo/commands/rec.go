@@ -32,15 +32,7 @@ var recAddCmd = &cobra.Command{
 	Short: "store and index recs",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		store, err := newRecordsStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		searchStore, err := newRecordsSearchStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		service := records.NewService(store, searchStore)
+		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
 		out := make(chan *records.Rec)
 		service.AddRecs(out)
 
@@ -79,16 +71,8 @@ var recIndexAllCmd = &cobra.Command{
 	Use:   "all",
 	Short: "index all stored records",
 	Run: func(cmd *cobra.Command, args []string) {
-		store, err := newRecordsStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		searchStore, err := newRecordsSearchStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		service := records.NewService(store, searchStore)
-		err = service.IndexRecs()
+		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
+		err := service.IndexRecs()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -99,11 +83,7 @@ var recIndexCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create record search index",
 	Run: func(cmd *cobra.Command, args []string) {
-		store, err := newRecordsSearchStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = store.CreateIndex()
+		err := newRecordsSearchStore().CreateIndex()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -114,11 +94,7 @@ var recIndexDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete record search index",
 	Run: func(cmd *cobra.Command, args []string) {
-		store, err := newRecordsSearchStore()
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = store.DeleteIndex()
+		err := newRecordsSearchStore().DeleteIndex()
 		if err != nil {
 			log.Fatal(err)
 		}
