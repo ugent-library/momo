@@ -19,9 +19,11 @@ import (
 )
 
 const (
-	pgConnDefault = "host=localhost dbname=momo_dev sslmode=disable"
-	hostDefault   = "localhost"
-	portDefault   = 3000
+	defaultPgConn   = "host=localhost dbname=momo_dev sslmode=disable"
+	defaultEs6URL   = "http://localhost:9200"
+	defaultEs6Index = "momo_rec"
+	defaultHost     = "localhost"
+	defaultPort     = 3000
 )
 
 func newRecordsStore() (records.Storage, error) {
@@ -33,7 +35,9 @@ func newRecordsStore() (records.Storage, error) {
 }
 
 func newRecordsSearchStore() (records.SearchStorage, error) {
-	client, err := elasticsearch.NewDefaultClient()
+	client, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: strings.Split(viper.GetString("es6-url"), ","),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +47,7 @@ func newRecordsSearchStore() (records.SearchStorage, error) {
 	}
 	store := &es6.Store{
 		Client:       client,
-		IndexName:    "momo_rec",
+		IndexName:    viper.GetString("es6-index"),
 		IndexMapping: string(mapping),
 	}
 	return store, nil
@@ -58,9 +62,15 @@ func main() {
 		Use:   "momo [command]",
 		Short: "the momo CLI",
 	}
-	rootCmd.PersistentFlags().String("pg-conn", pgConnDefault, "PostgreSQL connection string")
+	rootCmd.PersistentFlags().String("pg-conn", defaultPgConn, "PostgreSQL connection string")
 	viper.BindPFlag("pg-conn", rootCmd.PersistentFlags().Lookup("pg-conn"))
-	viper.SetDefault("pg-conn", pgConnDefault)
+	viper.SetDefault("pg-conn", defaultPgConn)
+	rootCmd.PersistentFlags().String("es6-url", defaultEs6URL, "Elasticsearch 6.x url, separate multiple with comma")
+	viper.BindPFlag("es6-url", rootCmd.PersistentFlags().Lookup("es6-url"))
+	viper.SetDefault("es6-url", defaultEs6URL)
+	rootCmd.PersistentFlags().String("es6-index", defaultEs6Index, "Elasticsearch 6.x index name")
+	viper.BindPFlag("es6-index", rootCmd.PersistentFlags().Lookup("es6-index"))
+	viper.SetDefault("es6-index", defaultEs6Index)
 
 	serverCmd := &cobra.Command{
 		Use:   "server",
@@ -80,12 +90,12 @@ func main() {
 			app.Start()
 		},
 	}
-	serverCmd.Flags().String("host", hostDefault, "server host")
+	serverCmd.Flags().String("host", defaultHost, "server host")
 	viper.BindPFlag("host", serverCmd.Flags().Lookup("host"))
-	viper.SetDefault("host", hostDefault)
-	serverCmd.Flags().Int("port", portDefault, "server port")
+	viper.SetDefault("host", defaultHost)
+	serverCmd.Flags().Int("port", defaultPort, "server port")
 	viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
-	viper.SetDefault("port", portDefault)
+	viper.SetDefault("port", defaultPort)
 
 	recCmd := &cobra.Command{
 		Use:   "rec [command]",
