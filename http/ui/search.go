@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"bytes"
 	"encoding/json"
 	"html"
 	"html/template"
@@ -24,8 +25,9 @@ type Search struct {
 
 func NewSearch(service records.Service, theme string) *Search {
 	funcs := template.FuncMap{
-		"renderMetadata": renderMetadata,
-		"renderSource":   renderSource,
+		"renderMetadata":     renderMetadata,
+		"renderSourceView":   renderSourceView,
+		"renderInternalView": renderInternalView,
 	}
 	r := view.NewRenderer(theme, funcs)
 	h := &Search{
@@ -110,7 +112,7 @@ func renderMetadataField(b *strings.Builder, m *gjson.Result, path string, dt st
 	}
 }
 
-func renderSource(j json.RawMessage) template.HTML {
+func renderSourceView(j json.RawMessage) template.HTML {
 	var b strings.Builder
 	m := gjson.ParseBytes(j)
 	marc := m.Get(`@this.#(metadata_format=="marc-in-json").metadata`)
@@ -144,4 +146,10 @@ func renderSource(j json.RawMessage) template.HTML {
 		b.WriteString(`</table>`)
 	}
 	return template.HTML(b.String())
+}
+
+func renderInternalView(rec *records.Rec) template.HTML {
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, rec.RawMetadata, "", "\t")
+	return template.HTML("<code><pre>" + prettyJSON.String() + "</pre></code>")
 }

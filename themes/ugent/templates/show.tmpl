@@ -1,8 +1,14 @@
-<h1>{{.Rec.Title}}</h1>
+<h1>
+    {{.Rec.Title}}
+    {{if .Rec.Type}}<span class="badge badge-secondary">{{.Rec.Type}}</span>{{end}}
+</h1>
 
 {{renderMetadata .Rec.RawMetadata}}
 
 {{if .Rec.RawSource }}
 <h3>Librarian view</h3>
-{{renderSource .Rec.RawSource}}
+{{renderSourceView .Rec.RawSource}}
 {{end}}
+
+<h3>Internal view</h3>
+{{renderInternalView .Rec}}
