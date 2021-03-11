@@ -16,6 +16,7 @@ func init() {
 	recIndexCmd.AddCommand(recIndexCreateCmd)
 	recIndexCmd.AddCommand(recIndexDeleteCmd)
 
+	recCmd.AddCommand(recGetCmd)
 	recCmd.AddCommand(recAddCmd)
 	recCmd.AddCommand(recIndexCmd)
 
@@ -25,6 +26,42 @@ func init() {
 var recCmd = &cobra.Command{
 	Use:   "rec [command]",
 	Short: "Record commands",
+}
+
+var recGetCmd = &cobra.Command{
+	Use:   "get [id ...]",
+	Short: "get stored records",
+	Run: func(cmd *cobra.Command, args []string) {
+		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
+		enc := json.NewEncoder(os.Stdout)
+
+		if len(args) > 0 {
+			for _, id := range args {
+				rec, err := service.GetRec(id)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if err := enc.Encode(rec); err != nil {
+					log.Fatal(err)
+				}
+			}
+		} else {
+			c := make(chan *records.Rec)
+			defer close(c)
+
+			go func() {
+				for rec := range c {
+					if err := enc.Encode(rec); err != nil {
+						log.Fatal(err)
+					}
+				}
+			}()
+
+			if err := service.AllRecs(c); err != nil {
+				log.Fatal(err)
+			}
+		}
+	},
 }
 
 var recAddCmd = &cobra.Command{

@@ -17,6 +17,7 @@ type SearchStorage interface {
 
 type Service interface {
 	GetRec(string) (*Rec, error)
+	AllRecs(chan<- *Rec) error
 	SearchRecs(SearchArgs) (*Hits, error)
 	AddRecs(<-chan *Rec)
 	IndexRecs() error
@@ -34,6 +35,18 @@ func NewService(store Storage, searchStore SearchStorage, scopes ...Scope) Servi
 		scope = scopes[0]
 	}
 	return &service{store, searchStore, scope}
+}
+
+func (s *service) AllRecs(c chan<- *Rec) error {
+	return s.store.AllRecs(c)
+}
+
+func (s *service) GetRec(id string) (*Rec, error) {
+	return s.store.GetRec(id)
+}
+
+func (s *service) SearchRecs(args SearchArgs) (*Hits, error) {
+	return s.searchStore.SearchRecs(args.WithScope(s.scope))
 }
 
 func (s *service) AddRecs(in <-chan *Rec) {
@@ -66,14 +79,6 @@ func (s *service) AddRecs(in <-chan *Rec) {
 		wg.Wait()
 		close(out)
 	}()
-}
-
-func (s *service) GetRec(id string) (*Rec, error) {
-	return s.store.GetRec(id)
-}
-
-func (s *service) SearchRecs(args SearchArgs) (*Hits, error) {
-	return s.searchStore.SearchRecs(args.WithScope(s.scope))
 }
 
 func (s *service) IndexRecs() error {
