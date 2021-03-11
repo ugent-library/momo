@@ -27,7 +27,7 @@ type Renderer interface {
 func NewRenderer(theme string, funcs ...template.FuncMap) Renderer {
 	r := &renderer{}
 	if theme == "" {
-		theme = "opale" // default theme: Opale
+		theme = "ugent" // default theme: Ugent
 	}
 	r.Funcs = []template.FuncMap{template.FuncMap{
 		"assetPath": r.assetPath,

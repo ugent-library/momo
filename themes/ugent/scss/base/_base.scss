@@ -1,0 +1,51 @@
+body {
+  > .page {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+
+body {
+    > .container-fluid {
+      max-width: 1280px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 10px;
+      padding-right: 10px;
+      > .row {
+
+        > section {
+          margin-bottom: 30px;
+        }
+
+        > aside {
+          margin-top: 4px;
+        }
+      }
+
+      @media (max-width: 1280px) {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+    }
+  }
+
+  img {
+    max-width: 100%;
+    aside & {
+      width: 100%;
+    }
+  }
+
+  .flexbox {
+    display: -webkit-flex;
+    display: flex;
+    display: -ms-flexbox;
+    -webkit-flex-wrap: wrap;
+    flex-wrap:         wrap;
+    -ms-flex-wrap:     wrap;
+  }

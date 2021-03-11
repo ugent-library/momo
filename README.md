@@ -49,7 +49,7 @@ Install node dependencies:
 npm install
 ```
 
-Momo contains a default theme called Opale. This theme will be compiled and installed during installation.
+Momo contains a default theme called Ugent. This theme will be compiled and installed during installation.
 
 Compile a theme manually. Replace THEME with the name of your theme:
 
@@ -60,7 +60,7 @@ npx mix --mix-config themes/THEME/webpack.mix.js
 Watching:
 
 ```
-npx mix --mix-config themes/opale/webpack.mix.js watch # live reload in development
+npx mix --mix-config themes/ugent/webpack.mix.js watch # live reload in development
 npx mix --production # production
 ```
 

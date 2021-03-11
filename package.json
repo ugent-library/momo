@@ -1,7 +1,7 @@
 {
     "private": true,
     "scripts": {
-        "postinstall": "npx mix --mix-config themes/opale/webpack.mix.js"
+        "postinstall": "npx mix --mix-config themes/ugent/webpack.mix.js"
     },
     "devDependencies": {
         "font-awesome": "^4.7.0",

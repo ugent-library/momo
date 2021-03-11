@@ -1,0 +1,9 @@
+@import 'themes/_common/ugent/scss/ugent.scss';
+@import 'node_modules/bootstrap-vue/src/index.scss';
+$fa-font-path: "~font-awesome/fonts";
+@import '~font-awesome/scss/font-awesome';
+
+@import 'common/variables';
+
+@import 'base/index';
+@import 'components/index';
