@@ -1,0 +1,17 @@
+[Unit]
+Description=momo
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/opt/momo
+EnvironmentFile=/opt/momo/.env
+ExecStart=/opt/momo/momo server start
+StandardOutput=append:/var/log/momo/momo.log
+StandardError=inherit
+# or with an older version of systemd:
+# ExecStart=/bin/sh -c 'exec /opt/momo/momo server start >>/var/log/momo/momo.log 2>>/var/log/momo/momo.log'
+
+[Install]
+WantedBy=multi-user.target
