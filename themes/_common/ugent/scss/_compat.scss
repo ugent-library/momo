@@ -1,0 +1,12 @@
+.btn-default {
+    @extend .btn-primary;
+    @extend .text-light;
+}
+
+.pbottom-small {
+    @extend .pb-3;
+}
+
+.mbottom-small {
+    @extend .mb-3;
+}

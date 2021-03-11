@@ -1,0 +1,21 @@
+@import 'variables';
+
+@import 'bootstrap/bootstrap';
+
+@import 'fonts';
+@import 'compat';
+@import 'footer';
+@import 'header';
+@import 'links';
+@import 'lists';
+@import 'typography';
+
+@include media-breakpoint-up(md) {
+    .row.row-full {
+        margin-left: -$grid-gutter-width;
+        margin-right: -$grid-gutter-width;
+    }
+}
+img {
+    max-width: 100%;
+}

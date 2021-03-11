@@ -1,0 +1,79 @@
+$enable-rounded: false;
+
+$transition-duration-default: .15s;
+$transition-ease-default: ease-in-out;
+
+$UGent-blue:            #1E64C8;
+$UGent-yellow:          #FFD200;
+$UGent-LW-orange:       #F1A42B;
+$UGent-RE-red:          #DC4E28;
+$UGent-WE-aqua:         #2D8CA8;
+$UGent-GE-salmon-pink:  #E85E71;
+$UGent-EA-gray-blue:    #6F71B9;
+$UGent-EB-light-green:  #AEB050;
+$UGent-DI-purple:       #825491;
+$UGent-PP-warm-orange:  #FB7E3A;
+$UGent-BW-turquoise:    #27ABAD;
+$UGent-FW-light-purple: #BE5190;
+$UGent-PS-green:        #71A860;
+
+$blue:  #007bff;
+$yellow: #ffc107;
+$black: #202020;
+
+$primary:       $UGent-blue;
+$secondary:     $UGent-yellow;
+$tertiary:      #e9f0fa;
+
+$theme-colors: (
+  "tertiary": $tertiary,
+  "UGent-blue": $UGent-blue,
+  "UGent-yellow": $UGent-yellow,
+  "UGent-LW-orange": $UGent-LW-orange,
+  "UGent-RE-red": $UGent-RE-red,
+  "UGent-WE-aqua": $UGent-WE-aqua,
+  "UGent-GE-salmon-pink": $UGent-GE-salmon-pink,
+  "UGent-EA-gray-blue": $UGent-EA-gray-blue,
+  "UGent-EB-light-green": $UGent-EB-light-green,
+  "UGent-DI-purple": $UGent-DI-purple,
+  "UGent-PP-warm-orange": $UGent-PP-warm-orange,
+  "UGent-BW-turquoise": $UGent-BW-turquoise,
+  "UGent-FW-light-purple": $UGent-FW-light-purple,
+  "UGent-PS-green": $UGent-PS-green
+);
+
+$border-color: #CCCCCC;
+$border-color-light: #DDDDDD;
+$brand-warning: #fffae5;
+$brand-disabled: #B4B4B4;
+
+$em-base: 17px;
+$fz-default: $em-base;
+$fz-defaultplus: 18px;
+$fz-small: 14px;
+$fz-smallplus: 19px;
+$fz-medium: 20px;
+$fz-mediumplus: 22px;
+$fz-large: 50px;
+
+$line-height-base: 21/17;
+$line-height-medium: 26/20;
+$line-height-medium-caps: 20/20;
+$line-height-large: 50/50;
+
+$default-text-color: black;
+$dark-text-color: #646464;
+
+$default-font-family: 'PannoTextNormal', Arial, sans-serif;
+$semibold-font-family: 'PannoTextSemiBold', Arial, sans-serif;
+$medium-font-family: 'PannoTextMedium', Arial, sans-serif;
+$light-font-family: 'PannoTextLight', Arial, sans-serif;
+
+$body-text-font-family: $light-font-family;
+$header-font-family: $medium-font-family;
+
+$breadcrumb-divider: ">";
+
+@import 'bootstrap/functions';
+@import 'bootstrap/variables';
+@import 'bootstrap/mixins';

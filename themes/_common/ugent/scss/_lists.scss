@@ -1,0 +1,63 @@
+ul, ol {
+  padding-left: 18px;
+
+  li {
+    margin-bottom: 8px;
+    position: relative;
+
+    a {
+      border-bottom: 1px solid transparent;
+      &:hover,
+      &:focus,
+      &.selected {
+        color: $primary;
+        border-color: $primary;
+      }
+    }
+  }
+}
+ul {
+  list-style-type: none;
+  li {
+    &:before {
+      content: "→";
+      font-family: $medium-font-family;
+      font-size: 16px;
+      color: inherit;
+      margin-right: 6px;
+      position: absolute;
+      top: 2px;
+      left: -18px;
+    }
+    ol > li { // No arrow for nested ol li's
+      &:before {
+        display: none;
+      }
+    }
+  }
+}
+
+.list-unstyled {
+  li:before {
+      content: none;
+  }
+}
+
+ol, ul { // Margin for nested lists (ul in ol and ol in ul)
+  ul, ol {
+    margin-top: 8px;
+    padding-left: 10px;
+  }
+}
+
+dl {
+  color: $black;
+  dt {
+    font-family: $medium-font-family;
+    line-height: $line-height-base;
+  }
+  dd {
+    font-family: $light-font-family;
+    line-height: $line-height-base;
+  }
+}

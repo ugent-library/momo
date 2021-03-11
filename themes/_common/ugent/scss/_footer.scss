@@ -1,0 +1,16 @@
+@import 'variables';
+
+.footer li {
+    a {
+        color: $white;
+    }
+    &::before {
+        color: $white;
+    }
+}
+
+.footer .container-share a {
+    background: $white;
+    color: $primary;
+    padding: 0.4rem 0.3rem;
+}

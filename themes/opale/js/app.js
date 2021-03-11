@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import { BootstrapVue } from 'bootstrap-vue'
 
-import '../css/app.scss'
+// import '../scss/screen.scss'
 
 Vue.use(BootstrapVue)
 

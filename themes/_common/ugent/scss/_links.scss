@@ -1,0 +1,80 @@
+//transitions
+a, button, .btn, a i {
+    transition: color $transition-duration-default $transition-ease-default,
+                background-color $transition-duration-default $transition-ease-default;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  word-break: break-word;
+  border-bottom: 1px solid $primary;
+  transition: border-color $transition-duration-default $transition-ease-default;
+
+  &:hover,
+  &:focus {
+    color: $primary;
+    text-decoration: none;
+    border-color: transparent;
+  }
+
+  &.btn {
+    text-decoration: none;
+  }
+
+  &.block-link {
+    text-decoration: none;
+    h3 span, .h3 span {
+      border-bottom: 1px solid transparent;
+    }
+    &:hover, &:focus {
+      h3 span, .h3 span {
+        border-color: $default-text-color;
+      }
+    }
+  }
+  h3 & {
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    &:hover,
+    &:focus {
+      border-color: $default-text-color;
+    }
+  }
+
+  &[data-type='image'], &:has(> img) {
+    border-bottom: 0;
+  }
+}
+
+
+//small elements
+.standalone-link {
+  display: block;
+  margin-bottom: -3px;
+  border-bottom: 0;
+
+  i {
+    color: $black;
+    &.fa {
+      color: $primary;
+    }
+  }
+  span {
+    border-bottom: 1px solid transparent;
+    transition: border-color $transition-duration-default $transition-ease-default;
+  }
+  &.heavy {
+    font-family: $semibold-font-family;
+    text-decoration: none;
+    i {
+      color: $primary;
+    }
+  }
+  &:hover,
+  &:focus {
+    span {
+      border-color: $primary;
+    }
+  }
+}

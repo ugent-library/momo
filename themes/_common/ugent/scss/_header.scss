@@ -1,0 +1,91 @@
+.nav-primary {
+    .nav-item {
+        @extend .p-1;
+        margin-bottom: 0;
+    }
+    @include media-breakpoint-down(sm) {
+        width: 100%;
+    }
+    @include media-breakpoint-up(md) {
+        .nav-item:first-child {
+            margin-left: -0.75rem;
+        }
+    }
+    .nav-link {
+        font-size: 120%;
+        border-bottom: 2px solid transparent;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: $primary;
+    }
+    .active .nav-link, .nav-link:hover {
+        border-color: $primary;
+    }
+
+    background-color: $white;
+    color: $primary;
+    @include media-breakpoint-down(sm) {
+        background-color: $primary;
+        color: $white;
+        .nav-link {
+            color: $white;
+            border: none;
+        }
+    }
+}
+
+.nav-tertiary {
+    .nav-item {
+        @extend .p-1;
+    }
+    .nav-link {
+        padding: 0 !important;
+        font-size: 80%;
+        border-bottom: 1px solid transparent;
+        color: $white;
+    }
+    .active .nav-link, .nav-link:hover {
+        border-color: $white;
+    }
+}
+
+.branding h1, .branding .h1 {
+    text-transform: uppercase;
+    background-color: $primary;
+    color: $white;
+    @include media-breakpoint-down(sm) {
+        @include font-size($h4-font-size);
+    }
+}
+.branding-mini {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-grow: 1;
+    padding: .5rem;
+    @include media-breakpoint-up(md) {
+        display: none;
+    }
+    background-color: $primary;
+    color: $white;
+}
+.branding-logo {
+    display: flex;
+    @include media-breakpoint-down(sm) {
+        flex-grow: 1;
+    }
+    @include media-breakpoint-up(md) {
+        padding-bottom: 1rem;
+    }
+}
+.branding-menu-column {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    @include media-breakpoint-down(sm) {
+        width: 100%;
+    }
+    background-color: $primary;
+    color: $white;
+}

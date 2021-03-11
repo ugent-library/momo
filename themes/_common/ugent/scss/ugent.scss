@@ -1,0 +1,20 @@
+@import "screen.scss";
+
+.dropdown-menu {
+  li::before {
+    content: "";
+  }
+  & > li a {
+    border: 0;
+  }
+}
+
+.pagination {
+  & > li a {
+     padding: 6px 12px;
+     width: auto;
+     -ms-word-break: normal;
+         word-break: normal;
+  }
+}
+

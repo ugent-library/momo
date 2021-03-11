@@ -48,6 +48,7 @@
       :total-rows="total"
       :per-page="size"
       aria-controls="search-results"
+      class="list-unstyled"
     ></b-pagination>
   </div>
 </template>

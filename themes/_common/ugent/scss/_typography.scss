@@ -1,0 +1,77 @@
+body {
+  font-family: $body-text-font-family;
+}
+
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4,
+h5, .h5,
+h6, .h6 {
+  font-family: $header-font-family;
+}
+
+h1, .h1,
+h2, .h2 {
+  color: $primary;
+  .bg-primary & {
+    color: $white;
+  }
+}
+
+h1, .h1 {
+  font-size: $fz-large;
+  line-height: $line-height-large;
+  margin-bottom: 13px;
+}
+h2, .h2 {
+  font-size: $fz-medium;
+  line-height: $line-height-medium-caps;
+}
+h3, .h3 {
+  font-size: $fz-smallplus;
+  line-height: $line-height-base;
+  margin-bottom: 5px;
+}
+h4, .h4 {
+  font-size: $fz-medium;
+  line-height: $line-height-medium-caps;
+  text-transform: uppercase;
+}
+h5, .h5,
+h6, .h6 {
+  font-size: $fz-medium;
+  line-height: $line-height-medium-caps;
+}
+
+.lead {
+  font-size: $fz-default;
+  font-family: $medium-font-family;
+  line-height: $line-height-base;
+}
+
+strong {
+  font-family: $medium-font-family;
+  font-weight: normal;
+}
+
+@include media-breakpoint-up(xs) {
+  a[href^="tel"],
+  a[href^="tel"]:hover {
+    text-decoration: none;
+    color: $default-text-color;
+    cursor: default;
+    border-bottom: 0;
+  }
+}
+
+.breadcrumb {
+    background: none;
+    .breadcrumb-item span {
+        color: black;
+    }
+    .breadcrumb-item a {
+        color: black;
+        border-color: black;
+    }
+}
