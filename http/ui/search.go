@@ -1,4 +1,4 @@
-package lens
+package ui
 
 import (
 	"encoding/json"
@@ -16,19 +16,19 @@ import (
 	"github.com/unrolled/render"
 )
 
-type Handler struct {
+type Search struct {
 	service     records.Service
 	render      *render.Render
 	formDecoder *form.Decoder
 }
 
-func NewHandler(service records.Service, theme string) *Handler {
+func NewSearch(service records.Service, theme string) *Search {
 	funcs := template.FuncMap{
 		"renderMetadata": renderMetadata,
 		"renderSource":   renderSource,
 	}
 	r := view.NewRenderer(theme, funcs)
-	h := &Handler{
+	h := &Search{
 		service:     service,
 		render:      r.Create(),
 		formDecoder: form.NewDecoder(),
@@ -36,7 +36,7 @@ func NewHandler(service records.Service, theme string) *Handler {
 	return h
 }
 
-func (s *Handler) Index() http.HandlerFunc {
+func (s *Search) Index() http.HandlerFunc {
 	type data struct {
 		Title string
 	}
@@ -45,7 +45,7 @@ func (s *Handler) Index() http.HandlerFunc {
 	}
 }
 
-func (s *Handler) Get() http.HandlerFunc {
+func (s *Search) Get() http.HandlerFunc {
 	type data struct {
 		Rec *records.Rec
 	}
@@ -62,7 +62,7 @@ func (s *Handler) Get() http.HandlerFunc {
 }
 
 // TODO move route to api
-func (s *Handler) Search() http.HandlerFunc {
+func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		searchArgs := records.SearchArgs{}
 		err := s.formDecoder.Decode(&searchArgs, r.URL.Query())
