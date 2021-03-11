@@ -14,7 +14,7 @@ import (
 )
 
 type Model struct {
-	ID        int64          `gorm:"primaryKey"`
+	PK        int64          `gorm:"primaryKey"`
 	CreatedAt time.Time      `gorm:"autoCreateTime:milli;type:timestamp;index"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli;type:timestamp;index"`
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamp;index"`
@@ -22,10 +22,9 @@ type Model struct {
 
 type Rec struct {
 	Model
-	RecID      string         `gorm:"not null;uniqueIndex"`
+	ID         string         `gorm:"not null;uniqueIndex"`
 	Type       string         `gorm:"not null;index"`
 	Collection pq.StringArray `gorm:"type:text[];not null;index"`
-	Title      string         `gorm:"not null"`
 	Metadata   datatypes.JSON `gorm:"not null"`
 	Source     datatypes.JSON
 }
@@ -46,7 +45,7 @@ func New(dsn string) (*Store, error) {
 
 func (s *Store) GetRec(id string) (*records.Rec, error) {
 	r := Rec{}
-	res := s.db.Where("rec_id = ?", id).First(&r)
+	res := s.db.Where("id = ?", id).First(&r)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -73,17 +72,16 @@ func (s *Store) AllRecs(c chan<- *records.Rec) error {
 
 func (s *Store) AddRec(rec *records.Rec) error {
 	r := Rec{
-		RecID:      rec.ID,
+		ID:         rec.ID,
 		Type:       rec.Type,
 		Collection: pq.StringArray(rec.Collection),
-		Title:      rec.Title,
 		Metadata:   datatypes.JSON(rec.RawMetadata),
 		Source:     datatypes.JSON(rec.RawSource),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "rec_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"type", "collection", "title",
+		Columns: []clause.Column{{Name: "id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"type", "collection",
 			"metadata", "source", "updated_at"}),
 	}).Create(&r)
 
@@ -92,10 +90,9 @@ func (s *Store) AddRec(rec *records.Rec) error {
 
 func reifyRec(r *Rec) *records.Rec {
 	return &records.Rec{
-		ID:          r.RecID,
+		ID:          r.ID,
 		Type:        r.Type,
 		Collection:  r.Collection,
-		Title:       r.Title,
 		RawMetadata: json.RawMessage(r.Metadata),
 		RawSource:   json.RawMessage(r.Source),
 		CreatedAt:   r.CreatedAt,

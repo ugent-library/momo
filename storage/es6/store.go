@@ -168,7 +168,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 			"query": map[string]interface{}{
 				"multi_match": map[string]interface{}{
 					"query":    args.Query,
-					"fields":   []string{"id^100", "title.ngram"},
+					"fields":   []string{"id^100", "metadata.title.ngram"},
 					"operator": "and",
 				},
 			},
@@ -201,7 +201,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		"pre_tags":            []string{"<mark>"},
 		"post_tags":           []string{"</mark>"},
 		"fields": map[string]interface{}{
-			"title.ngram": map[string]interface{}{},
+			"metadata.title.ngram": map[string]interface{}{},
 		},
 	}
 	query["aggs"] = map[string]interface{}{

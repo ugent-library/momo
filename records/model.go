@@ -9,7 +9,6 @@ type Rec struct {
 	ID          string          `json:"id"`
 	Type        string          `json:"type"`
 	Collection  []string        `json:"collection"`
-	Title       string          `json:"title"`
 	RawMetadata json.RawMessage `json:"metadata"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`

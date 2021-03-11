@@ -101,10 +101,10 @@ export default {
           var hits = [];
           res.hits.forEach(function (h) {
             var hit = { id: h.id };
-            if (h.highlight && h.highlight["title.ngram"]) {
-              hit.title = h.highlight["title.ngram"][0];
+            if (h.highlight && h.highlight["metadata.title.ngram"]) {
+              hit.title = h.highlight["metadata.title.ngram"][0];
             } else {
-              hit.title = h.title;
+              hit.title = h.metadata.title;
             }
             hits.push(hit);
           });

@@ -41,19 +41,19 @@
                 "type": {
                     "type": "keyword"
                 },
-                "title": {
-                    "type": "text",
-                    "fields": {
-                        "ngram": {
-                            "type": "text",
-                            "analyzer": "ngram",
-                            "search_analyzer": "lowercase"
-                        }
-                    }
-                },
                 "metadata": {
                     "type": "object",
                     "properties": {
+                        "title": {
+                            "type": "text",
+                            "fields": {
+                                "ngram": {
+                                    "type": "text",
+                                    "analyzer": "ngram",
+                                    "search_analyzer": "lowercase"
+                                }
+                            }
+                        },
                         "author": {
                             "properties": {
                                 "name": {

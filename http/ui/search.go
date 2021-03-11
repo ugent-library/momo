@@ -25,6 +25,7 @@ type Search struct {
 
 func NewSearch(service records.Service, theme string) *Search {
 	funcs := template.FuncMap{
+		"renderTitle":        renderTitle,
 		"renderMetadata":     renderMetadata,
 		"renderSourceView":   renderSourceView,
 		"renderInternalView": renderInternalView,
@@ -82,6 +83,11 @@ func (s *Search) Search() http.HandlerFunc {
 		s.render.JSON(w, http.StatusOK, hits)
 	}
 
+}
+
+func renderTitle(j json.RawMessage) template.HTML {
+	title := gjson.GetBytes(j, "title").String()
+	return template.HTML(title)
 }
 
 func renderMetadata(j json.RawMessage) template.HTML {

@@ -1,5 +1,5 @@
 <h1>
-    {{.Rec.Title}}
+    {{renderTitle .Rec.RawMetadata}}
     {{if .Rec.Type}}<span class="badge badge-secondary">{{.Rec.Type}}</span>{{end}}
 </h1>
 
