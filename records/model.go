@@ -31,8 +31,9 @@ type Hit struct {
 }
 
 type Hits struct {
-	Total int    `json:"total"`
-	Hits  []*Hit `json:"hits"`
+	Total          int             `json:"total"`
+	Hits           []*Hit          `json:"hits"`
+	RawAggregation json.RawMessage `json:"aggregation"`
 }
 
 func (s SearchArgs) WithScope(scope Scope) SearchArgs {

@@ -204,6 +204,18 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 			"title.ngram": map[string]interface{}{},
 		},
 	}
+	query["aggs"] = map[string]interface{}{
+		"collection": map[string]interface{}{
+			"terms": map[string]interface{}{
+				"field": "collection",
+			},
+		},
+		"type": map[string]interface{}{
+			"terms": map[string]interface{}{
+				"field": "type",
+			},
+		},
+	}
 
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, err
@@ -235,6 +247,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 				Highlight json.RawMessage
 			}
 		}
+		Aggregations json.RawMessage
 	}
 
 	var r resEnvelope
@@ -242,11 +255,13 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	hits := records.Hits{Hits: []*records.Hit{}}
-	hits.Total = r.Hits.Total
+	hits := records.Hits{
+		Total: r.Hits.Total,
+		Hits:  []*records.Hit{},
+	}
 
-	if len(r.Hits.Hits) == 0 {
-		return &hits, nil
+	if len(r.Aggregations) > 0 {
+		hits.RawAggregation = r.Aggregations
 	}
 
 	for _, h := range r.Hits.Hits {
