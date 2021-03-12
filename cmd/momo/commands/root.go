@@ -13,6 +13,8 @@ import (
 	"github.com/ugent-library/momo/storage/pg"
 )
 
+var verbose bool
+
 var rootCmd = &cobra.Command{
 	Use:   "momo [command]",
 	Short: "The momo CLI",
@@ -22,6 +24,8 @@ func init() {
 	viper.SetEnvPrefix("momo")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
+
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
 	rootCmd.PersistentFlags().String("pg-conn", defaultPgConn, "postgres connection string")
 	viper.BindPFlag("pg-conn", rootCmd.PersistentFlags().Lookup("pg-conn"))

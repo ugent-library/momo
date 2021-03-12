@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/ugent-library/momo/records"
@@ -70,10 +69,10 @@ var recAddCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
+		p := newProgress(100)
 		out := make(chan *records.Rec)
 		service.AddRecs(out)
 
-		// parse json files
 		// TODO read json files concurrently?
 		for _, path := range args {
 			file, err := os.Open(path)
@@ -89,13 +88,17 @@ var recAddCmd = &cobra.Command{
 					log.Fatal(err)
 				}
 				out <- &r
+				if verbose {
+					p.inc()
+				}
 			}
 		}
 
 		close(out)
 
-		// TODO flush stdio or send output back over channel?
-		time.Sleep(3 * time.Second)
+		if verbose {
+			p.done()
+		}
 	},
 }
 
