@@ -11,7 +11,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
 	"github.com/elastic/go-elasticsearch/v6/esutil"
-	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/engine"
 )
 
 type Store struct {
@@ -20,7 +20,7 @@ type Store struct {
 	IndexMapping string
 }
 
-func (s *Store) CreateIndex() error {
+func (s *Store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
 	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
 	if err != nil {
@@ -32,7 +32,7 @@ func (s *Store) CreateIndex() error {
 	return nil
 }
 
-func (s *Store) DeleteIndex() error {
+func (s *Store) DeleteRecIndex() error {
 	res, err := s.Client.Indices.Delete([]string{s.IndexName})
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (s *Store) DeleteIndex() error {
 	return nil
 }
 
-func (s *Store) AddRec(rec *records.Rec) error {
+func (s *Store) AddRec(rec *engine.Rec) error {
 	payload, err := json.Marshal(rec)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func (s *Store) AddRec(rec *records.Rec) error {
 }
 
 // TODO don't die
-func (s *Store) AddRecs(c <-chan *records.Rec) {
+func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.IndexName,
 		Client: s.Client,
@@ -151,7 +151,7 @@ func (s *Store) AddRecs(c <-chan *records.Rec) {
 	// }
 }
 
-func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
+func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
@@ -253,9 +253,9 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	hits := records.Hits{
+	hits := engine.RecHits{
 		Total: r.Hits.Total,
-		Hits:  []*records.Hit{},
+		Hits:  []*engine.RecHit{},
 	}
 
 	if len(r.Aggregations) > 0 {
@@ -263,7 +263,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	for _, h := range r.Hits.Hits {
-		var hit records.Hit
+		var hit engine.RecHit
 
 		if err := json.Unmarshal(h.Source, &hit); err != nil {
 			return nil, err

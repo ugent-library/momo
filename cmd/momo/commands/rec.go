@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/engine"
 )
 
 func init() {
@@ -31,12 +31,12 @@ var recGetCmd = &cobra.Command{
 	Use:   "get [id ...]",
 	Short: "get stored records",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
+		e := newEngine()
 		enc := json.NewEncoder(os.Stdout)
 
 		if len(args) > 0 {
 			for _, id := range args {
-				rec, err := service.GetRec(id)
+				rec, err := e.GetRec(id)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -45,7 +45,7 @@ var recGetCmd = &cobra.Command{
 				}
 			}
 		} else {
-			c := make(chan *records.Rec)
+			c := make(chan *engine.Rec)
 			defer close(c)
 
 			go func() {
@@ -56,7 +56,7 @@ var recGetCmd = &cobra.Command{
 				}
 			}()
 
-			if err := service.AllRecs(c); err != nil {
+			if err := e.GetAllRecs(c); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -68,10 +68,10 @@ var recAddCmd = &cobra.Command{
 	Short: "store and index recs",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
+		e := newEngine()
 		p := newProgress(100)
-		out := make(chan *records.Rec)
-		service.AddRecs(out)
+		out := make(chan *engine.Rec)
+		e.AddRecs(out)
 
 		// TODO read json files concurrently?
 		for _, path := range args {
@@ -81,7 +81,7 @@ var recAddCmd = &cobra.Command{
 			}
 			dec := json.NewDecoder(file)
 			for {
-				var r records.Rec
+				var r engine.Rec
 				if err := dec.Decode(&r); err == io.EOF {
 					break
 				} else if err != nil {
@@ -111,8 +111,8 @@ var recIndexAllCmd = &cobra.Command{
 	Use:   "all",
 	Short: "index all stored records",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := records.NewService(newRecordsStore(), newRecordsSearchStore())
-		err := service.IndexRecs()
+		e := newEngine()
+		err := e.IndexRecs()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -123,7 +123,8 @@ var recIndexCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create record search index",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := newRecordsSearchStore().CreateIndex()
+		e := newEngine()
+		err := e.CreateRecIndex()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -134,7 +135,8 @@ var recIndexDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete record search index",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := newRecordsSearchStore().DeleteIndex()
+		e := newEngine()
+		err := e.DeleteRecIndex()
 		if err != nil {
 			log.Fatal(err)
 		}

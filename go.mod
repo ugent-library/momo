@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
-	github.com/go-chi/chi v1.5.4
+	github.com/go-chi/chi/v5 v5.0.1
 	github.com/go-playground/form/v4 v4.1.1
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/lib/pq v1.3.0

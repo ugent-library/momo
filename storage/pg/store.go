@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/lib/pq"
-	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/engine"
 )
 
 type Model struct {
@@ -43,7 +43,7 @@ func New(dsn string) (*Store, error) {
 	return s, nil
 }
 
-func (s *Store) GetRec(id string) (*records.Rec, error) {
+func (s *Store) GetRec(id string) (*engine.Rec, error) {
 	r := Rec{}
 	res := s.db.Where("id = ?", id).First(&r)
 	if res.Error != nil {
@@ -52,7 +52,7 @@ func (s *Store) GetRec(id string) (*records.Rec, error) {
 	return reifyRec(&r), nil
 }
 
-func (s *Store) AllRecs(c chan<- *records.Rec) error {
+func (s *Store) GetAllRecs(c chan<- *engine.Rec) error {
 	rows, err := s.db.Model(&Rec{}).Rows()
 	defer rows.Close()
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *Store) AllRecs(c chan<- *records.Rec) error {
 	return nil
 }
 
-func (s *Store) AddRec(rec *records.Rec) error {
+func (s *Store) AddRec(rec *engine.Rec) error {
 	r := Rec{
 		ID:         rec.ID,
 		Type:       rec.Type,
@@ -88,8 +88,8 @@ func (s *Store) AddRec(rec *records.Rec) error {
 	return res.Error
 }
 
-func reifyRec(r *Rec) *records.Rec {
-	return &records.Rec{
+func reifyRec(r *Rec) *engine.Rec {
+	return &engine.Rec{
 		ID:          r.ID,
 		Type:        r.Type,
 		Collection:  r.Collection,
