@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/web"
+	"github.com/ugent-library/momo/web/app"
 )
 
 func init() {
@@ -30,7 +31,9 @@ var serverStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start the http server",
 	Run: func(cmd *cobra.Command, args []string) {
-		s := web.NewServer(newEngine(),
+		a := app.New(newEngine())
+		web.RegisterRoutes(a)
+		s := web.NewServer(a,
 			web.WithHost(viper.GetString("host")),
 			web.WithPort(viper.GetInt("port")),
 		)
