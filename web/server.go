@@ -63,15 +63,16 @@ func (s *server) initRoutes() {
 	r.Mount("/s/", http.StripPrefix("/s/", http.FileServer(http.Dir("static"))))
 
 	// robots.txt
-	GetRobots(a, r)
+	r.Get("/robots.txt", Robots(a))
 
 	for _, lens := range a.Lenses() {
 		r.Route("/"+lens.Name, func(r chi.Router) {
 			r.Use(app.ScopeSetter(lens.Scope))
 			r.Use(app.ThemeSetter(lens.Theme))
-			ui.ListRecs(a, r)
-			ui.SearchRecs(a, r)
-			ui.GetRec(a, r)
+
+			r.Get("/", ui.ListRecs(a))
+			r.Get("/search", ui.SearchRecs(a))
+			r.Get("/{id}", ui.ShowRec(a))
 		})
 	}
 }

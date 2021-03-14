@@ -9,22 +9,22 @@ import (
 	"github.com/ugent-library/momo/web/app"
 )
 
-func ListRecs(a *app.App, router chi.Router) {
+func ListRecs(a *app.App) http.HandlerFunc {
 	type data struct {
 		Title string
 	}
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		a.RenderHTML(w, r, "index", data{Title: "Search"})
-	})
+	}
 }
 
-func GetRec(a *app.App, router chi.Router) {
+func ShowRec(a *app.App) http.HandlerFunc {
 	type data struct {
 		Rec *engine.Rec
 	}
-	router.Get("/{recID}", func(w http.ResponseWriter, r *http.Request) {
-		recID := chi.URLParam(r, "recID")
-		rec, err := a.GetRec(recID)
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		rec, err := a.GetRec(id)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 404)
@@ -32,12 +32,12 @@ func GetRec(a *app.App, router chi.Router) {
 		}
 
 		a.RenderHTML(w, r, "show", data{Rec: rec})
-	})
+	}
 }
 
-// TODO move route to api
-func SearchRecs(a *app.App, router chi.Router) {
-	router.Get("/search", func(w http.ResponseWriter, r *http.Request) {
+// TODO move to api
+func SearchRecs(a *app.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		searchArgs := engine.SearchArgs{}
 		err := a.DecodeForm(&searchArgs, r.URL.Query())
 
@@ -54,5 +54,5 @@ func SearchRecs(a *app.App, router chi.Router) {
 		}
 
 		a.RenderJSON(w, r, hits)
-	})
+	}
 }

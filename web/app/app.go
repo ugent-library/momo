@@ -74,6 +74,12 @@ func (a *App) RenderHTML(w http.ResponseWriter, r *http.Request, tmpl string, v 
 	return renderer.HTML(w, GetStatus(r), tmpl, v)
 }
 
+func (a *App) RenderText(w http.ResponseWriter, r *http.Request, v string) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(GetStatus(r))
+	w.Write([]byte(v))
+}
+
 func (a *App) RenderJSON(w http.ResponseWriter, r *http.Request, v interface{}) {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
