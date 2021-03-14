@@ -14,7 +14,7 @@ func ListRecs(a *app.App, router chi.Router) {
 		Title string
 	}
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		a.RenderHTML(w, r, http.StatusOK, "index", data{Title: "Search"})
+		a.RenderHTML(w, r, "index", data{Title: "Search"})
 	})
 }
 
@@ -30,7 +30,8 @@ func GetRec(a *app.App, router chi.Router) {
 			http.Error(w, err.Error(), 404)
 			return
 		}
-		a.RenderHTML(w, r, http.StatusOK, "show", data{Rec: rec})
+
+		a.RenderHTML(w, r, "show", data{Rec: rec})
 	})
 }
 
@@ -51,6 +52,7 @@ func SearchRecs(a *app.App, router chi.Router) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		a.RenderJSON(w, r, http.StatusOK, hits)
+
+		a.RenderJSON(w, r, hits)
 	})
 }

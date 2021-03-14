@@ -67,8 +67,8 @@ func (s *server) initRoutes() {
 
 	for _, lens := range a.Lenses() {
 		r.Route("/"+lens.Name, func(r chi.Router) {
-			r.Use(app.SetScope(lens.Scope))
-			r.Use(app.SetTheme(lens.Theme))
+			r.Use(app.ScopeSetter(lens.Scope))
+			r.Use(app.ThemeSetter(lens.Theme))
 			ui.ListRecs(a, r)
 			ui.SearchRecs(a, r)
 			ui.GetRec(a, r)

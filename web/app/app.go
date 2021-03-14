@@ -21,8 +21,11 @@ import (
 	"github.com/unrolled/render"
 )
 
-var themeCtxKey = &contextKey{"Theme"}
-var scopeCtxKey = &contextKey{"Scope"}
+var (
+	StatusCtxKey = &contextKey{"Status"}
+	ThemeCtxKey  = &contextKey{"Theme"}
+	ScopeCtxKey  = &contextKey{"Scope"}
+)
 
 type App struct {
 	engine.Engine
@@ -62,31 +65,26 @@ func (a *App) DecodeForm(v interface{}, values url.Values) error {
 	return a.formDecoder.Decode(v, values)
 }
 
-func (a *App) RenderHTML(w http.ResponseWriter, r *http.Request, status int, tmpl string, v interface{}) error {
+func (a *App) RenderHTML(w http.ResponseWriter, r *http.Request, tmpl string, v interface{}) error {
 	t := GetTheme(r)
 	renderer, ok := a.themeRenderers[t]
 	if !ok {
 		panic("momo: theme " + t + " not found")
 	}
-	return renderer.HTML(w, status, tmpl, v)
+	return renderer.HTML(w, GetStatus(r), tmpl, v)
 }
 
-// taken from chi render
-func (a *App) RenderJSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func (a *App) RenderJSON(w http.ResponseWriter, r *http.Request, v interface{}) {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(true)
-
 	if err := enc.Encode(v); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	// if status, ok := r.Context().Value(StatusCtxKey).(int); ok {
-	// 	w.WriteHeader(status)
-	// }
-	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(GetStatus(r))
 	w.Write(buf.Bytes())
 }
 
@@ -101,31 +99,41 @@ func (c *contextKey) String() string {
 	return c.name
 }
 
+func GetStatus(r *http.Request) int {
+	if status, ok := r.Context().Value(StatusCtxKey).(int); ok {
+		return status
+	}
+	return http.StatusOK
+}
+
+func SetStatus(r *http.Request, status int) {
+	*r = *r.WithContext(context.WithValue(r.Context(), StatusCtxKey, status))
+}
+
+func GetScope(r *http.Request) engine.Scope {
+	return r.Context().Value(ScopeCtxKey).(engine.Scope)
+}
+
 // GetTheme gets the theme name from the request context.
 func GetTheme(r *http.Request) string {
-	return r.Context().Value(themeCtxKey).(string)
+	return r.Context().Value(ThemeCtxKey).(string)
 }
 
 // SetTheme is a middleware that forces the theme name.
-func SetTheme(theme string) func(next http.Handler) http.Handler {
+func ThemeSetter(theme string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), themeCtxKey, theme))
+			r = r.WithContext(context.WithValue(r.Context(), ThemeCtxKey, theme))
 			next.ServeHTTP(w, r)
 		}
 		return http.HandlerFunc(fn)
 	}
 }
 
-func GetScope(r *http.Request) engine.Scope {
-	return r.Context().Value(scopeCtxKey).(engine.Scope)
-}
-
-// SetTheme is a middleware that forces the theme name.
-func SetScope(scope engine.Scope) func(next http.Handler) http.Handler {
+func ScopeSetter(scope engine.Scope) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), scopeCtxKey, scope))
+			r = r.WithContext(context.WithValue(r.Context(), ScopeCtxKey, scope))
 			next.ServeHTTP(w, r)
 		}
 		return http.HandlerFunc(fn)
