@@ -1,55 +1,97 @@
 // based on https://github.com/elastic/go-elasticsearch/tree/master/_examples/xkcdsearch
 
 <template>
-  <div>
-    <div id="search-form">
-      <form v-on:submit.prevent="">
-        <input
-          v-model.lazy="query"
-          class="form-control"
-          type="text"
-          size="50"
-          placeholder="Search..."
-        />
-      </form>
-      <p class="total">
-        <span class="label">total: </span
-        ><span class="content">{{ total }}</span>
-      </p>
+  <div class="container momo-search">
+    <div class="row">
+        <form v-on:submit.prevent="">
+          <div class="form-group">
+            <input
+              v-model.lazy="query"
+              class="form-control"
+              type="text"
+              placeholder="Search..."
+            />
+          </div>
+        </form>
     </div>
 
-    <div v-if="total < 1 && !state.loading" class="no-results">
-      <p>Sorry, no results for your query&hellip;</p>
+    <div class="row">
+        <p>Start opnieuw</p>
+        <p>Filters</p>
+        <p>{{total }} gevonden</p>
     </div>
 
-    <ul
-      v-for="hit in hits"
-      v-bind:id="hit.id"
-      :key="hit.id"
-      id="search-results"
-      class="result"
-    >
-      <li>
-        <a :href="hitUrl(hit)"
-          ><span class="title" v-html="hit.title"></span
-        ></a>
-      </li>
-    </ul>
+    <div class="row">
 
-    <p v-show="state.fetching" id="loading-results">Loading results...</p>
-    <p v-show="state.loading" id="loading-app">Loading the application...</p>
-    <p v-if="state.error" id="app-error">
-      [{{ state.error.status }}] {{ state.error.statusText }}
-    </p>
+      <div class="col-3">
+        <div
+          v-for="facet in facets"
+          v-bind:id="facet.id"
+          :key="facet.id"
+          class="facet"
+        >
+          <span class="title" v-html="facet.id"></span>
 
-    <b-pagination
-      v-if="state.initialized"
-      v-model="page"
-      :total-rows="total"
-      :per-page="size"
-      aria-controls="search-results"
-      class="list-unstyled"
-    ></b-pagination>
+          <ul class="facets list-unstyled">
+            <li
+              v-for="bucket in facet.buckets"
+              v-bind:id="bucket.key"
+              :key="bucket.key"
+              class="bucket"
+            >
+              <span v-if="state.type.includes(bucket.key)" class="remove" v-on:click="removeBucketFacet(facet.id, bucket.key)" >remove</span>
+              <span class="bucket" v-on:click="addBucketFacet(facet.id, bucket.key)" v-html="bucket.key"></span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="col-9">
+        <div class="container search-results">
+
+          <div class="row">
+            <p>Sorteren</p>
+            <p>Per pagina</p>
+          </div>
+
+          <div class="row">
+            <div v-if="total < 1 && !state.loading" class="no-results">
+              <p>Sorry, no results for your query&hellip;</p>
+            </div>
+
+            <ul id="search-results" class="list-unstyled">
+              <li
+              v-for="hit in hits"
+              v-bind:id="hit.id"
+              :key="hit.id"
+              class="result"
+              >
+                <a :href="hitUrl(hit)"
+                  ><span class="title" v-html="hit.title"></span
+                ></a>
+              </li>
+            </ul>
+
+            <p v-show="state.fetching" id="loading-results">Loading results...</p>
+            <p v-show="state.loading" id="loading-app">Loading the application...</p>
+            <p v-if="state.error" id="app-error">
+              [{{ state.error.status }}] {{ state.error.statusText }}
+            </p>
+
+            <b-pagination
+              v-if="state.initialized"
+              v-model="page"
+              :total-rows="total"
+              :per-page="size"
+              aria-controls="search-results"
+              class="list-unstyled"
+            ></b-pagination>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
@@ -62,10 +104,15 @@ export default {
         loading: true,
         fetching: false,
         error: null,
+        type: [],
+        collection: []
       },
 
       query: "",
+      type: "",
+      collection: "",
       hits: [],
+      facets: [],
       total: 0,
       page: 1,
       size: 10,
@@ -85,6 +132,9 @@ export default {
       p.set("q", self.query);
       p.set("skip", (self.page - 1) * self.size);
       p.set("size", self.size);
+      p.set("type", self.type);
+      p.set("collection", self.collection);
+
       var pStr = "?" + p.toString();
 
       window.history.pushState({}, "", pStr);
@@ -109,6 +159,14 @@ export default {
             hits.push(hit);
           });
 
+          var facets = Object.keys(res.aggregation).map(function(key) {
+              return {
+                "id" : key,
+                "buckets": res.aggregation[key].buckets
+              };
+          });
+
+          self.facets = facets;
           self.total = res.total;
           self.hits = hits;
         })
@@ -126,6 +184,24 @@ export default {
     hitUrl: function (hit) {
       return window.location.pathname + "/" + hit.id;
     },
+    addBucketFacet: function(facet, bucket) {
+      var self = this;
+
+      if (self.state[facet].includes(bucket) != true) {
+        self.state[facet].push(bucket);
+        self[facet]=self.state[facet].join("-");
+      }
+    },
+    removeBucketFacet: function(facet, bucket) {
+      var self = this;
+
+      if (self.state[facet].includes(bucket) == true) {
+        const index = self.state[facet].indexOf(bucket);
+        self.state[facet].splice(index, 1);
+        self[facet]=self.state[facet].join("-");
+      }
+    }
+
   },
   watch: {
     query: function () {
@@ -134,14 +210,29 @@ export default {
     page: function () {
       this.loadResults();
     },
+    type: function() {
+      this.loadResults();
+    },
+    collection: function() {
+      this.loadResults();
+    }
   },
 
   mounted: function () {
     var self = this;
 
     var p = new URL(window.location).searchParams;
+
     if (p.has("q")) {
       self.query = p.get("q");
+    }
+    if (p.has("type")) {
+      self.type = p.get("type");
+      self.state.type = self.type.split("-");
+    }
+    if (p.has("collection")) {
+      self.collection = p.get("collection");
+      self.state.collection = self.collection.split("-");
     }
     if (p.has("size")) {
       self.size = parseInt(p.get("size"), 10);

@@ -176,10 +176,12 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	if args.Scope != nil {
-		terms := make([]map[string]interface{}, len(args.Scope))
+		var terms []map[string]interface{}
+
 		for k, v := range args.Scope {
 			terms = append(terms, map[string]interface{}{"terms": map[string]interface{}{k: v}})
 		}
+
 		query = map[string]interface{}{
 			"query": map[string]interface{}{
 				"bool": map[string]interface{}{

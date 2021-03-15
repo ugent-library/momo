@@ -18663,3 +18663,6 @@ aside img {
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot);
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot) format("embedded-opentype"), url(/s/ugent/fonts/ugentpannotext-semilight-web.woff) format("woff"), url(/s/ugent/fonts/ugentpannotext-semilight-web.ttf) format("truetype");
 }
+.momo-search form {
+  width: 100%;
+}
