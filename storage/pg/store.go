@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/lib/pq"
-	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/engine"
 )
 
 type Model struct {
-	ID        int64          `gorm:"primaryKey"`
+	PK        int64          `gorm:"primaryKey"`
 	CreatedAt time.Time      `gorm:"autoCreateTime:milli;type:timestamp;index"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli;type:timestamp;index"`
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamp;index"`
@@ -22,10 +22,9 @@ type Model struct {
 
 type Rec struct {
 	Model
-	RecID      string         `gorm:"not null;uniqueIndex"`
+	ID         string         `gorm:"not null;uniqueIndex"`
 	Type       string         `gorm:"not null;index"`
 	Collection pq.StringArray `gorm:"type:text[];not null;index"`
-	Title      string         `gorm:"not null"`
 	Metadata   datatypes.JSON `gorm:"not null"`
 	Source     datatypes.JSON
 }
@@ -44,16 +43,16 @@ func New(dsn string) (*Store, error) {
 	return s, nil
 }
 
-func (s *Store) GetRec(id string) (*records.Rec, error) {
+func (s *Store) GetRec(id string) (*engine.Rec, error) {
 	r := Rec{}
-	res := s.db.Where("rec_id = ?", id).First(&r)
+	res := s.db.Where("id = ?", id).First(&r)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	return reifyRec(&r), nil
 }
 
-func (s *Store) AllRecs(c chan<- *records.Rec) error {
+func (s *Store) GetAllRecs(c chan<- *engine.Rec) error {
 	rows, err := s.db.Model(&Rec{}).Rows()
 	defer rows.Close()
 	if err != nil {
@@ -71,31 +70,29 @@ func (s *Store) AllRecs(c chan<- *records.Rec) error {
 	return nil
 }
 
-func (s *Store) AddRec(rec *records.Rec) error {
+func (s *Store) AddRec(rec *engine.Rec) error {
 	r := Rec{
-		RecID:      rec.ID,
+		ID:         rec.ID,
 		Type:       rec.Type,
 		Collection: pq.StringArray(rec.Collection),
-		Title:      rec.Title,
 		Metadata:   datatypes.JSON(rec.RawMetadata),
 		Source:     datatypes.JSON(rec.RawSource),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "rec_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"type", "collection", "title",
+		Columns: []clause.Column{{Name: "id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"type", "collection",
 			"metadata", "source", "updated_at"}),
 	}).Create(&r)
 
 	return res.Error
 }
 
-func reifyRec(r *Rec) *records.Rec {
-	return &records.Rec{
-		ID:          r.RecID,
+func reifyRec(r *Rec) *engine.Rec {
+	return &engine.Rec{
+		ID:          r.ID,
 		Type:        r.Type,
 		Collection:  r.Collection,
-		Title:       r.Title,
 		RawMetadata: json.RawMessage(r.Metadata),
 		RawSource:   json.RawMessage(r.Source),
 		CreatedAt:   r.CreatedAt,

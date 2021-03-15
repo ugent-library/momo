@@ -7,13 +7,11 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync/atomic"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
 	"github.com/elastic/go-elasticsearch/v6/esutil"
-	"github.com/ugent-library/momo/records"
+	"github.com/ugent-library/momo/engine"
 )
 
 type Store struct {
@@ -22,7 +20,7 @@ type Store struct {
 	IndexMapping string
 }
 
-func (s *Store) CreateIndex() error {
+func (s *Store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
 	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
 	if err != nil {
@@ -34,7 +32,7 @@ func (s *Store) CreateIndex() error {
 	return nil
 }
 
-func (s *Store) DeleteIndex() error {
+func (s *Store) DeleteRecIndex() error {
 	res, err := s.Client.Indices.Delete([]string{s.IndexName})
 	if err != nil {
 		return err
@@ -45,7 +43,7 @@ func (s *Store) DeleteIndex() error {
 	return nil
 }
 
-func (s *Store) AddRec(rec *records.Rec) error {
+func (s *Store) AddRec(rec *engine.Rec) error {
 	payload, err := json.Marshal(rec)
 	if err != nil {
 		return err
@@ -73,7 +71,7 @@ func (s *Store) AddRec(rec *records.Rec) error {
 }
 
 // TODO don't die
-func (s *Store) AddRecs(c <-chan *records.Rec) {
+func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.IndexName,
 		Client: s.Client,
@@ -88,9 +86,9 @@ func (s *Store) AddRecs(c <-chan *records.Rec) {
 		log.Fatal(err)
 	}
 
-	var countSuccessful uint64
+	// var countSuccessful uint64
 
-	start := time.Now().UTC()
+	// start := time.Now().UTC()
 
 	for rec := range c {
 
@@ -107,9 +105,9 @@ func (s *Store) AddRecs(c <-chan *records.Rec) {
 				DocumentID:   rec.ID,
 				DocumentType: "_doc",
 				Body:         bytes.NewReader(payload),
-				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
-					atomic.AddUint64(&countSuccessful, 1)
-				},
+				// OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
+				// atomic.AddUint64(&countSuccessful, 1)
+				// },
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
 						log.Printf("ERROR: %s", err)
@@ -131,29 +129,29 @@ func (s *Store) AddRecs(c <-chan *records.Rec) {
 		log.Fatalf("Unexpected error: %s", err)
 	}
 
-	biStats := bi.Stats()
+	// biStats := bi.Stats()
 
-	dur := time.Since(start)
+	// dur := time.Since(start)
 
-	if biStats.NumFailed > 0 {
-		log.Fatalf(
-			"Indexed [%d] documents with [%d] errors in %s (%d docs/sec)",
-			int64(biStats.NumFlushed),
-			int64(biStats.NumFailed),
-			dur.Truncate(time.Millisecond),
-			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
-		)
-	} else {
-		log.Printf(
-			"Sucessfuly indexed [%d] documents in %s (%d docs/sec)",
-			int64(biStats.NumFlushed),
-			dur.Truncate(time.Millisecond),
-			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
-		)
-	}
+	// if biStats.NumFailed > 0 {
+	// 	log.Fatalf(
+	// 		"Indexed [%d] documents with [%d] errors in %s (%d docs/sec)",
+	// 		int64(biStats.NumFlushed),
+	// 		int64(biStats.NumFailed),
+	// 		dur.Truncate(time.Millisecond),
+	// 		int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
+	// 	)
+	// } else {
+	// 	log.Printf(
+	// 		"Sucessfuly indexed [%d] documents in %s (%d docs/sec)",
+	// 		int64(biStats.NumFlushed),
+	// 		dur.Truncate(time.Millisecond),
+	// 		int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
+	// 	)
+	// }
 }
 
-func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
+func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	var buf bytes.Buffer
 	var query map[string]interface{}
 
@@ -168,7 +166,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 			"query": map[string]interface{}{
 				"multi_match": map[string]interface{}{
 					"query":    args.Query,
-					"fields":   []string{"id^100", "title.ngram"},
+					"fields":   []string{"id^100", "metadata.title.ngram"},
 					"operator": "and",
 				},
 			},
@@ -203,7 +201,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		"pre_tags":            []string{"<mark>"},
 		"post_tags":           []string{"</mark>"},
 		"fields": map[string]interface{}{
-			"title.ngram": map[string]interface{}{},
+			"metadata.title.ngram": map[string]interface{}{},
 		},
 	}
 	query["aggs"] = map[string]interface{}{
@@ -257,9 +255,9 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	hits := records.Hits{
+	hits := engine.RecHits{
 		Total: r.Hits.Total,
-		Hits:  []*records.Hit{},
+		Hits:  []*engine.RecHit{},
 	}
 
 	if len(r.Aggregations) > 0 {
@@ -267,7 +265,7 @@ func (s *Store) SearchRecs(args records.SearchArgs) (*records.Hits, error) {
 	}
 
 	for _, h := range r.Hits.Hits {
-		var hit records.Hit
+		var hit engine.RecHit
 
 		if err := json.Unmarshal(h.Source, &hit); err != nil {
 			return nil, err

@@ -1,6 +1,7 @@
 [
     {
         "name": "lib",
+        "theme" : "ugent",
         "scope": {
             "collection": [
                 "lludss"
@@ -9,15 +10,16 @@
     },
     {
         "name": "orpheus",
+        "theme" : "orpheus",
         "scope": {
             "collection": [
                 "orpheus"
             ]
-        },
-        "theme" : "orpheus"
+        }
     },
     {
         "name": "biblio",
+        "theme" : "ugent",
         "scope": {
             "collection": [
                 "biblio"
@@ -26,6 +28,7 @@
     },
     {
         "name": "cageweb",
+        "theme" : "ugent",
         "scope": {
             "collection": [
                 "cageweb"
@@ -33,6 +36,9 @@
         }
     },
     {
-        "name": "all"
+        "name": "all",
+        "theme" : "ugent",
+        "scope": {
+        }
     }
 ]
