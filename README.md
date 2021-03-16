@@ -27,6 +27,12 @@ go run cmd/momo/main.go rec index delete
 go run cmd/momo/main.go rec add myrecs1.json myrecs2.json
 ```
 
+## Destructive reset
+
+```
+go run cmd/momo/main.go reset
+```
+
 ## Configuration
 
 Configuration can be passed as an argument:
