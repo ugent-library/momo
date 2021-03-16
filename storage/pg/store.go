@@ -88,6 +88,15 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 	return res.Error
 }
 
+func (s *Store) Reset() error {
+	err := s.db.Migrator().DropTable(&Rec{})
+	if err != nil {
+		return err
+	}
+	return s.db.AutoMigrate(&Rec{})
+
+}
+
 func reifyRec(r *Rec) *engine.Rec {
 	return &engine.Rec{
 		ID:          r.ID,
