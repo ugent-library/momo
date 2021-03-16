@@ -3,22 +3,26 @@
 <template>
   <div class="container momo-search">
     <div class="row">
-        <form v-on:submit.prevent="">
-          <div class="form-group">
-            <input
-              v-model.lazy="query"
-              class="form-control"
-              type="text"
-              placeholder="Search..."
-            />
-          </div>
-        </form>
+        <div class="col-12">
+          <form v-on:submit.prevent="">
+            <div class="form-group">
+              <input
+                v-model.lazy="query"
+                class="form-control"
+                type="text"
+                placeholder="Search..."
+              />
+            </div>
+          </form>
+        </div>
     </div>
 
     <div class="row">
+      <div class="col-12">
         <p>Start opnieuw</p>
         <p>Filters</p>
         <p>{{total }} gevonden</p>
+      </div>
     </div>
 
     <div class="row">
@@ -30,7 +34,7 @@
           :key="facet.id"
           class="facet"
         >
-          <span class="title" v-html="facet.id"></span>
+          <h2 class="title" v-html="facet.label"></h2>
 
           <ul class="facets list-unstyled">
             <li
@@ -41,6 +45,7 @@
             >
               <span v-if="state.type.includes(bucket.key)" class="remove" v-on:click="removeBucketFacet(facet.id, bucket.key)" >remove</span>
               <span class="bucket" v-on:click="addBucketFacet(facet.id, bucket.key)" v-html="bucket.key"></span>
+              <span class="bucket-count">({{ bucket.doc_count }})</span>
             </li>
           </ul>
         </div>
@@ -162,9 +167,12 @@ export default {
           var facets = Object.keys(res.aggregation).map(function(key) {
               return {
                 "id" : key,
+                "label": key.replace (/^(.)/, (_, c) => c.toUpperCase()), // uppertitle
                 "buckets": res.aggregation[key].buckets
               };
           });
+
+          console.log(facets);
 
           self.facets = facets;
           self.total = res.total;
@@ -228,11 +236,15 @@ export default {
     }
     if (p.has("type")) {
       self.type = p.get("type");
-      self.state.type = self.type.split("-");
+      if (self.type !== "") {
+        self.state.type = self.type.split("-");
+      }
     }
     if (p.has("collection")) {
       self.collection = p.get("collection");
-      self.state.collection = self.collection.split("-");
+      if (self.collection !== "") {
+        self.state.collection = self.collection.split("-");
+      }
     }
     if (p.has("size")) {
       self.size = parseInt(p.get("size"), 10);

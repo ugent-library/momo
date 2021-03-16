@@ -6,26 +6,52 @@
     url('../../../_common/ugent/fonts/ugentpannotext-normal-web.ttf') format('truetype');
   }
 
-  @font-face {
-    font-family: 'PannoTextSemiBold';
-    src: url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.eot');
-    src: url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.eot') format('embedded-opentype'),
-    url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.woff') format('woff'),
-    url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.ttf') format('truetype');
-  }
+@font-face {
+  font-family: 'PannoTextSemiBold';
+  src: url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.eot');
+  src: url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.eot') format('embedded-opentype'),
+  url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.woff') format('woff'),
+  url('../../../_common/ugent/fonts/ugentpannotext-semibold-web.ttf') format('truetype');
+}
 
-  @font-face {
-    font-family: 'PannoTextMedium';
-    src: url('../../../_common/ugent/fonts/ugentpannotext-medium-web.eot');
-    src: url('../../../_common/ugent/fonts/ugentpannotext-medium-web.eot') format('embedded-opentype'),
-    url('../../../_common/ugent/fonts/ugentpannotext-medium-web.woff') format('woff'),
-    url('../../../_common/ugent/fonts/ugentpannotext-medium-web.ttf') format('truetype');
-  }
+@font-face {
+  font-family: 'PannoTextMedium';
+  src: url('../../../_common/ugent/fonts/ugentpannotext-medium-web.eot');
+  src: url('../../../_common/ugent/fonts/ugentpannotext-medium-web.eot') format('embedded-opentype'),
+  url('../../../_common/ugent/fonts/ugentpannotext-medium-web.woff') format('woff'),
+  url('../../../_common/ugent/fonts/ugentpannotext-medium-web.ttf') format('truetype');
+}
 
-  @font-face {
-    font-family: 'PannoTextLight';
-    src: url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.eot');
-    src: url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.eot') format('embedded-opentype'),
-    url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.woff') format('woff'),
-    url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.ttf') format('truetype');
-  }
+@font-face {
+  font-family: 'PannoTextLight';
+  src: url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.eot');
+  src: url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.eot') format('embedded-opentype'),
+  url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.woff') format('woff'),
+  url('../../../_common/ugent/fonts/ugentpannotext-semilight-web.ttf') format('truetype');
+}
+
+p, blockquote, address, big, cite, code, em, font, strike, li, ol, ul, fieldset,
+form, label, legend, button, table, caption, tr, th, td
+{
+    font-size: ms(0);
+}
+
+h5 {
+    font-size: ms(0);
+}
+
+h4 {
+    font-size: ms(1);
+}
+
+h3 {
+    font-size: ms(2);
+}
+
+h2 {
+    font-size: ms(3);
+}
+
+h1 {
+  font-size: ms(4);
+}

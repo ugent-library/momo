@@ -18663,6 +18663,34 @@ aside img {
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot);
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot) format("embedded-opentype"), url(/s/ugent/fonts/ugentpannotext-semilight-web.woff) format("woff"), url(/s/ugent/fonts/ugentpannotext-semilight-web.ttf) format("truetype");
 }
+p, blockquote, address, big, cite, code, em, font, strike, li, ol, ul, fieldset,
+form, label, legend, button, table, caption, tr, th, td {
+  font-size: 1.025em;
+}
+
+h5 {
+  font-size: 1.025em;
+}
+
+h4 {
+  font-size: 1.23em;
+}
+
+h3 {
+  font-size: 1.476em;
+}
+
+h2 {
+  font-size: 1.7712em;
+}
+
+h1 {
+  font-size: 2.12544em;
+}
+
+.momo-search {
+  padding: 0;
+}
 .momo-search form {
   width: 100%;
 }
