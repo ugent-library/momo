@@ -43,6 +43,27 @@ func (s *Store) DeleteRecIndex() error {
 	return nil
 }
 
+func (s *Store) Reset() error {
+	res, err := s.Client.Indices.Exists([]string{s.IndexName})
+	if err != nil {
+		return err
+	}
+	switch res.StatusCode {
+	case 200:
+		err = s.DeleteRecIndex()
+		if err != nil {
+			return err
+		}
+	case 404:
+		// index doesn't exist, do nothing
+	default:
+		if res.IsError() {
+			return fmt.Errorf("error: %s", res)
+		}
+	}
+	return s.CreateRecIndex()
+}
+
 func (s *Store) AddRec(rec *engine.Rec) error {
 	payload, err := json.Marshal(rec)
 	if err != nil {

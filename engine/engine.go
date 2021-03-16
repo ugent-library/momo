@@ -3,6 +3,7 @@ package engine
 type Engine interface {
 	RecEngine
 	LensEngine
+	Reset() error
 }
 
 type engine struct {
@@ -34,4 +35,11 @@ func WithSearchStore(s SearchStorage) option {
 	return func(e *engine) {
 		e.searchStore = s
 	}
+}
+
+func (e *engine) Reset() error {
+	if err := e.searchStore.Reset(); err != nil {
+		return err
+	}
+	return e.store.Reset()
 }

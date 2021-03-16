@@ -3,6 +3,8 @@ package commands
 import (
 	"fmt"
 	"time"
+
+	"github.com/manifoldco/promptui"
 )
 
 type progress struct {
@@ -33,4 +35,20 @@ func (p *progress) inc() {
 
 func (p *progress) done() {
 	fmt.Printf("\r%d done (%d/sec)\n", p.count, p.rate())
+}
+
+func confirm() bool {
+	prompt := promptui.Prompt{
+		Label:     "Are you sure",
+		IsConfirm: true,
+	}
+
+	res, err := prompt.Run()
+
+	if err != nil {
+		fmt.Println("Type y or N")
+		return false
+	}
+
+	return res == "y"
 }
