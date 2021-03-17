@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/ugent-library/momo/engine"
+	"github.com/ugent-library/momo/internal/engine"
 )
 
 func init() {

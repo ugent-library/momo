@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
-	"github.com/ugent-library/momo/engine"
-	"github.com/ugent-library/momo/web/controller"
-	mw "github.com/ugent-library/momo/web/middleware"
+	"github.com/ugent-library/momo/internal/controller"
+	"github.com/ugent-library/momo/internal/engine"
+	mw "github.com/ugent-library/momo/internal/middleware"
 )
 
 func Register(r chi.Router, e engine.Engine) {
