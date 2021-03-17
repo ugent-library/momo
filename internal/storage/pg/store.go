@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/lib/pq"
-	"github.com/ugent-library/momo/engine"
+	"github.com/ugent-library/momo/internal/engine"
 )
 
 type Model struct {

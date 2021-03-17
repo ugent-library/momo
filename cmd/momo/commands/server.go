@@ -3,10 +3,11 @@ package commands
 import (
 	"log"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ugent-library/momo/web"
-	"github.com/ugent-library/momo/web/app"
+	"github.com/ugent-library/momo/internal/routes"
+	"github.com/ugent-library/momo/internal/server"
 )
 
 func init() {
@@ -31,11 +32,11 @@ var serverStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start the http server",
 	Run: func(cmd *cobra.Command, args []string) {
-		a := app.New(newEngine())
-		web.RegisterRoutes(a)
-		s := web.NewServer(a,
-			web.WithHost(viper.GetString("host")),
-			web.WithPort(viper.GetInt("port")),
+		r := chi.NewRouter()
+		routes.Register(r, newEngine())
+		s := server.New(r,
+			server.WithHost(viper.GetString("host")),
+			server.WithPort(viper.GetInt("port")),
 		)
 		if err := s.Start(); err != nil {
 			log.Fatal(err)

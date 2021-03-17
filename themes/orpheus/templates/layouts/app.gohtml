@@ -1,3 +1,4 @@
+{{define "app"}}
 <!doctype html>
 <html lang="en">
   <head>
@@ -7,7 +8,8 @@
   </head>
   <body>
     [ORPHEUS LAYOUT]
-    {{yield}}
+    {{template "yield" .Yield}}
     <script type="application/javascript" src="{{assetPath "/js/app.js"}}"></script>
   </body>
 </html>
+{{end}}

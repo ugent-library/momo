@@ -1,3 +1,4 @@
+{{define "app"}}
 <!doctype html>
 <html lang="en">
   <head>
@@ -42,7 +43,7 @@
       </nav>
 
       <div class="main-content container">
-        {{yield}}
+        {{template "yield" .Yield}}
       </div>
 
       <footer class="footer container bg-primary text-white align-left p-3 pb-0">
@@ -80,3 +81,4 @@
     <script type="application/javascript" src="{{assetPath "/js/app.js"}}"></script>
   </body>
 </html>
+{{end}}

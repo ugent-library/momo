@@ -17,12 +17,12 @@ var (
 
 type Theme interface {
 	Name() string
-	FuncMaps() []template.FuncMap
+	Funcs() template.FuncMap
 }
 
 type theme struct {
 	name          string
-	funcMaps      []template.FuncMap
+	funcs         template.FuncMap
 	assetManifest map[string]string
 }
 
@@ -57,9 +57,9 @@ func New(name string) Theme {
 		name:          name,
 		assetManifest: loadAssetManifest(name),
 	}
-	t.funcMaps = []template.FuncMap{{
+	t.funcs = template.FuncMap{
 		"assetPath": t.assetPath,
-	}}
+	}
 	return t
 }
 
@@ -67,8 +67,8 @@ func (t *theme) Name() string {
 	return t.name
 }
 
-func (t *theme) FuncMaps() []template.FuncMap {
-	return t.funcMaps
+func (t *theme) Funcs() template.FuncMap {
+	return t.funcs
 }
 
 func (t *theme) assetPath(asset string) (string, error) {

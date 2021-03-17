@@ -11,7 +11,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
 	"github.com/elastic/go-elasticsearch/v6/esutil"
-	"github.com/ugent-library/momo/engine"
+	"github.com/ugent-library/momo/internal/engine"
 )
 
 type Store struct {
