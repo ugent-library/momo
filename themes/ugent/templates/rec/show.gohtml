@@ -1,9 +1,8 @@
+{{define "yield"}}
 <h1>
     {{renderTitle .Rec.RawMetadata}}
     {{if .Rec.Type}}<span class="badge badge-secondary">{{.Rec.Type}}</span>{{end}}
 </h1>
-
-<div id="iiif-viewer"></div>
 
 {{renderMetadata .Rec.RawMetadata}}
 
@@ -14,3 +13,4 @@
 
 <h3>Internal view</h3>
 {{renderInternalView .Rec}}
+{{end}}

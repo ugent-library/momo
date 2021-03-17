@@ -6,6 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	_ "github.com/ugent-library/momo/themes/orpheus" // load orpheus theme
+	_ "github.com/ugent-library/momo/themes/ugent"   // load ugent theme
 )
 
 var verbose bool
