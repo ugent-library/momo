@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/ugent-library/momo/web/ctx"
-	"github.com/ugent-library/momo/web/theme"
+	"github.com/ugent-library/momo/internal/ctx"
+	"github.com/ugent-library/momo/internal/theme"
 )
 
 type Data struct {

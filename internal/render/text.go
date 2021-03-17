@@ -3,7 +3,7 @@ package render
 import (
 	"net/http"
 
-	"github.com/ugent-library/momo/web/ctx"
+	"github.com/ugent-library/momo/internal/ctx"
 )
 
 func Text(w http.ResponseWriter, r *http.Request, v string) {

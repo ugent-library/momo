@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/ugent-library/momo/engine"
-	"github.com/ugent-library/momo/web/render"
+	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/render"
 )
 
 func Robots(_ engine.Engine) http.HandlerFunc {

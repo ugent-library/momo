@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ugent-library/momo/engine"
+	"github.com/ugent-library/momo/internal/engine"
 )
 
 var (

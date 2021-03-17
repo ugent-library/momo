@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ugent-library/momo/engine"
-	"github.com/ugent-library/momo/web/ctx"
+	"github.com/ugent-library/momo/internal/ctx"
+	"github.com/ugent-library/momo/internal/engine"
 )
 
 // ThemeSetter is a middleware that forces the theme name.

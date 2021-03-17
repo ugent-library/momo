@@ -11,10 +11,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/tidwall/gjson"
-	"github.com/ugent-library/momo/engine"
-	"github.com/ugent-library/momo/web/ctx"
-	"github.com/ugent-library/momo/web/form"
-	"github.com/ugent-library/momo/web/render"
+	"github.com/ugent-library/momo/internal/ctx"
+	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/form"
+	"github.com/ugent-library/momo/internal/render"
 )
 
 type Recs struct {

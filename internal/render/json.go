@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ugent-library/momo/web/ctx"
+	"github.com/ugent-library/momo/internal/ctx"
 )
 
 func JSON(w http.ResponseWriter, r *http.Request, v interface{}) {
