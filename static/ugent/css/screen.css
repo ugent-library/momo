@@ -18663,3 +18663,61 @@ aside img {
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot);
   src: url(/s/ugent/fonts/ugentpannotext-semilight-web.eot) format("embedded-opentype"), url(/s/ugent/fonts/ugentpannotext-semilight-web.woff) format("woff"), url(/s/ugent/fonts/ugentpannotext-semilight-web.ttf) format("truetype");
 }
+p, blockquote, address, big, cite, code, em, font, strike, li, ol, ul, fieldset,
+form, label, legend, button, table, caption, tr, th, td {
+  font-size: 1.025em;
+}
+
+h5 {
+  font-size: 1.025em;
+}
+
+h4 {
+  font-size: 1.23em;
+}
+
+h3 {
+  font-size: 1.476em;
+}
+
+h2 {
+  font-size: 1.7712em;
+}
+
+h1 {
+  font-size: 2.12544em;
+}
+
+.momo-search {
+  padding: 0;
+}
+.momo-search form {
+  width: 100%;
+}
+.momo-search .facet-checkbox-bucket {
+  margin: 0.5em 0;
+}
+.momo-search .search-results .search-result-item {
+  padding: 0 0 1.5em;
+  margin: 0 0 1.5em;
+  border-bottom: 1px solid #ccc;
+}
+.momo-search .search-results .search-result-item .btn {
+  padding: 1em;
+  border: none;
+}
+.momo-search .search-results .search-result-item .btn-tag {
+  margin: 0.3em 0;
+  height: 2.125em;
+  font-family: "PannoTextLight", Arial, sans-serif;
+  line-height: 0.2em;
+  font-size: 0.825em;
+  background: #eee;
+  color: #666;
+}
+.momo-search .search-results .search-result-item .mbottom-small {
+  margin-bottom: 0.5em;
+}
+.momo-search .search-results .search-result-item h2 {
+  font-size: 1.23em;
+}

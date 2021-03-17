@@ -1,0 +1,44 @@
+.momo-search {
+    padding: 0;
+
+    form {
+        width: 100%
+    }
+
+    .facet-checkbox-bucket {
+        margin: 0.5em 0;
+    }
+
+    .search-results {
+
+        .search-result-item {
+            padding: 0 0 1.5em;
+            margin: 0 0 1.5em;
+            border-bottom: 1px solid #ccc;
+
+            .btn {
+                padding: 1em;
+                border: none;
+            }
+
+            .btn-tag {
+                margin: 0.3em 0;
+                height: 2.125em;
+                font-family: "PannoTextLight",Arial,sans-serif;
+                line-height: 0.2em;
+                font-size: 0.825em;
+                background: #eee;
+                color: #666;
+            }
+
+            .mbottom-small {
+                margin-bottom: 0.5em;
+            }
+
+            h2 {
+                font-size: ms(1);
+            }
+        }
+
+    }
+}
