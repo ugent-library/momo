@@ -19,8 +19,8 @@
 
     <div class="row">
       <div class="col-12">
-        <p>Start opnieuw</p>
-        <p>Filters</p>
+        <!-- <p>Start opnieuw</p>
+        <p>Filters</p> -->
         <p>{{total }} gevonden</p>
       </div>
     </div>
@@ -30,24 +30,29 @@
       <div class="col-3">
         <div
           v-for="facet in facets"
-          v-bind:id="facet.id"
+          v-bind:id="`facet-${facet.id}`"
           :key="facet.id"
           class="facet"
         >
           <h2 class="title" v-html="facet.label"></h2>
 
-          <ul class="facets list-unstyled">
-            <li
-              v-for="bucket in facet.buckets"
-              v-bind:id="bucket.key"
-              :key="bucket.key"
-              class="bucket"
+          <b-form-group>
+            <b-form-checkbox-group
+              v-bind:id="`facet-checkbox-group-${facet.id}`"
+              v-model="state[facet.id]"
+              v-bind:name="facet.id"
+              stacked
             >
-              <span v-if="state.type.includes(bucket.key)" class="remove" v-on:click="removeBucketFacet(facet.id, bucket.key)" >remove</span>
-              <span class="bucket" v-on:click="addBucketFacet(facet.id, bucket.key)" v-html="bucket.key"></span>
-              <span class="bucket-count">({{ bucket.doc_count }})</span>
-            </li>
-          </ul>
+              <b-form-checkbox
+                v-for="bucket in facet.buckets"
+                v-bind:id="bucket.key"
+                :key="bucket.key"
+                class="facet-checkbox-bucket"
+                v-bind:value="bucket.key"
+              >{{ bucket.key }} ({{ bucket.doc_count }})</b-form-checkbox>
+            </b-form-checkbox-group>
+          </b-form-group>
+
         </div>
 
       </div>
@@ -55,43 +60,54 @@
       <div class="col-9">
         <div class="container search-results">
 
-          <div class="row">
+          <!-- <div class="row">
             <p>Sorteren</p>
             <p>Per pagina</p>
+          </div> -->
+
+          <div class="row">
+            <div class="col-12">
+              <div v-if="total < 1 && !state.loading" class="no-results">
+                <p>Sorry, no results for your query&hellip;</p>
+              </div>
+
+              <ul id="search-results" class="list-unstyled">
+                <li
+                v-for="hit in hits"
+                v-bind:id="hit.id"
+                :key="hit.id"
+                class="result search-result-item"
+                >
+                  <ul class="list-inline mbottom-small">
+                    <li>
+                      <span class="btn btn-primary btn-tag" v-html="hit.type"></span>
+                    </li>
+                  </ul>
+                  <a :href="hitUrl(hit)"
+                    ><h2 class="title" v-html="hit.title"></h2>
+                  </a>
+                </li>
+              </ul>
+
+              <p v-show="state.fetching" id="loading-results">Loading results...</p>
+              <p v-show="state.loading" id="loading-app">Loading the application...</p>
+              <p v-if="state.error" id="app-error">
+                [{{ state.error.status }}] {{ state.error.statusText }}
+              </p>
+            </div>
           </div>
 
           <div class="row">
-            <div v-if="total < 1 && !state.loading" class="no-results">
-              <p>Sorry, no results for your query&hellip;</p>
+            <div class="col-12">
+              <b-pagination
+                v-if="state.initialized"
+                v-model="page"
+                :total-rows="total"
+                :per-page="size"
+                aria-controls="search-results"
+                class="list-unstyled"
+              ></b-pagination>
             </div>
-
-            <ul id="search-results" class="list-unstyled">
-              <li
-              v-for="hit in hits"
-              v-bind:id="hit.id"
-              :key="hit.id"
-              class="result"
-              >
-                <a :href="hitUrl(hit)"
-                  ><span class="title" v-html="hit.title"></span
-                ></a>
-              </li>
-            </ul>
-
-            <p v-show="state.fetching" id="loading-results">Loading results...</p>
-            <p v-show="state.loading" id="loading-app">Loading the application...</p>
-            <p v-if="state.error" id="app-error">
-              [{{ state.error.status }}] {{ state.error.statusText }}
-            </p>
-
-            <b-pagination
-              v-if="state.initialized"
-              v-model="page"
-              :total-rows="total"
-              :per-page="size"
-              aria-controls="search-results"
-              class="list-unstyled"
-            ></b-pagination>
           </div>
         </div>
       </div>
@@ -155,7 +171,11 @@ export default {
         .then(function (res) {
           var hits = [];
           res.hits.forEach(function (h) {
-            var hit = { id: h.id };
+            var hit = {
+              id: h.id,
+              type: h.type
+            };
+
             if (h.highlight && h.highlight["metadata.title.ngram"]) {
               hit.title = h.highlight["metadata.title.ngram"][0];
             } else {
@@ -171,8 +191,6 @@ export default {
                 "buckets": res.aggregation[key].buckets
               };
           });
-
-          console.log(facets);
 
           self.facets = facets;
           self.total = res.total;
@@ -192,26 +210,18 @@ export default {
     hitUrl: function (hit) {
       return window.location.pathname + "/" + hit.id;
     },
-    addBucketFacet: function(facet, bucket) {
+    toggleBucket: function(facet, bucket) {
       var self = this;
-
-      if (self.state[facet].includes(bucket) != true) {
-        self.state[facet].push(bucket);
-        self[facet]=self.state[facet].join("-");
-      }
+      self[facet]=self.state[facet].join("-");
     },
-    removeBucketFacet: function(facet, bucket) {
-      var self = this;
-
-      if (self.state[facet].includes(bucket) == true) {
-        const index = self.state[facet].indexOf(bucket);
-        self.state[facet].splice(index, 1);
-        self[facet]=self.state[facet].join("-");
-      }
-    }
-
   },
   watch: {
+    'state.type': function(buckets) {
+      this.toggleBucket('type', buckets);
+    },
+    'state.collection': function(buckets) {
+      this.toggleBucket('collection', buckets);
+    },
     query: function () {
       this.loadResults();
     },

@@ -18694,3 +18694,30 @@ h1 {
 .momo-search form {
   width: 100%;
 }
+.momo-search .facet-checkbox-bucket {
+  margin: 0.5em 0;
+}
+.momo-search .search-results .search-result-item {
+  padding: 0 0 1.5em;
+  margin: 0 0 1.5em;
+  border-bottom: 1px solid #ccc;
+}
+.momo-search .search-results .search-result-item .btn {
+  padding: 1em;
+  border: none;
+}
+.momo-search .search-results .search-result-item .btn-tag {
+  margin: 0.3em 0;
+  height: 2.125em;
+  font-family: "PannoTextLight", Arial, sans-serif;
+  line-height: 0.2em;
+  font-size: 0.825em;
+  background: #eee;
+  color: #666;
+}
+.momo-search .search-results .search-result-item .mbottom-small {
+  margin-bottom: 0.5em;
+}
+.momo-search .search-results .search-result-item h2 {
+  font-size: 1.23em;
+}
