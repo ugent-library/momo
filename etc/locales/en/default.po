@@ -1,0 +1,5 @@
+msgid "Librarian view"
+msgstr "Librarian view"
+
+msgid "Developer view"
+msgstr "Developer view"

@@ -10,11 +10,13 @@ import (
 	"path/filepath"
 
 	"github.com/ugent-library/momo/internal/ctx"
+	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/theme"
 )
 
 type Data struct {
-	Yield interface{}
+	Locale engine.Locale
+	Data   interface{}
 }
 
 type View struct {
@@ -73,7 +75,8 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 		// do nothing
 	default:
 		vd = Data{
-			Yield: data,
+			Locale: ctx.GetLocale(r),
+			Data:   data,
 		}
 	}
 

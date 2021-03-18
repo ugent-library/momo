@@ -9,6 +9,7 @@ import (
 
 var (
 	StatusKey = &key{"Status"}
+	LocaleKey = &key{"Locale"}
 	ThemeKey  = &key{"Theme"}
 	ScopeKey  = &key{"Scope"}
 )
@@ -28,8 +29,12 @@ func GetStatus(r *http.Request) int {
 	return http.StatusOK
 }
 
-func SetStatus(r *http.Request, status int) {
-	*r = *r.WithContext(context.WithValue(r.Context(), StatusKey, status))
+func SetStatus(r *http.Request, s int) {
+	*r = *r.WithContext(context.WithValue(r.Context(), StatusKey, s))
+}
+
+func GetLocale(r *http.Request) engine.Locale {
+	return r.Context().Value(LocaleKey).(engine.Locale)
 }
 
 func GetScope(r *http.Request) engine.Scope {

@@ -1,18 +1,18 @@
-{{define "yield"}}
+{{define "content"}}
 <h1>
-    {{renderTitle .Rec.RawMetadata}}
-    {{if .Rec.Type}}<span class="badge badge-secondary">{{.Rec.Type}}</span>{{end}}
+    {{renderTitle .Data.Rec.RawMetadata}}
+    {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
 </h1>
 
 <div id="iiif-viewer"></div>
 
-{{renderMetadata .Rec.RawMetadata}}
+{{renderMetadata .Data.Rec.RawMetadata}}
 
-{{if .Rec.RawSource }}
+{{if .Data.Rec.RawSource }}
 <h3>Librarian view</h3>
-{{renderSourceView .Rec.RawSource}}
+{{renderSourceView .Data.Rec.RawSource}}
 {{end}}
 
 <h3>Internal view</h3>
-{{renderInternalView .Rec}}
+{{renderInternalView .Data.Rec}}
 {{end}}

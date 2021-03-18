@@ -1,16 +1,15 @@
-{{define "yield"}}
+{{define "content"}}
 <h1>
-    {{renderTitle .Rec.RawMetadata}}
-    {{if .Rec.Type}}<span class="badge badge-secondary">{{.Rec.Type}}</span>{{end}}
+    {{renderTitle .Data.Rec.RawMetadata}}
+    {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
 </h1>
+{{renderMetadata .Data.Rec.RawMetadata}}
 
-{{renderMetadata .Rec.RawMetadata}}
-
-{{if .Rec.RawSource }}
-<h3>Librarian view</h3>
-{{renderSourceView .Rec.RawSource}}
+{{if .Data.Rec.RawSource }}
+<h3>{{.Locale.Get "Librarian view"}}</h3>
+{{renderSourceView .Data.Rec.RawSource}}
 {{end}}
 
-<h3>Internal view</h3>
-{{renderInternalView .Rec}}
+<h3>{{.Locale.Get "Developer view"}}</h3>
+{{renderInternalView .Data.Rec}}
 {{end}}

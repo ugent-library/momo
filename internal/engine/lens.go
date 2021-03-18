@@ -7,8 +7,7 @@ import (
 )
 
 type LensEngine interface {
-	GetLens(name string) *Lens
-	Lenses() []*Lens
+	Lenses() []Lens
 }
 
 type Lens struct {
@@ -18,35 +17,20 @@ type Lens struct {
 }
 
 func (e *engine) initLens() {
-	lenses := make(map[string]*Lens)
-	for _, lens := range loadLenses() {
-		lenses[lens.Name] = lens
-	}
-	e.lenses = lenses
+	e.lenses = loadLenses()
 }
 
-func (e *engine) GetLens(name string) *Lens {
-	if lens, ok := e.lenses[name]; ok {
-		return lens
-	}
-	return nil
+func (e *engine) Lenses() []Lens {
+	return e.lenses
 }
 
-func (e *engine) Lenses() []*Lens {
-	lenses := make([]*Lens, 0)
-	for _, lens := range e.lenses {
-		lenses = append(lenses, lens)
-	}
-	return lenses
-}
-
-func loadLenses() []*Lens {
+func loadLenses() []Lens {
 	jsonFile, err := os.Open("etc/lenses.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	lenses := make([]*Lens, 0)
+	lenses := make([]Lens, 0)
 	if err := json.NewDecoder(jsonFile).Decode(&lenses); err != nil {
 		log.Fatal(err)
 	}

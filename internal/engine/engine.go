@@ -3,13 +3,14 @@ package engine
 type Engine interface {
 	RecEngine
 	LensEngine
+	LocaleEngine
 	Reset() error
 }
 
 type engine struct {
 	store       Storage
 	searchStore SearchStorage
-	lenses      map[string]*Lens
+	lenses      []Lens
 }
 
 type option func(*engine)

@@ -1,0 +1,5 @@
+msgid "Librarian view"
+msgstr "Voor bibliothecarissen"
+
+msgid "Developer view"
+msgstr "Voor ontwikkelaars"

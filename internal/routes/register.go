@@ -27,8 +27,9 @@ func Register(r chi.Router, e engine.Engine) {
 
 	for _, lens := range e.Lenses() {
 		r.Route("/"+lens.Name, func(r chi.Router) {
-			r.Use(mw.ScopeSetter(lens.Scope))
-			r.Use(mw.ThemeSetter(lens.Theme))
+			r.Use(mw.SetLocale(e))
+			r.Use(mw.SetScope(lens.Scope))
+			r.Use(mw.SetTheme(lens.Theme))
 
 			r.Get("/", recs.List)
 			r.Get("/search", recs.Search)

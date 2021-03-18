@@ -8,8 +8,22 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 )
 
-// ThemeSetter is a middleware that forces the theme name.
-func ThemeSetter(theme string) func(next http.Handler) http.Handler {
+func SetLocale(e engine.Engine) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			loc := e.GetLocale(
+				r.URL.Query().Get("lang"),
+				r.Header.Get("Accept-Language"),
+			)
+			r = r.WithContext(context.WithValue(r.Context(), ctx.LocaleKey, loc))
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(fn)
+	}
+}
+
+// SetTheme is a middleware that forces the theme name.
+func SetTheme(theme string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(context.WithValue(r.Context(), ctx.ThemeKey, theme))
@@ -19,8 +33,8 @@ func ThemeSetter(theme string) func(next http.Handler) http.Handler {
 	}
 }
 
-// ScopeSetter is a middleware that forces the scope.
-func ScopeSetter(scope engine.Scope) func(next http.Handler) http.Handler {
+// SetScope is a middleware that forces the scope.
+func SetScope(scope engine.Scope) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(context.WithValue(r.Context(), ctx.ScopeKey, scope))
