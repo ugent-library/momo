@@ -13,11 +13,11 @@ bin = "tmp/bin"
 # Customize binary.
 full_bin = "./tmp/bin/momo server start"
 # Watch these filename extensions.
-include_ext = ["go", "tmpl"]
+include_ext = ["go", "gohtml"]
 # Ignore these filename extensions or directories.
-exclude_dir = ["node_modules", "static", "tmp"]
+exclude_dir = []
 # Watch these directories if you specified.
-include_dir = []
+include_dir = ["cmd", "etc", "internal", "themes/ugent/templates", "themes/orpheus/templates"]
 # Exclude files.
 exclude_file = []
 # Exclude unchanged files.
@@ -29,7 +29,7 @@ delay = 1000 # ms
 # Stop running old binary when build errors occur.
 stop_on_error = true
 # Send Interrupt signal before killing process (windows does not support this feature)
-send_interrupt = false
+send_interrupt = true
 # Delay after sending Interrupt signal
 kill_delay = 500 # ms
 
