@@ -20,6 +20,8 @@ type Store struct {
 	IndexMapping string
 }
 
+type M map[string]interface{}
+
 func (s *Store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
 	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
@@ -173,41 +175,41 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 }
 
 func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
+	facetFields := []string{"collection", "type"}
 	var buf bytes.Buffer
-	var query map[string]interface{}
+	var query M
+	var queryFilter M
+	var termsFilters []M
 
 	if len(args.Query) == 0 {
-		query = map[string]interface{}{
-			"query": map[string]interface{}{
-				"match_all": map[string]interface{}{},
-			},
+		queryFilter = M{
+			"match_all": M{},
 		}
+
 	} else {
-		query = map[string]interface{}{
-			"query": map[string]interface{}{
-				"multi_match": map[string]interface{}{
-					"query":    args.Query,
-					"fields":   []string{"id^100", "metadata.title.ngram"},
-					"operator": "and",
-				},
+		queryFilter = M{
+			"multi_match": M{
+				"query":    args.Query,
+				"fields":   []string{"id^100", "metadata.title.ngram"},
+				"operator": "and",
 			},
 		}
 	}
 
-	if args.Scope != nil {
-		var terms []map[string]interface{}
-
-		for k, v := range args.Scope {
-			terms = append(terms, map[string]interface{}{"terms": map[string]interface{}{k: v}})
+	if args.Scope == nil {
+		query = M{"query": queryFilter}
+	} else {
+		for field, terms := range args.Scope {
+			termsFilters = append(termsFilters, M{"terms": M{field: terms}})
 		}
 
-		query = map[string]interface{}{
-			"query": map[string]interface{}{
-				"bool": map[string]interface{}{
-					"must": query["query"],
-					"filter": map[string]interface{}{
-						"bool": map[string]interface{}{
-							"must": terms,
+		query = M{
+			"query": M{
+				"bool": M{
+					"must": queryFilter,
+					"filter": M{
+						"bool": M{
+							"must": termsFilters,
 						},
 					},
 				},
@@ -217,25 +219,46 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 
 	query["size"] = args.Size
 	query["from"] = args.Skip
-	query["highlight"] = map[string]interface{}{
+	query["highlight"] = M{
 		"require_field_match": false,
 		"pre_tags":            []string{"<mark>"},
 		"post_tags":           []string{"</mark>"},
-		"fields": map[string]interface{}{
-			"metadata.title.ngram": map[string]interface{}{},
+		"fields": M{
+			"metadata.title.ngram": M{},
 		},
 	}
-	query["aggs"] = map[string]interface{}{
-		"collection": map[string]interface{}{
-			"terms": map[string]interface{}{
-				"field": "collection",
-			},
+	query["aggs"] = M{
+		"facets": M{
+			"global": M{},
+			"aggs":   M{},
 		},
-		"type": map[string]interface{}{
-			"terms": map[string]interface{}{
-				"field": "type",
+	}
+
+	// facet filter contains all query and all filters except itself
+	for _, field := range facetFields {
+		filters := []M{queryFilter}
+
+		for _, filter := range termsFilters {
+			if _, found := filter["terms"].(M)[field]; found {
+				continue
+			} else {
+				filters = append(filters, filter)
+			}
+		}
+
+		query["aggs"].(M)["facets"].(M)["aggs"].(M)[field] = M{
+			"filter": M{"bool": M{"must": filters}},
+			"aggs": M{
+				"facet": M{
+					"terms": M{
+						"field":         field,
+						"min_doc_count": 1,
+						"order":         M{"_key": "asc"},
+						"size":          500, // TODO give better value or use nested facets or composite aggregation
+					},
+				},
 			},
-		},
+		}
 	}
 
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {

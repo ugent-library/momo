@@ -184,11 +184,11 @@ export default {
             hits.push(hit);
           });
 
-          var facets = Object.keys(res.aggregation).map(function(key) {
+          var facets = ["collection", "type"].map(function(key) {
               return {
                 "id" : key,
                 "label": key.replace (/^(.)/, (_, c) => c.toUpperCase()), // uppertitle
-                "buckets": res.aggregation[key].buckets
+                "buckets": res.aggregation.facets[key].facet.buckets
               };
           });
 
