@@ -70,17 +70,30 @@ npx mix --mix-config themes/ugent/webpack.mix.js watch # live reload in developm
 npx mix --production # production
 ```
 
+Building:
+
+```
+npx mix --production # production
+```
+
 Laravel Mix [documentation](https://laravel.com/docs/8.x).
 
 ## Start server
+
+To start the development server with live reload:
+
+```
+npx run dev
+```
+
+Run the server directly:
 
 ```
 go run cmd/momo/main.go server start
 ```
 
-To run the server with live reload:
+## Build
 
 ```
-go get -u github.com/cosmtrek/air
-air -c .air.toml
+go build -o momo cmd/momo/main.go
 ```
