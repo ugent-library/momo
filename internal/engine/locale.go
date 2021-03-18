@@ -39,6 +39,6 @@ func (e *engine) Languages() []language.Tag {
 }
 
 func (e *engine) GetLocale(langs ...string) Locale {
-	_, i := language.MatchStrings(languageMatcher, langs...)
-	return locales[i]
+	_, match := language.MatchStrings(languageMatcher, langs...)
+	return locales[match]
 }
