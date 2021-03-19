@@ -8,36 +8,16 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 )
 
+// SetLocale is a middleware that sets the locale based on the Accept-Language
+// header if not already set.
 func SetLocale(e engine.Engine) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			loc := e.GetLocale(
-				r.URL.Query().Get("lang"),
-				r.Header.Get("Accept-Language"),
-			)
-			r = r.WithContext(context.WithValue(r.Context(), ctx.LocaleKey, loc))
-			next.ServeHTTP(w, r)
-		}
-		return http.HandlerFunc(fn)
-	}
-}
-
-// SetTheme is a middleware that forces the theme name.
-func SetTheme(theme string) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), ctx.ThemeKey, theme))
-			next.ServeHTTP(w, r)
-		}
-		return http.HandlerFunc(fn)
-	}
-}
-
-// SetScope is a middleware that forces the scope.
-func SetScope(scope engine.Scope) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), ctx.ScopeKey, scope))
+			// skip if already set
+			if r.Context().Value(ctx.LocaleKey) == nil {
+				loc := e.GetLocale(r.Header.Get("Accept-Language"))
+				r = r.WithContext(context.WithValue(r.Context(), ctx.LocaleKey, loc))
+			}
 			next.ServeHTTP(w, r)
 		}
 		return http.HandlerFunc(fn)

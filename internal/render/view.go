@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/ugent-library/momo/internal/ctx"
 	"github.com/ugent-library/momo/internal/engine"
@@ -15,16 +16,19 @@ import (
 )
 
 type Data struct {
-	Locale engine.Locale
-	Data   interface{}
+	request *http.Request
+	Locales []engine.Locale
+	Locale  engine.Locale
+	Data    interface{}
 }
 
 type View struct {
+	engine    engine.Engine
 	layout    string
 	templates map[string]*template.Template
 }
 
-func NewView(layout string, files []string, funcs ...template.FuncMap) *View {
+func NewView(e engine.Engine, layout string, files []string, funcs ...template.FuncMap) *View {
 	templates := make(map[string]*template.Template)
 
 	for _, t := range theme.Themes() {
@@ -54,6 +58,7 @@ func NewView(layout string, files []string, funcs ...template.FuncMap) *View {
 	}
 
 	return &View{
+		engine:    e,
 		templates: templates,
 		layout:    layout,
 	}
@@ -75,8 +80,10 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 		// do nothing
 	default:
 		vd = Data{
-			Locale: ctx.GetLocale(r),
-			Data:   data,
+			request: r,
+			Locales: v.engine.Locales(),
+			Locale:  ctx.GetLocale(r),
+			Data:    data,
 		}
 	}
 
@@ -90,10 +97,43 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	}
 
 	var buf bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&buf, v.layout, vd); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, v.layout, &vd); err != nil {
 		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	io.Copy(w, &buf)
+}
+
+func (d *Data) LocalizeCurrentPath(loc engine.Locale) string {
+	p := d.request.URL.Path
+
+	// remove forward slash
+	if strings.HasPrefix(p, "/") {
+		p = p[1:]
+	}
+	// remove trailing slash
+	if strings.HasSuffix(p, "/") {
+		p = p[:(len(p) - 1)]
+	}
+
+	parts := strings.Split(p, "/")
+
+	var replaceLang bool
+	for _, loc := range d.Locales {
+		if parts[0] == loc.Language().String() {
+			replaceLang = true
+			break
+		}
+	}
+
+	newLang := loc.Language().String()
+	if replaceLang {
+		parts[0] = newLang
+	} else {
+		parts[0] = newLang + "/" + parts[0]
+
+	}
+
+	return "/" + strings.Join(parts, "/")
 }

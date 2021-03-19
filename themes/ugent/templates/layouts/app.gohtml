@@ -32,9 +32,9 @@
             <div class="nav-primary collapse navbar-collapse navbar-expand-md" id="navbar">
               <ul class="nav navbar-nav list-unstyled">
                 <li class="nav-item"><a class="nav-link" href="#">home</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Item A</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Item B</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Item C</a></li>
+                {{range .Locales}}
+                <li class="nav-item"><a class="nav-link{{if eq . $.Locale}} active{{end}}" href="{{$.LocalizeCurrentPath .}}">{{.Language.String}}</a></li>
+                {{end}}
               </ul>
             </div>
           </div>

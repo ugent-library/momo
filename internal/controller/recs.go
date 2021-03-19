@@ -26,8 +26,8 @@ type Recs struct {
 func NewRecs(e engine.Engine) *Recs {
 	return &Recs{
 		engine:   e,
-		listView: render.NewView("app", []string{"rec/list"}),
-		showView: render.NewView("app", []string{"rec/show"}, template.FuncMap{
+		listView: render.NewView(e, "app", []string{"rec/list"}),
+		showView: render.NewView(e, "app", []string{"rec/show"}, template.FuncMap{
 			"renderTitle":        renderTitle,
 			"renderMetadata":     renderMetadata,
 			"renderSourceView":   renderSourceView,

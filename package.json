@@ -24,14 +24,16 @@
         "vue2-leaflet": "^2.6.0"
     },
     "nodemonConfig": {
-        "exec": "go run cmd/momo/main.go server start",
+        "exec": "go run cmd/momo/main.go server start || exit 1",
         "signal": "SIGTERM",
         "ext": "go,gohtml,json,po",
+        "delay": "1500",
         "watch": [
             "cmd",
             "etc",
             "internal",
-            "themes/*/templates"
+            "themes/ugent/templates",
+            "themes/orpheus/templates"
         ]
     }
 }
