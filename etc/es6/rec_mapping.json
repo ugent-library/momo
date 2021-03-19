@@ -41,6 +41,12 @@
                 "type": {
                     "type": "keyword"
                 },
+                "created_at": {
+                    "type": "date"
+                },
+                "updated_at": {
+                    "type": "date"
+                },
                 "metadata": {
                     "type": "object",
                     "properties": {
