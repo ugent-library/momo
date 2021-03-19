@@ -38,8 +38,6 @@ var serverStartCmd = &cobra.Command{
 			server.WithHost(viper.GetString("host")),
 			server.WithPort(viper.GetInt("port")),
 		)
-		if err := s.Start(); err != nil {
-			log.Fatal(err)
-		}
+		log.Fatal(s.Start())
 	},
 }
