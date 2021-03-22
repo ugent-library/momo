@@ -39,6 +39,7 @@ func (e *encoder) Encode(rec *engine.Rec) (err error) {
 			return
 		}
 	}
+
 	return
 }
 
