@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync/atomic"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
@@ -96,13 +94,11 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 }
 
 // TODO don't die
+// TODO send errors back over a channel
 func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.IndexName,
 		Client: s.Client,
-		// NumWorkers: 4, // The number of worker goroutines (default NumCPU)
-		// FlushBytes: int(flushBytes), // The flush threshold in bytes (default 5MB)
-		// FlushInterval: 30 * time.Second, // The periodic flush interval (default 30S)
 		OnError: func(c context.Context, e error) {
 			log.Printf("ERROR: %s", e)
 		},
@@ -111,18 +107,12 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 		log.Fatal(err)
 	}
 
-	var countSuccessful uint64
-
-	start := time.Now().UTC()
-
 	for rec := range c {
-
 		payload, err := json.Marshal(rec)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Add item to the BulkIndexer
 		err = bi.Add(
 			context.Background(),
 			esutil.BulkIndexerItem{
@@ -130,9 +120,6 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 				DocumentID:   rec.ID,
 				DocumentType: "_doc",
 				Body:         bytes.NewReader(payload),
-				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
-					atomic.AddUint64(&countSuccessful, 1)
-				},
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
 						log.Printf("ERROR: %s", err)
@@ -146,33 +133,11 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 		if err != nil {
 			log.Fatalf("Unexpected error: %s", err)
 		}
-
 	}
 
 	// Close the indexer
 	if err := bi.Close(context.Background()); err != nil {
 		log.Fatalf("Unexpected error: %s", err)
-	}
-
-	biStats := bi.Stats()
-
-	dur := time.Since(start)
-
-	if biStats.NumFailed > 0 {
-		log.Fatalf(
-			"Indexed [%d] documents with [%d] errors in %s (%d docs/sec)",
-			int64(biStats.NumFlushed),
-			int64(biStats.NumFailed),
-			dur.Truncate(time.Millisecond),
-			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
-		)
-	} else {
-		log.Printf(
-			"Sucessfuly indexed [%d] documents in %s (%d docs/sec)",
-			int64(biStats.NumFlushed),
-			dur.Truncate(time.Millisecond),
-			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
-		)
 	}
 }
 
@@ -187,7 +152,6 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 		queryFilter = M{
 			"match_all": M{},
 		}
-
 	} else {
 		queryFilter = M{
 			"multi_match": M{

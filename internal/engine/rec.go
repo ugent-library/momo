@@ -2,6 +2,8 @@ package engine
 
 import (
 	"encoding/json"
+	"log"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -82,36 +84,43 @@ func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
 	return e.searchStore.SearchRecs(args)
 }
 
-func (e *engine) AddRecs(in <-chan *Rec) {
-	var wg sync.WaitGroup
-
-	addRecs := func(in <-chan *Rec, out chan<- *Rec, wg *sync.WaitGroup) {
-		defer wg.Done()
-
-		for r := range in {
-			e.store.AddRec(r)
-			// index after storing
-			out <- r
-		}
-	}
+// TODO don't die
+// TODO send errors back over a channel
+func (e *engine) AddRecs(storeC <-chan *Rec) {
+	var storeWG sync.WaitGroup
+	var indexWG sync.WaitGroup
 
 	// indexing channel
-	out := make(chan *Rec)
+	indexC := make(chan *Rec)
 
 	// start bulk indexer
-	go e.searchStore.AddRecs(out)
+	go func() {
+		indexWG.Add(1)
+		defer indexWG.Done()
+		e.searchStore.AddRecs(indexC)
+	}()
 
 	// store recs
-	for i := 0; i < 4; i++ { // TODO make configurable
-		wg.Add(1)
-		go addRecs(in, out, &wg)
+	for i := 0; i < runtime.NumCPU()/2; i++ { // TODO make configurable
+		storeWG.Add(1)
+		go func() {
+			defer storeWG.Done()
+			for r := range storeC {
+				err := e.store.AddRec(r)
+				if err != nil {
+					log.Fatal(err)
+				}
+				// index after storing
+				indexC <- r
+			}
+		}()
 	}
 
 	// close indexing channel when all recs are stored
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
+	storeWG.Wait()
+	close(indexC)
+	// wait for indexing to finish
+	indexWG.Wait()
 }
 
 func (e *engine) IndexRecs() error {

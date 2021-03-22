@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -80,8 +80,15 @@ var recAddCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
 		p := newProgress(100)
-		out := make(chan *engine.Rec)
-		e.AddRecs(out)
+		c := make(chan *engine.Rec)
+
+		var wg sync.WaitGroup
+
+		go func() {
+			wg.Add(1)
+			defer wg.Done()
+			e.AddRecs(c)
+		}()
 
 		// TODO read json files concurrently?
 		for _, path := range args {
@@ -97,21 +104,20 @@ var recAddCmd = &cobra.Command{
 				} else if err != nil {
 					log.Fatal(err)
 				}
-				out <- &r
+				c <- &r
 				if verbose {
 					p.inc()
 				}
 			}
 		}
 
-		close(out)
+		close(c)
+
+		wg.Wait()
 
 		if verbose {
 			p.done()
 		}
-
-		// TODO channel closes too soon?
-		time.Sleep(3 * time.Second)
 	},
 }
 
