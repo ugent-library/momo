@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -108,6 +109,9 @@ var recAddCmd = &cobra.Command{
 		if verbose {
 			p.done()
 		}
+
+		// TODO channel closes too soon?
+		time.Sleep(3 * time.Second)
 	},
 }
 
