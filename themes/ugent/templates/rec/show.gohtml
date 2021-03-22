@@ -1,8 +1,10 @@
 {{define "content"}}
+
 <h1>
     {{renderTitle .Data.Rec.RawMetadata}}
     {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
 </h1>
+
 {{renderMetadata .Data.Rec.RawMetadata}}
 
 {{if .Data.Rec.RawSource }}
@@ -12,4 +14,10 @@
 
 <h3>{{.Locale.Get "Developer view"}}</h3>
 {{renderInternalView .Data.Rec}}
+
+<h3>RIS</h3>
+<code><pre>
+{{renderRIS .Data.Rec}}
+</pre></code>
+
 {{end}}

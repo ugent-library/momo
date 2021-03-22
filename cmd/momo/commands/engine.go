@@ -8,6 +8,8 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/formats/jsonl"
+	"github.com/ugent-library/momo/internal/formats/ris"
 	"github.com/ugent-library/momo/internal/storage/es6"
 	"github.com/ugent-library/momo/internal/storage/pg"
 )
@@ -16,6 +18,8 @@ func newEngine() engine.Engine {
 	return engine.New(
 		engine.WithStore(newStore()),
 		engine.WithSearchStore(newSearchStore()),
+		engine.WithRecEncoder("jsonl", jsonl.NewEncoder),
+		engine.WithRecEncoder("ris", ris.NewEncoder),
 	)
 }
 

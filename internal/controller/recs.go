@@ -14,6 +14,7 @@ import (
 	"github.com/ugent-library/momo/internal/ctx"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/form"
+	"github.com/ugent-library/momo/internal/formats/ris"
 	"github.com/ugent-library/momo/internal/render"
 )
 
@@ -32,6 +33,7 @@ func NewRecs(e engine.Engine) *Recs {
 			"renderMetadata":     renderMetadata,
 			"renderSourceView":   renderSourceView,
 			"renderInternalView": renderInternalView,
+			"renderRIS":          renderRIS,
 		}),
 	}
 }
@@ -148,7 +150,14 @@ func renderSourceView(j json.RawMessage) template.HTML {
 }
 
 func renderInternalView(rec *engine.Rec) template.HTML {
-	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, rec.RawMetadata, "", "\t")
-	return template.HTML("<code><pre>" + prettyJSON.String() + "</pre></code>")
+	var b bytes.Buffer
+	json.Indent(&b, rec.RawMetadata, "", "\t")
+	return template.HTML("<code><pre>" + b.String() + "</pre></code>")
+}
+
+func renderRIS(rec *engine.Rec) (string, error) {
+	var b strings.Builder
+	e := ris.NewEncoder(&b)
+	err := e.Encode(rec)
+	return b.String(), err
 }

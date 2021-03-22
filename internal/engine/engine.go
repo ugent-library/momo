@@ -1,22 +1,30 @@
 package engine
 
+import "sync"
+
 type Engine interface {
 	RecEngine
+	RecEncoderEngine
 	LensEngine
 	LocaleEngine
 	Reset() error
 }
 
 type engine struct {
-	store       Storage
-	searchStore SearchStorage
-	lenses      []Lens
+	store         Storage
+	searchStore   SearchStorage
+	lenses        []Lens
+	recEncoders   map[string]RecEncoderFactory
+	recEncodersMu sync.Mutex
 }
 
 type option func(*engine)
 
 func New(opts ...option) Engine {
-	e := &engine{}
+	e := &engine{
+		recEncoders: make(map[string]RecEncoderFactory),
+	}
+
 	for _, opt := range opts {
 		opt(e)
 	}
@@ -35,6 +43,12 @@ func WithStore(s Storage) option {
 func WithSearchStore(s SearchStorage) option {
 	return func(e *engine) {
 		e.searchStore = s
+	}
+}
+
+func WithRecEncoder(format string, factory RecEncoderFactory) option {
+	return func(e *engine) {
+		e.recEncoders[format] = factory
 	}
 }
 

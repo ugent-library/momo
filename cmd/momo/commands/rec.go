@@ -7,10 +7,15 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
 func init() {
+	recGetCmd.Flags().String("format", defaultRecformat, "format")
+	viper.BindPFlag("format", recGetCmd.Flags().Lookup("format"))
+	viper.SetDefault("format", defaultRecformat)
+
 	recIndexCmd.AddCommand(recIndexAllCmd)
 	recIndexCmd.AddCommand(recIndexCreateCmd)
 	recIndexCmd.AddCommand(recIndexDeleteCmd)
@@ -32,7 +37,11 @@ var recGetCmd = &cobra.Command{
 	Short: "get stored records",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		enc := json.NewEncoder(os.Stdout)
+		format := viper.GetString("format")
+		encoder := e.NewRecEncoder(os.Stdout, format)
+		if encoder == nil {
+			log.Fatalf("Unknown format %s", format)
+		}
 
 		if len(args) > 0 {
 			for _, id := range args {
@@ -40,7 +49,7 @@ var recGetCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
-				if err := enc.Encode(rec); err != nil {
+				if err := encoder.Encode(rec); err != nil {
 					log.Fatal(err)
 				}
 			}
@@ -50,7 +59,7 @@ var recGetCmd = &cobra.Command{
 
 			go func() {
 				for rec := range c {
-					if err := enc.Encode(rec); err != nil {
+					if err := encoder.Encode(rec); err != nil {
 						log.Fatal(err)
 					}
 				}

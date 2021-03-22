@@ -24,6 +24,29 @@ type Rec struct {
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
 	RawSource   json.RawMessage `json:"source"`
+	metadata    *RecMetadata
+}
+
+type RecMetadata struct {
+	Title              string
+	Author             []Contributor
+	Abstract           []Text
+	Edition            string
+	Publisher          string
+	PlaceOfPublication string
+	PublicationDate    string
+	DOI                []string
+	ISBN               []string
+	Note               []Text
+}
+
+type Contributor struct {
+	Name string
+}
+
+type Text struct {
+	Lang string
+	Text string
 }
 
 type RecHits struct {
@@ -35,6 +58,16 @@ type RecHits struct {
 type RecHit struct {
 	Rec
 	RawHighlight json.RawMessage `json:"highlight"`
+}
+
+func (rec *Rec) Metadata() *RecMetadata {
+	if rec.metadata == nil {
+		rec.metadata = &RecMetadata{}
+		if err := json.Unmarshal(rec.RawMetadata, rec.metadata); err != nil {
+			panic("momo: invalid metadata in rec " + rec.ID + ": " + err.Error())
+		}
+	}
+	return rec.metadata
 }
 
 func (e *engine) GetRec(id string) (*Rec, error) {

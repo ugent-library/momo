@@ -5,10 +5,11 @@ import "strings"
 type Scope map[string][]string
 
 type SearchArgs struct {
-	Scope      Scope  `form:"-"`
-	Query      string `form:"q"`
-	Size       int    `form:"size"`
-	Skip       int    `form:"skip"`
+	Scope Scope  `form:"-"`
+	Query string `form:"q"`
+	Size  int    `form:"size"`
+	Skip  int    `form:"skip"`
+	// TODO remove these temporary keys and handle them in the decoder
 	Type       string `form:"type"`
 	Collection string `form:"collection"`
 }
