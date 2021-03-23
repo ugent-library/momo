@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"log"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,6 +36,6 @@ var serverStartCmd = &cobra.Command{
 			server.WithHost(viper.GetString("host")),
 			server.WithPort(viper.GetInt("port")),
 		)
-		log.Fatal(s.Start())
+		s.Start()
 	},
 }
