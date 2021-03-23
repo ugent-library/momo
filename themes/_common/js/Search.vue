@@ -153,8 +153,17 @@ export default {
       p.set("q", self.query);
       p.set("skip", (self.page - 1) * self.size);
       p.set("size", self.size);
-      p.set("type", self.type);
-      p.set("collection", self.collection);
+      // TODO remove existing
+      for (let f of ["collection", "type"]) {
+        var k = `f[${f}]`
+        p.delete(k)
+        if (self[f] == "") {
+          continue
+        }
+        for (let term of self[f].split("-")) {
+          p.append(k, term)
+        }
+      }
 
       var pStr = "?" + p.toString();
 
@@ -244,16 +253,11 @@ export default {
     if (p.has("q")) {
       self.query = p.get("q");
     }
-    if (p.has("type")) {
-      self.type = p.get("type");
-      if (self.type !== "") {
-        self.state.type = self.type.split("-");
-      }
-    }
-    if (p.has("collection")) {
-      self.collection = p.get("collection");
-      if (self.collection !== "") {
-        self.state.collection = self.collection.split("-");
+    for (let f of ["collection", "type"]) {
+      var terms = p.getAll(`f[${f}]`)
+      if (terms.size) {
+        self[f] = terms.join("-")
+        self.state[f] = terms
       }
     }
     if (p.has("size")) {

@@ -84,18 +84,21 @@ var recAddCmd = &cobra.Command{
 
 		var wg sync.WaitGroup
 
+		wg.Add(len(args))
+
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
-			e.AddRecs(c)
+			wg.Wait()
+			close(c)
 		}()
 
-		// TODO read json files concurrently?
-		for _, path := range args {
-			file, err := os.Open(path)
+		addFile := func(f string) {
+			defer wg.Done()
+
+			file, err := os.Open(f)
 			if err != nil {
 				log.Fatal(err)
 			}
+
 			dec := json.NewDecoder(file)
 			for {
 				var r engine.Rec
@@ -104,6 +107,7 @@ var recAddCmd = &cobra.Command{
 				} else if err != nil {
 					log.Fatal(err)
 				}
+
 				c <- &r
 				if verbose {
 					p.inc()
@@ -111,9 +115,11 @@ var recAddCmd = &cobra.Command{
 			}
 		}
 
-		close(c)
+		for _, f := range args {
+			go addFile(f)
+		}
 
-		wg.Wait()
+		e.AddRecs(c)
 
 		if verbose {
 			p.done()

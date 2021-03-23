@@ -64,12 +64,12 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
 	searchArgs := engine.SearchArgs{}
 	err := form.Decode(&searchArgs, r.URL.Query())
-
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	hits, err := c.engine.SearchRecs(searchArgs.WithScope(ctx.GetScope(r)))
 	if err != nil {
 		log.Println(err)
