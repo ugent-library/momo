@@ -130,8 +130,8 @@ export default {
       },
 
       query: "",
-      type: "",
-      collection: "",
+      type: [],
+      collection: [],
       hits: [],
       facets: [],
       total: 0,
@@ -157,10 +157,10 @@ export default {
       for (let f of ["collection", "type"]) {
         var k = `f[${f}]`
         p.delete(k)
-        if (self[f] == "") {
+        if (!self[f].length) {
           continue
         }
-        for (let term of self[f].split("-")) {
+        for (let term of self[f]) {
           p.append(k, term)
         }
       }
@@ -221,7 +221,7 @@ export default {
     },
     toggleBucket: function(facet, bucket) {
       var self = this;
-      self[facet]=self.state[facet].join("-");
+      self[facet]=self.state[facet];
     },
   },
   watch: {
@@ -256,7 +256,7 @@ export default {
     for (let f of ["collection", "type"]) {
       var terms = p.getAll(`f[${f}]`)
       if (terms.size) {
-        self[f] = terms.join("-")
+        self[f] = terms
         self.state[f] = terms
       }
     }
