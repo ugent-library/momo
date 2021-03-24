@@ -14,6 +14,7 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 )
 
+// TODO constructor
 type Store struct {
 	Client       *elasticsearch.Client
 	IndexName    string

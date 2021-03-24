@@ -6,16 +6,17 @@ type Engine interface {
 	RecEngine
 	RecEncoderEngine
 	LensEngine
-	LocaleEngine
+	I18nEngine
 	Reset() error
 }
 
 type engine struct {
 	store         Storage
 	searchStore   SearchStorage
-	lenses        []Lens
 	recEncoders   map[string]RecEncoderFactory
 	recEncodersMu sync.Mutex
+	lenses        []Lens
+	I18nEngine
 }
 
 type option func(*engine)
@@ -49,6 +50,12 @@ func WithSearchStore(s SearchStorage) option {
 func WithRecEncoder(format string, factory RecEncoderFactory) option {
 	return func(e *engine) {
 		e.recEncoders[format] = factory
+	}
+}
+
+func WithI18n(i18n I18nEngine) option {
+	return func(e *engine) {
+		e.I18nEngine = i18n
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/formats/jsonl"
 	"github.com/ugent-library/momo/internal/formats/ris"
+	"github.com/ugent-library/momo/internal/i18n/gettext"
 	"github.com/ugent-library/momo/internal/storage/es6"
 	"github.com/ugent-library/momo/internal/storage/pg"
 )
@@ -20,6 +21,7 @@ func newEngine() engine.Engine {
 		engine.WithSearchStore(newSearchStore()),
 		engine.WithRecEncoder("jsonl", jsonl.NewEncoder),
 		engine.WithRecEncoder("ris", ris.NewEncoder),
+		engine.WithI18n(gettext.New()),
 	)
 }
 
