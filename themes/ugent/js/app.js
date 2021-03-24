@@ -1,15 +1,9 @@
-import Vue from 'vue'
-import { BootstrapVue } from 'bootstrap-vue'
+import { SearchApp } from '../../_common/js/Search'
 
-// import '../scss/screen.scss'
+window.addEventListener('DOMContentLoaded', () => {
+  const apps = [];
 
-Vue.use(BootstrapVue)
-
-import Search from "../../_common/js/Search";
-
-if (document.getElementById("search")) {
-  new Vue({
-    el: "#search",
-    render: h => h(Search)
-  })
-}
+  (function () {
+    apps.push(new SearchApp('#search'))
+  })(apps)
+})
