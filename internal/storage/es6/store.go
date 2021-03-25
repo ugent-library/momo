@@ -14,22 +14,34 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 )
 
-// TODO constructor
-type Store struct {
-	Client       *elasticsearch.Client
+type Config struct {
+	ClientConfig elasticsearch.Config
 	IndexPrefix  string
 	IndexMapping string
 }
 
+type store struct {
+	client *elasticsearch.Client
+	Config
+}
+
 type M map[string]interface{}
 
-func (s *Store) indexName(idx string) string {
+func New(c Config) (*store, error) {
+	client, err := elasticsearch.NewClient(c.ClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &store{client, c}, nil
+}
+
+func (s *store) indexName(idx string) string {
 	return s.IndexPrefix + idx
 }
 
-func (s *Store) CreateRecIndex() error {
+func (s *store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
-	res, err := s.Client.Indices.Create(s.indexName("rec"), s.Client.Indices.Create.WithBody(r))
+	res, err := s.client.Indices.Create(s.indexName("rec"), s.client.Indices.Create.WithBody(r))
 	if err != nil {
 		return err
 	}
@@ -39,8 +51,8 @@ func (s *Store) CreateRecIndex() error {
 	return nil
 }
 
-func (s *Store) DeleteRecIndex() error {
-	res, err := s.Client.Indices.Delete([]string{s.indexName("rec")})
+func (s *store) DeleteRecIndex() error {
+	res, err := s.client.Indices.Delete([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -50,8 +62,8 @@ func (s *Store) DeleteRecIndex() error {
 	return nil
 }
 
-func (s *Store) Reset() error {
-	res, err := s.Client.Indices.Exists([]string{s.indexName("rec")})
+func (s *store) Reset() error {
+	res, err := s.client.Indices.Exists([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -71,7 +83,7 @@ func (s *Store) Reset() error {
 	return s.CreateRecIndex()
 }
 
-func (s *Store) AddRec(rec *engine.Rec) error {
+func (s *store) AddRec(rec *engine.Rec) error {
 	payload, err := json.Marshal(rec)
 	if err != nil {
 		return err
@@ -81,7 +93,7 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 		Index:      s.indexName("rec"),
 		DocumentID: rec.ID,
 		Body:       bytes.NewReader(payload),
-	}.Do(ctx, s.Client)
+	}.Do(ctx, s.client)
 	if err != nil {
 		return err
 	}
@@ -100,10 +112,10 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 
 // TODO don't die
 // TODO send errors back over a channel
-func (s *Store) AddRecs(c <-chan *engine.Rec) {
+func (s *store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.indexName("rec"),
-		Client: s.Client,
+		Client: s.client,
 		OnError: func(c context.Context, e error) {
 			log.Printf("ERROR: %s", e)
 		},
@@ -146,7 +158,7 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	}
 }
 
-func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
+func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	facetFields := []string{"collection", "type"}
 	var buf bytes.Buffer
 	var query M
@@ -235,11 +247,11 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, err
 	}
-	res, err := s.Client.Search(
-		s.Client.Search.WithContext(context.Background()),
-		s.Client.Search.WithIndex(s.indexName("rec")),
-		s.Client.Search.WithBody(&buf),
-		s.Client.Search.WithTrackTotalHits(true),
+	res, err := s.client.Search(
+		s.client.Search.WithContext(context.Background()),
+		s.client.Search.WithIndex(s.indexName("rec")),
+		s.client.Search.WithBody(&buf),
+		s.client.Search.WithTrackTotalHits(true),
 	)
 	if err != nil {
 		return nil, err

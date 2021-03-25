@@ -34,20 +34,19 @@ func newStore() engine.Storage {
 }
 
 func newSearchStore() engine.SearchStorage {
-	client, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: strings.Split(viper.GetString("es6-url"), ","),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
 	mapping, err := ioutil.ReadFile("etc/es6/rec_mapping.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := &es6.Store{
-		Client:       client,
+	store, err := es6.New(es6.Config{
+		ClientConfig: elasticsearch.Config{
+			Addresses: strings.Split(viper.GetString("es6-url"), ","),
+		},
 		IndexPrefix:  viper.GetString("es6-index-prefix"),
 		IndexMapping: string(mapping),
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
 	return store
 }
