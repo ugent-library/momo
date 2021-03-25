@@ -5,21 +5,17 @@ import 'leaflet/dist/leaflet.css'
 import IIIFViewer from './IIIFViewer'
 
 export class IIIFViewerApp {
-  constructor (element, props) {
-    const apps = [];
+  static create (element, props) {
+    Vue.use(BootstrapVue)
 
-    (function () {
-      Vue.use(BootstrapVue)
-
-      const matches = document.body.querySelectorAll(element)
-      for (const match of matches) {
-        if (document.body.contains(match)) {
-          apps.push(new Vue({
-            el: match,
-            render: h => h(IIIFViewer, { props: props })
-          }))
-        }
+    const matches = document.body.querySelectorAll(element)
+    for (const match of matches) {
+      if (document.body.contains(match)) {
+        const vm = new Vue({
+          render: h => h(IIIFViewer, { props: props })
+        })
+        vm.$mount(match)
       }
-    })(apps)
+    }
   }
 }

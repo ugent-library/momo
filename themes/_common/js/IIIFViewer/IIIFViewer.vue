@@ -28,7 +28,7 @@ export default {
       opts: this.initialOptions,
       infoUrl: this.initialInfoUrl
     }
-  },
+  }
 }
 </script>
 
