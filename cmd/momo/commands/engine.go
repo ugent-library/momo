@@ -46,7 +46,7 @@ func newSearchStore() engine.SearchStorage {
 	}
 	store := &es6.Store{
 		Client:       client,
-		IndexName:    viper.GetString("es6-index"),
+		IndexPrefix:  viper.GetString("es6-index-prefix"),
 		IndexMapping: string(mapping),
 	}
 	return store

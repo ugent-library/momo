@@ -28,9 +28,9 @@ func init() {
 	rootCmd.PersistentFlags().String("es6-url", defaultEs6URL, "elasticsearch 6.x url, separate multiple with comma")
 	viper.BindPFlag("es6-url", rootCmd.PersistentFlags().Lookup("es6-url"))
 	viper.SetDefault("es6-url", defaultEs6URL)
-	rootCmd.PersistentFlags().String("es6-index", defaultEs6Index, "elasticsearch 6.x index name")
-	viper.BindPFlag("es6-index", rootCmd.PersistentFlags().Lookup("es6-index"))
-	viper.SetDefault("es6-index", defaultEs6Index)
+	rootCmd.PersistentFlags().String("es6-index-prefix", defaultEs6IndexPrefix, "elasticsearch 6.x index prefix")
+	viper.BindPFlag("es6-index-prefix", rootCmd.PersistentFlags().Lookup("es6-index-prefix"))
+	viper.SetDefault("es6-index-prefix", defaultEs6IndexPrefix)
 }
 
 // Execute the momo CLI
