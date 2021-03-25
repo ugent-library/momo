@@ -110,8 +110,6 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	return nil
 }
 
-// TODO don't die
-// TODO send errors back over a channel
 func (s *store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.indexName("rec"),
@@ -237,7 +235,7 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 						"field":         field,
 						"min_doc_count": 1,
 						"order":         M{"_key": "asc"},
-						"size":          500, // TODO give better value or use nested facets or composite aggregation
+						"size":          200,
 					},
 				},
 			},

@@ -41,6 +41,10 @@ func (i *i18n) Locales() []engine.Locale {
 	return i.locales
 }
 
+func (i *i18n) DefaultLocale() engine.Locale {
+	return i.locales[0]
+}
+
 func (i *i18n) GetLocale(langs ...string) engine.Locale {
 	_, match := language.MatchStrings(i.matcher, langs...)
 	return i.locales[match]

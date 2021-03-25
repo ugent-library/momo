@@ -4,6 +4,7 @@ import "golang.org/x/text/language"
 
 type I18nEngine interface {
 	Locales() []Locale
+	DefaultLocale() Locale
 	GetLocale(...string) Locale
 }
 

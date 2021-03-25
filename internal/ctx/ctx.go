@@ -28,28 +28,34 @@ func (c *key) String() string {
 
 // GetStatus gets the http status from the request context if set or 200 OK if not.
 func GetStatus(r *http.Request) int {
-	if status, ok := r.Context().Value(StatusKey).(int); ok {
-		return status
+	if v, ok := r.Context().Value(StatusKey).(int); ok {
+		return v
 	}
 	return http.StatusOK
 }
 
+// SetStatus sets the http status in the request context.
 func SetStatus(r *http.Request, s int) {
 	*r = *r.WithContext(context.WithValue(r.Context(), StatusKey, s))
 }
 
-// TODO return default
+// GetLocale gets the current locale from the request context.
 func GetLocale(r *http.Request) engine.Locale {
-	return r.Context().Value(LocaleKey).(engine.Locale)
+	if v, ok := r.Context().Value(LocaleKey).(engine.Locale); ok {
+		return v
+	}
+	return nil
 }
 
-// TODO return default
+// GetScope gets the current scope from the request context.
 func GetScope(r *http.Request) engine.Scope {
-	return r.Context().Value(ScopeKey).(engine.Scope)
+	if v, ok := r.Context().Value(ScopeKey).(engine.Scope); ok {
+		return v
+	}
+	return nil
 }
 
-// GetTheme gets the theme name from the request context.
-// TODO return default
+// GetTheme gets the current theme name from the request context.
 func GetTheme(r *http.Request) string {
 	return r.Context().Value(ThemeKey).(string)
 }

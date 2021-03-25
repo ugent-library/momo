@@ -84,8 +84,6 @@ func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
 	return e.searchStore.SearchRecs(args)
 }
 
-// TODO don't die
-// TODO send errors back over a channel
 func (e *engine) AddRecs(storeC <-chan *Rec) {
 	var storeWG sync.WaitGroup
 	var indexWG sync.WaitGroup
@@ -101,7 +99,7 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 	}()
 
 	// store recs
-	for i := 0; i < runtime.NumCPU()/2; i++ { // TODO make configurable
+	for i := 0; i < runtime.NumCPU()/2; i++ {
 		storeWG.Add(1)
 		go func() {
 			defer storeWG.Done()
