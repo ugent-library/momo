@@ -1,5 +1,5 @@
 const mix = require('laravel-mix')
-const ESLintPlugin = require('eslint-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 mix.js('./themes/ugent/js/app.js', 'js')
   .sass('./themes/ugent/scss/screen.scss', 'css')
@@ -38,7 +38,7 @@ mix.webpackConfig({
   },
   plugins: [
     new ESLintPlugin({})
-  ],
+  ]
 })
 
 // Uncomment this if you want to see generated webpack.config.js

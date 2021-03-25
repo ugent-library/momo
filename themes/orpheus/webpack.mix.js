@@ -1,5 +1,5 @@
 const mix = require('laravel-mix')
-const ESLintPlugin = require('eslint-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 mix.js('./themes/orpheus/js/app.js', 'js')
   .sass('./themes/orpheus/css/app.scss', 'css')
@@ -18,7 +18,7 @@ if (mix.inProduction()) {
 mix.webpackConfig({
   plugins: [
     new ESLintPlugin({})
-  ],
+  ]
 })
 
 // Uncomment this if you want to see generated webpack.config.js
