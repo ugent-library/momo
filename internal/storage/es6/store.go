@@ -14,17 +14,22 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 )
 
+// TODO constructor
 type Store struct {
 	Client       *elasticsearch.Client
-	IndexName    string
+	IndexPrefix  string
 	IndexMapping string
 }
 
 type M map[string]interface{}
 
+func (s *Store) indexName(idx string) string {
+	return s.IndexPrefix + idx
+}
+
 func (s *Store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
-	res, err := s.Client.Indices.Create(s.IndexName, s.Client.Indices.Create.WithBody(r))
+	res, err := s.Client.Indices.Create(s.indexName("rec"), s.Client.Indices.Create.WithBody(r))
 	if err != nil {
 		return err
 	}
@@ -35,7 +40,7 @@ func (s *Store) CreateRecIndex() error {
 }
 
 func (s *Store) DeleteRecIndex() error {
-	res, err := s.Client.Indices.Delete([]string{s.IndexName})
+	res, err := s.Client.Indices.Delete([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -46,7 +51,7 @@ func (s *Store) DeleteRecIndex() error {
 }
 
 func (s *Store) Reset() error {
-	res, err := s.Client.Indices.Exists([]string{s.IndexName})
+	res, err := s.Client.Indices.Exists([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -73,7 +78,7 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 	}
 	ctx := context.Background()
 	res, err := esapi.CreateRequest{
-		Index:      s.IndexName,
+		Index:      s.indexName("rec"),
 		DocumentID: rec.ID,
 		Body:       bytes.NewReader(payload),
 	}.Do(ctx, s.Client)
@@ -97,7 +102,7 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 // TODO send errors back over a channel
 func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Index:  s.IndexName,
+		Index:  s.indexName("rec"),
 		Client: s.Client,
 		OnError: func(c context.Context, e error) {
 			log.Printf("ERROR: %s", e)
@@ -232,7 +237,7 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	}
 	res, err := s.Client.Search(
 		s.Client.Search.WithContext(context.Background()),
-		s.Client.Search.WithIndex(s.IndexName),
+		s.Client.Search.WithIndex(s.indexName("rec")),
 		s.Client.Search.WithBody(&buf),
 		s.Client.Search.WithTrackTotalHits(true),
 	)
