@@ -10,12 +10,19 @@ import (
 
 type RecEngine interface {
 	GetRec(string) (*Rec, error)
-	GetAllRecs(chan<- *Rec) error
+	AllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
 	AddRecs(<-chan *Rec)
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
+}
+
+type RecCursor interface {
+	Next() bool
+	Value() *Rec
+	Error() error
+	Close()
 }
 
 type Rec struct {
@@ -76,8 +83,8 @@ func (e *engine) GetRec(id string) (*Rec, error) {
 	return e.store.GetRec(id)
 }
 
-func (e *engine) GetAllRecs(c chan<- *Rec) error {
-	return e.store.GetAllRecs(c)
+func (e *engine) AllRecs() RecCursor {
+	return e.store.AllRecs()
 }
 
 func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
@@ -121,12 +128,33 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 	indexWG.Wait()
 }
 
-func (e *engine) IndexRecs() error {
-	c := make(chan *Rec)
-	defer close(c)
-	go e.searchStore.AddRecs(c)
-	err := e.store.GetAllRecs(c)
-	return err
+func (e *engine) IndexRecs() (err error) {
+	var indexWG sync.WaitGroup
+	// indexing channel
+	indexC := make(chan *Rec)
+
+	go func() {
+		indexWG.Add(1)
+		defer indexWG.Done()
+		e.searchStore.AddRecs(indexC)
+	}()
+
+	// send recs to indexer
+	c := e.store.AllRecs()
+	defer c.Close()
+	for c.Next() {
+		if err = c.Error(); err != nil {
+			break
+		}
+		indexC <- c.Value()
+	}
+
+	close(indexC)
+
+	// wait for indexing to finish
+	indexWG.Wait()
+
+	return
 }
 
 func (e *engine) CreateRecIndex() error {

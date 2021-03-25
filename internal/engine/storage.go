@@ -2,7 +2,7 @@ package engine
 
 type Storage interface {
 	GetRec(string) (*Rec, error)
-	GetAllRecs(chan<- *Rec) error
+	AllRecs() RecCursor
 	AddRec(*Rec) error
 	Reset() error
 }

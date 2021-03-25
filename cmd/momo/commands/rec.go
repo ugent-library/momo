@@ -44,6 +44,7 @@ var recGetCmd = &cobra.Command{
 			log.Fatalf("Unknown format %s", format)
 		}
 
+		// get single recs by id
 		if len(args) > 0 {
 			for _, id := range args {
 				rec, err := e.GetRec(id)
@@ -54,19 +55,18 @@ var recGetCmd = &cobra.Command{
 					log.Fatal(err)
 				}
 			}
-		} else {
-			c := make(chan *engine.Rec)
-			defer close(c)
 
-			go func() {
-				for rec := range c {
-					if err := encoder.Encode(rec); err != nil {
-						log.Fatal(err)
-					}
-				}
-			}()
+			return
+		}
 
-			if err := e.GetAllRecs(c); err != nil {
+		// get all recs
+		c := e.AllRecs()
+		defer c.Close()
+		for c.Next() {
+			if err := c.Error(); err != nil {
+				log.Fatal(err)
+			}
+			if err := encoder.Encode(c.Value()); err != nil {
 				log.Fatal(err)
 			}
 		}

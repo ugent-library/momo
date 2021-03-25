@@ -52,22 +52,9 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 	return reifyRec(&r), nil
 }
 
-func (s *store) GetAllRecs(c chan<- *engine.Rec) error {
+func (s *store) AllRecs() engine.RecCursor {
 	rows, err := s.db.Model(&Rec{}).Rows()
-	defer rows.Close()
-	if err != nil {
-		return err
-	}
-
-	for rows.Next() {
-		r := Rec{}
-		if err := s.db.ScanRows(rows, &r); err != nil {
-			return err
-		}
-		c <- reifyRec(&r)
-	}
-
-	return nil
+	return &recCursor{db: s.db, rows: rows, err: err}
 }
 
 func (s *store) AddRec(rec *engine.Rec) error {
