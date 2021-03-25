@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import IIIFViewer from './IIIFViewer'
 
 export class IIIFViewerApp {
-  constructor (element) {
+  constructor (element, props) {
     const apps = [];
 
     (function () {
@@ -16,7 +16,7 @@ export class IIIFViewerApp {
         if (document.body.contains(match)) {
           apps.push(new Vue({
             el: match,
-            render: h => h(IIIFViewer)
+            render: h => h(IIIFViewer, { props: props })
           }))
         }
       }

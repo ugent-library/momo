@@ -22,4 +22,18 @@
 {{renderRIS .Data.Rec}}
 </pre></code>
 
+<script type="text/javascript">
+    window.addEventListener('DOMContentLoaded', () => {
+        const config = {
+            initialZoom: 2,
+            initialOptions: {
+                tileFormat: 'jpg',
+                tileSize: 512
+            },
+            initialInfoUrl: "http://iiif.hualab.nl:8080/iiif/2/saftleven-panorama-1684.jpg/info.json"
+        };
+        IIIFViewer.init('#iiif-viewer', config);
+    });
+</script>
+
 {{end}}
