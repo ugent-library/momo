@@ -1,30 +1,24 @@
 package sitemap
 
 import (
+	"bufio"
+	"encoding/xml"
 	"fmt"
-	"time"
+	"os"
+	"path"
 
-	"github.com/ikeikeikeike/go-sitemap-generator/v2/stm"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
-func Generate(e engine.Engine, dir string) (err error) {
-	now := time.Now().Unix()
-	sitemaps := make([]string, 0)
-	i := 0
-
-	newSm := func() *stm.Sitemap {
-		file := fmt.Sprintf("sitemap-%d-%d.xml", now, len(sitemaps))
-		sitemaps = append(sitemaps, file)
-		sm := stm.NewSitemap(1)
-		sm.SetDefaultHost("http://localhost:3000")
-		sm.SetSitemapsPath(dir)
-		sm.SetFilename(file)
-		sm.Create()
-		return sm
+func Generate(e engine.Engine, baseURL string) (err error) {
+	var langs []string
+	for _, loc := range e.Locales() {
+		langs = append(langs, loc.Language().String())
 	}
 
-	sm := newSm()
+	sm := &sitemap{
+		path: "static/sitemaps",
+	}
 
 	c := e.AllRecs()
 	defer c.Close()
@@ -34,40 +28,107 @@ func Generate(e engine.Engine, dir string) (err error) {
 			break
 		}
 
-		i++
-
 		rec := c.Value()
 
-		sm.Add(stm.URL{
-			{"loc", fmt.Sprintf("/collection/%s/%s", rec.Collection, rec.ID)},
-		})
-
-		if i == 10000 {
-			sm.Finalize()
-			break
+		for _, lang := range langs {
+			alts := make([]alternate, len(langs))
+			for i, l := range langs {
+				alts[i].lang = l
+				alts[i].url = fmt.Sprintf("%s/%s/collection/%s/%s", baseURL, l, rec.Collection, rec.ID)
+			}
+			alts = append(alts, alternate{
+				lang: "x-default",
+				url:  fmt.Sprintf("%s/collection/%s/%s", baseURL, rec.Collection, rec.ID),
+			})
+			sm.add(sitemapURL{
+				loc:        fmt.Sprintf("%s/%s/collection/%s/%s", baseURL, lang, rec.Collection, rec.ID),
+				lastmod:    rec.UpdatedAt.Format("2006-01-02"),
+				priority:   "0.9",
+				alternates: alts,
+			})
 		}
 	}
+
+	sm.finish()
 
 	return
 }
 
-// type sitemap struct {
-// 	p string
-// 	f *os.File
-// }
+type sitemap struct {
+	path     string
+	numFiles int
+	numURLs  int
+	f        *os.File
+	w        *bufio.Writer
+}
 
-// func writeSitemap(e engine.Engine, p string, recs []*engine.Rec) (err error) {
-// 	f, err := os.Create(p)
-// 	if err != nil {
-// 		return
-// 	}
+type sitemapURL struct {
+	loc        string
+	lastmod    string
+	priority   string
+	alternates []alternate
+}
 
-// 	defer f.Close()
+type alternate struct {
+	lang string
+	url  string
+}
 
-// 	f.WriteString(`<?xml version="1.0" encoding="UTF-8"?>`)
-// 	f.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`)
+func (sm *sitemap) switchFile() error {
+	sm.finish()
 
-// 	f.WriteString(`</urlset>`)
+	if err := os.MkdirAll(sm.path, os.ModePerm); err != nil {
+		return err
+	}
 
-// 	return
-// }
+	f, err := os.Create(path.Join(sm.path, fmt.Sprintf("sitemap-%d.xml", sm.numFiles)))
+	if err != nil {
+		return err
+	}
+
+	sm.f = f
+	sm.w = bufio.NewWriter(f)
+
+	sm.w.WriteString(`<?xml version="1.0" encoding="UTF-8"?>`)
+	sm.w.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`)
+
+	sm.numFiles++
+
+	return nil
+}
+
+func (sm *sitemap) add(u sitemapURL) error {
+	if sm.numURLs == 0 || sm.numURLs == 50000 {
+		if err := sm.switchFile(); err != nil {
+			return err
+		}
+		sm.numURLs = 0
+	}
+
+	w := sm.w
+	w.WriteString(`<url>`)
+	w.WriteString(`<loc>`)
+	xml.EscapeText(w, []byte(u.loc))
+	w.WriteString(`</loc>`)
+	for _, alt := range u.alternates {
+		w.WriteString(`<xhtml:link rel="alternate" hreflang="`)
+		xml.EscapeText(w, []byte(alt.lang))
+		w.WriteString(`" href="`)
+		xml.EscapeText(w, []byte(alt.url))
+		w.WriteString(`"/>`)
+	}
+	w.WriteString(`</url>`)
+
+	sm.numURLs++
+
+	return nil
+}
+
+func (sm *sitemap) finish() {
+	if sm.f != nil {
+		sm.w.WriteString(`</urlset>`)
+
+		sm.w.Flush()
+		sm.f.Close()
+	}
+}

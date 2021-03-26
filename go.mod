@@ -7,7 +7,6 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-chi/chi/v5 v5.0.1
 	github.com/go-playground/form/v4 v4.1.1
-	github.com/ikeikeikeike/go-sitemap-generator/v2 v2.0.2
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/leonelquinteros/gotext v1.4.0
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
