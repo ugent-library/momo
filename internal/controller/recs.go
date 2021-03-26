@@ -50,8 +50,9 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 		Rec *engine.Rec
 	}
 
+	collection := ctx.GetCollection(r)
 	id := chi.URLParam(r, "id")
-	rec, err := c.engine.GetRec(id)
+	rec, err := c.engine.GetRec(collection, id)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 404)
@@ -62,15 +63,15 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
-	searchArgs := engine.SearchArgs{}
-	err := form.Decode(&searchArgs, r.URL.Query())
+	args := engine.SearchArgs{}
+	err := form.Decode(&args, r.URL.Query())
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	hits, err := c.engine.SearchRecs(searchArgs.WithScope(ctx.GetScope(r)))
+	hits, err := c.engine.SearchRecs(args.WithFilter("collection", ctx.GetCollection(r)))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

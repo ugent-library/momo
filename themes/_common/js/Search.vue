@@ -126,12 +126,10 @@ export default {
         fetching: false,
         error: null,
         type: [],
-        collection: []
       },
 
       query: "",
       type: [],
-      collection: [],
       hits: [],
       facets: [],
       total: 0,
@@ -154,7 +152,7 @@ export default {
       p.set("skip", (self.page - 1) * self.size);
       p.set("size", self.size);
       // TODO remove existing
-      for (let f of ["collection", "type"]) {
+      for (let f of ["type"]) {
         var k = `f[${f}]`
         p.delete(k)
         if (!self[f].length) {
@@ -193,7 +191,7 @@ export default {
             hits.push(hit);
           });
 
-          var facets = ["collection", "type"].map(function(key) {
+          var facets = ["type"].map(function(key) {
               return {
                 "id" : key,
                 "label": key.replace (/^(.)/, (_, c) => c.toUpperCase()), // uppertitle
@@ -228,9 +226,6 @@ export default {
     'state.type': function(buckets) {
       this.toggleBucket('type', buckets);
     },
-    'state.collection': function(buckets) {
-      this.toggleBucket('collection', buckets);
-    },
     query: function () {
       this.loadResults();
     },
@@ -238,9 +233,6 @@ export default {
       this.loadResults();
     },
     type: function() {
-      this.loadResults();
-    },
-    collection: function() {
       this.loadResults();
     }
   },
@@ -253,7 +245,7 @@ export default {
     if (p.has("q")) {
       self.query = p.get("q");
     }
-    for (let f of ["collection", "type"]) {
+    for (let f of ["type"]) {
       var terms = p.getAll(`f[${f}]`)
       if (terms.size) {
         self[f] = terms

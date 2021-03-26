@@ -12,10 +12,10 @@ var (
 	StatusKey = &key{"Status"}
 	// LocaleKey is used to get or set the locale in the request context
 	LocaleKey = &key{"Locale"}
+	// CollectionKey is used to get or set the collection in the request context
+	CollectionKey = &key{"Collection"}
 	// ThemeKey is used to get or set the ui theme in the request context
 	ThemeKey = &key{"Theme"}
-	// ScopeKey is used to get or set the search scope in the request context
-	ScopeKey = &key{"Scope"}
 )
 
 type key struct {
@@ -47,12 +47,9 @@ func GetLocale(r *http.Request) engine.Locale {
 	return nil
 }
 
-// GetScope gets the current scope from the request context.
-func GetScope(r *http.Request) engine.Scope {
-	if v, ok := r.Context().Value(ScopeKey).(engine.Scope); ok {
-		return v
-	}
-	return nil
+// GetCollection gets the current scope from the request context.
+func GetCollection(r *http.Request) string {
+	return r.Context().Value(CollectionKey).(string)
 }
 
 // GetTheme gets the current theme name from the request context.

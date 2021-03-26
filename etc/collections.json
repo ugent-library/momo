@@ -1,0 +1,22 @@
+[
+    {
+        "name": "booktower",
+        "theme" : "ugent"
+    },
+    {
+        "name": "orpheus",
+        "theme" : "orpheus"
+    },
+    {
+        "name": "biblio",
+        "theme" : "ugent"
+    },
+    {
+        "name": "cageweb",
+        "theme" : "ugent"
+    },
+    {
+        "name": "all",
+        "theme" : "ugent"
+    }
+]

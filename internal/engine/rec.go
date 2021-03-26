@@ -9,7 +9,7 @@ import (
 )
 
 type RecEngine interface {
-	GetRec(string) (*Rec, error)
+	GetRec(string, string) (*Rec, error)
 	AllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
 	AddRecs(<-chan *Rec)
@@ -27,8 +27,8 @@ type RecCursor interface {
 
 type Rec struct {
 	ID          string          `json:"id"`
+	Collection  string          `json:"collection"`
 	Type        string          `json:"type"`
-	Collection  []string        `json:"collection"`
 	RawMetadata json.RawMessage `json:"metadata"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
@@ -79,8 +79,8 @@ func (rec *Rec) Metadata() *RecMetadata {
 	return rec.metadata
 }
 
-func (e *engine) GetRec(id string) (*Rec, error) {
-	return e.store.GetRec(id)
+func (e *engine) GetRec(coll string, id string) (*Rec, error) {
+	return e.store.GetRec(coll, id)
 }
 
 func (e *engine) AllRecs() RecCursor {

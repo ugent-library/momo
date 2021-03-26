@@ -3,19 +3,19 @@ package engine
 import "sync"
 
 type Engine interface {
+	CollectionEngine
 	RecEngine
 	RecEncoderEngine
-	LensEngine
 	I18nEngine
 	Reset() error
 }
 
 type engine struct {
+	collections   []Collection
 	store         Storage
 	searchStore   SearchStorage
 	recEncoders   map[string]RecEncoderFactory
 	recEncodersMu sync.Mutex
-	lenses        []Lens
 	I18nEngine
 }
 
@@ -30,7 +30,7 @@ func New(opts ...option) Engine {
 		opt(e)
 	}
 
-	e.initLens()
+	e.initCollections()
 
 	return e
 }

@@ -9,22 +9,21 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/lib/pq"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
 type Model struct {
 	PK        int64          `gorm:"primaryKey"`
-	CreatedAt time.Time      `gorm:"autoCreateTime:milli;type:timestamp;index"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli;type:timestamp;index"`
+	CreatedAt time.Time      `gorm:"not null;autoCreateTime:milli;type:timestamp;index"`
+	UpdatedAt time.Time      `gorm:"not null;autoUpdateTime:milli;type:timestamp;index"`
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamp;index"`
 }
 
 type Rec struct {
 	Model
-	ID         string         `gorm:"not null;uniqueIndex"`
+	ID         string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
+	Collection string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
 	Type       string         `gorm:"not null;index"`
-	Collection pq.StringArray `gorm:"type:text[];not null;index"`
 	Metadata   datatypes.JSON `gorm:"not null"`
 	Source     datatypes.JSON
 }
@@ -43,9 +42,9 @@ func New(dsn string) (*store, error) {
 	return s, nil
 }
 
-func (s *store) GetRec(id string) (*engine.Rec, error) {
+func (s *store) GetRec(coll string, id string) (*engine.Rec, error) {
 	r := Rec{}
-	res := s.db.Where("id = ?", id).First(&r)
+	res := s.db.Where("collection = ?", coll).Where("id = ?", id).First(&r)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -61,13 +60,13 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	r := Rec{
 		ID:         rec.ID,
 		Type:       rec.Type,
-		Collection: pq.StringArray(rec.Collection),
+		Collection: rec.Collection,
 		Metadata:   datatypes.JSON(rec.RawMetadata),
 		Source:     datatypes.JSON(rec.RawSource),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "id"}},
+		Columns: []clause.Column{{Name: "id"}, {Name: "collection"}},
 		DoUpdates: clause.AssignmentColumns([]string{"type", "collection",
 			"metadata", "source", "updated_at"}),
 	}).Create(&r)

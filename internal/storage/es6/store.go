@@ -157,7 +157,7 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 }
 
 func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
-	facetFields := []string{"collection", "type"}
+	facetFields := []string{"type"}
 	var buf bytes.Buffer
 	var query M
 	var queryFilter M
@@ -177,10 +177,10 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 		}
 	}
 
-	if args.Scope == nil {
+	if args.Filters == nil {
 		query = M{"query": queryFilter}
 	} else {
-		for field, terms := range args.Scope {
+		for field, terms := range args.Filters {
 			termsFilters = append(termsFilters, M{"terms": M{field: terms}})
 		}
 
@@ -208,6 +208,7 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 			"metadata.title.ngram": M{},
 		},
 	}
+
 	query["aggs"] = M{
 		"facets": M{
 			"global": M{},
