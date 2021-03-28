@@ -4,16 +4,9 @@
   <div class="container momo-search">
     <div class="row">
         <div class="col-12">
-          <form v-on:submit.prevent="">
-            <div class="form-group">
-              <input
-                v-model.lazy="query"
-                class="form-control"
-                type="text"
-                placeholder="Search..."
-              />
-            </div>
-          </form>
+          <basic-query
+            v-on:query-submitted="loadResults"
+          ></basic-query>
         </div>
     </div>
 
@@ -28,33 +21,14 @@
     <div class="row">
 
       <div class="col-3">
-        <div
-          v-for="facet in facets"
-          v-bind:id="`facet-${facet.id}`"
-          :key="facet.id"
-          class="facet"
-        >
-          <h2 class="title" v-html="facet.label"></h2>
-
-          <b-form-group>
-            <b-form-checkbox-group
-              v-bind:id="`facet-checkbox-group-${facet.id}`"
-              v-model="state[facet.id]"
-              v-bind:name="facet.id"
-              stacked
-            >
-              <b-form-checkbox
-                v-for="bucket in facet.buckets"
-                v-bind:id="bucket.key"
-                :key="bucket.key"
-                class="facet-checkbox-bucket"
-                v-bind:value="bucket.key"
-              >{{ bucket.key }} ({{ bucket.doc_count }})</b-form-checkbox>
-            </b-form-checkbox-group>
-          </b-form-group>
-
-        </div>
-
+          <basic-facet
+            v-for="facet in facets"
+            v-bind:key="facet.id"
+            v-bind:facetId="facet.id"
+            v-bind:label="facet.label"
+            v-bind:buckets="facet.buckets"
+            v-on:bucket-selected="loadResults"
+          ></basic-facet>
       </div>
 
       <div class="col-9">
@@ -99,14 +73,11 @@
 
           <div class="row">
             <div class="col-12">
-              <b-pagination
+              <search-pagination
                 v-if="state.initialized"
-                v-model="page"
-                :total-rows="total"
-                :per-page="size"
-                aria-controls="search-results"
-                class="list-unstyled"
-              ></b-pagination>
+                v-bind:total="total"
+                v-on:page-selected="loadResults"
+              ></search-pagination>
             </div>
           </div>
         </div>
@@ -117,26 +88,27 @@
 </template>
 
 <script>
+import BasicFacet from './BasicFacet.vue'
+import BasicQuery from './BasicQuery.vue'
+import SearchPagination from './SearchPagination.vue'
+
 export default {
+  components: {
+    BasicFacet,
+    BasicQuery,
+    SearchPagination
+  },
   data () {
     return {
       state: {
         initialized: false,
         loading: true,
         fetching: false,
-        error: null,
-        type: [],
-        collection: []
+        error: null
       },
-
-      query: '',
-      type: [],
-      collection: [],
       hits: [],
-      facets: [],
-      total: 0,
-      page: 1,
-      size: 10
+      facets: {},
+      total: 0
     }
   },
   methods: {
@@ -150,21 +122,6 @@ export default {
 
       const path = window.location.pathname
       const p = new URL(window.location).searchParams
-      p.set('q', self.query)
-      p.set('skip', (self.page - 1) * self.size)
-      p.set('size', self.size)
-      // TODO remove existing
-      for (const f of ['collection', 'type']) {
-        const k = `f[${f}]`
-        p.delete(k)
-        if (!self[f].length) {
-          continue
-        }
-        for (const term of self[f]) {
-          p.append(k, term)
-        }
-      }
-
       const pStr = '?' + p.toString()
 
       window.history.pushState({}, '', pStr)
@@ -193,15 +150,19 @@ export default {
             hits.push(hit)
           })
 
-          const facets = ['collection', 'type'].map(function (key) {
-            return {
-              id: key,
-              label: key.replace(/^(.)/, (_, c) => c.toUpperCase()), // uppertitle
-              buckets: res.aggregation.facets[key].facet.buckets
-            }
-          })
+          const facets = res.aggregation.facets
 
-          self.facets = facets
+          Object
+            .keys(facets)
+            .filter( (key) => { return key !== 'doc_count' })
+            .map( (key) => {
+              self.facets[key] = {
+                id: key,
+                label: key.replace(/^(.)/, (_, c) => c.toUpperCase()), // uppertitle
+                buckets: facets[key].facet.buckets
+              }
+            })
+
           self.total = res.total
           self.hits = hits
         })
@@ -218,56 +179,11 @@ export default {
     },
     hitUrl: function (hit) {
       return window.location.pathname + '/' + hit.id
-    },
-    toggleBucket: function (facet, bucket) {
-      const self = this
-      self[facet] = self.state[facet]
-    }
-  },
-  watch: {
-    'state.type': function (buckets) {
-      this.toggleBucket('type', buckets)
-    },
-    'state.collection': function (buckets) {
-      this.toggleBucket('collection', buckets)
-    },
-    query: function () {
-      this.loadResults()
-    },
-    page: function () {
-      this.loadResults()
-    },
-    type: function () {
-      this.loadResults()
-    },
-    collection: function () {
-      this.loadResults()
     }
   },
 
   mounted: function () {
-    const self = this
-
-    const p = new URL(window.location).searchParams
-
-    if (p.has('q')) {
-      self.query = p.get('q')
-    }
-    for (const f of ['collection', 'type']) {
-      const terms = p.getAll(`f[${f}]`)
-      if (terms.size) {
-        self[f] = terms
-        self.state[f] = terms
-      }
-    }
-    if (p.has('size')) {
-      self.size = parseInt(p.get('size'), 10)
-    }
-    if (p.has('skip')) {
-      self.page = Math.ceil((parseInt(p.get('skip'), 10) + 1) / self.size)
-    }
-
-    self.loadResults()
+    this.loadResults()
   }
 }
 </script>
