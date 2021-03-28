@@ -1,7 +1,5 @@
 package engine
 
-import "sync"
-
 type Engine interface {
 	CollectionEngine
 	RecEngine
@@ -11,11 +9,10 @@ type Engine interface {
 }
 
 type engine struct {
-	collections   []Collection
-	store         Storage
-	searchStore   SearchStorage
-	recEncoders   map[string]RecEncoderFactory
-	recEncodersMu sync.Mutex
+	collections []Collection
+	store       Storage
+	searchStore SearchStorage
+	recEncoders map[string]RecEncoderFactory
 	I18nEngine
 }
 
