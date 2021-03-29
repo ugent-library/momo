@@ -42,13 +42,13 @@ func (e *encoder) Encode(rec *engine.Rec) (err error) {
 	return
 }
 
-func addID(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "ID", rec.ID)
-}
-
 func addEndOfRecord(w io.Writer, rec *engine.Rec) error {
 	_, err := io.WriteString(w, "ER  - \r\n")
 	return err
+}
+
+func addID(w io.Writer, rec *engine.Rec) error {
+	return addTag(w, "ID", rec.ID)
 }
 
 func addTitle(w io.Writer, rec *engine.Rec) error {
@@ -60,14 +60,18 @@ func addTitle(w io.Writer, rec *engine.Rec) error {
 
 func addAuthor(w io.Writer, rec *engine.Rec) error {
 	for _, v := range rec.Metadata().Author {
-		return addTag(w, "AU", v.Name)
+		if err := addTag(w, "AU", v.Name); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func addAbstract(w io.Writer, rec *engine.Rec) error {
 	for _, v := range rec.Metadata().Abstract {
-		return addTag(w, "AB", v.Text)
+		if err := addTag(w, "AB", v.Text); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -103,7 +107,9 @@ func addISBN(w io.Writer, rec *engine.Rec) error {
 
 func addNote(w io.Writer, rec *engine.Rec) error {
 	for _, v := range rec.Metadata().Note {
-		return addTag(w, "N1", v.Text)
+		if err := addTag(w, "N1", v.Text); err != nil {
+			return err
+		}
 	}
 	return nil
 }
