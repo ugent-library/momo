@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/formats/jsonl"
+	"github.com/ugent-library/momo/internal/formats/oaidc"
 	"github.com/ugent-library/momo/internal/formats/ris"
 	"github.com/ugent-library/momo/internal/i18n/gettext"
 	"github.com/ugent-library/momo/internal/storage/es6"
@@ -20,6 +21,7 @@ func newEngine() engine.Engine {
 		engine.WithStore(newStore()),
 		engine.WithSearchStore(newSearchStore()),
 		engine.WithRecEncoder("jsonl", jsonl.NewEncoder),
+		engine.WithRecEncoder("oaidc", oaidc.NewEncoder),
 		engine.WithRecEncoder("ris", ris.NewEncoder),
 		engine.WithI18n(gettext.New()),
 	)
