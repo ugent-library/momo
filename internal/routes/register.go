@@ -23,6 +23,9 @@ func Register(r chi.Router, e engine.Engine) {
 	// static file server
 	r.Mount("/s/", http.StripPrefix("/s/", http.FileServer(http.Dir("static"))))
 
+	// OAI-PMH provider
+	r.Mount("/oai", controller.OAI(e))
+
 	// robots.txt
 	r.Get("/robots.txt", controller.Robots(e))
 
