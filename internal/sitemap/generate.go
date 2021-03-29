@@ -170,7 +170,7 @@ func (sm *sitemap) finish() error {
 		w.WriteString(`</lastmod></sitemap>`)
 	}
 
-	sm.w.WriteString(`</sitemapindex>`)
+	w.WriteString(`</sitemapindex>`)
 
 	sm.closeFile()
 

@@ -8,20 +8,26 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
+var (
+	formatF string
+	queryF  string
+)
+
 func init() {
-	recGetCmd.Flags().String("format", defaultRecformat, "format")
-	viper.BindPFlag("format", recGetCmd.Flags().Lookup("format"))
-	viper.SetDefault("format", defaultRecformat)
+	recGetCmd.Flags().StringVarP(&formatF, "format", "f", defaultRecformat, "export format")
+
+	recSearchCmd.Flags().StringVarP(&formatF, "format", "f", defaultRecformat, "export format")
+	recSearchCmd.Flags().StringVarP(&queryF, "query", "q", "", "search query")
 
 	recIndexCmd.AddCommand(recIndexAllCmd)
 	recIndexCmd.AddCommand(recIndexCreateCmd)
 	recIndexCmd.AddCommand(recIndexDeleteCmd)
 
 	recCmd.AddCommand(recGetCmd)
+	recCmd.AddCommand(recSearchCmd)
 	recCmd.AddCommand(recAddCmd)
 	recCmd.AddCommand(recIndexCmd)
 
@@ -34,17 +40,39 @@ var recCmd = &cobra.Command{
 }
 
 var recGetCmd = &cobra.Command{
-	Use:   "get [id ...]",
+	Use:   "get",
 	Short: "get stored records",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		format := viper.GetString("format")
-		encoder := e.NewRecEncoder(os.Stdout, format)
+		encoder := e.NewRecEncoder(os.Stdout, formatF)
 		if encoder == nil {
-			log.Fatalf("Unknown format %s", format)
+			log.Fatalf("Unknown format %s", formatF)
 		}
 
 		c := e.AllRecs()
+		defer c.Close()
+		for c.Next() {
+			if err := c.Error(); err != nil {
+				log.Fatal(err)
+			}
+			if err := encoder.Encode(c.Value()); err != nil {
+				log.Fatal(err)
+			}
+		}
+	},
+}
+
+var recSearchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "search records",
+	Run: func(cmd *cobra.Command, args []string) {
+		e := newEngine()
+		encoder := e.NewRecEncoder(os.Stdout, formatF)
+		if encoder == nil {
+			log.Fatalf("Unknown format %s", formatF)
+		}
+
+		c := e.SearchAllRecs(engine.SearchArgs{Query: queryF})
 		defer c.Close()
 		for c.Next() {
 			if err := c.Error(); err != nil {

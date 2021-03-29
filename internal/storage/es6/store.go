@@ -11,6 +11,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
 	"github.com/elastic/go-elasticsearch/v6/esutil"
+	"github.com/pkg/errors"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
@@ -23,6 +24,18 @@ type Config struct {
 type store struct {
 	client *elasticsearch.Client
 	Config
+}
+
+type resEnvelope struct {
+	ScrollID string `json:"_scroll_id"`
+	Hits     struct {
+		Total int
+		Hits  []struct {
+			Source    json.RawMessage `json:"_source"`
+			Highlight json.RawMessage
+		}
+	}
+	Aggregations json.RawMessage
 }
 
 type M map[string]interface{}
@@ -158,48 +171,11 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 
 func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	facetFields := []string{"type"}
-	var buf bytes.Buffer
-	var query M
-	var queryFilter M
-	var termsFilters []M
-
-	if len(args.Query) == 0 {
-		queryFilter = M{
-			"match_all": M{},
-		}
-	} else {
-		queryFilter = M{
-			"multi_match": M{
-				"query":    args.Query,
-				"fields":   []string{"id^100", "metadata.title.ngram"},
-				"operator": "and",
-			},
-		}
-	}
-
-	if args.Filters == nil {
-		query = M{"query": queryFilter}
-	} else {
-		for field, terms := range args.Filters {
-			termsFilters = append(termsFilters, M{"terms": M{field: terms}})
-		}
-
-		query = M{
-			"query": M{
-				"bool": M{
-					"must": queryFilter,
-					"filter": M{
-						"bool": M{
-							"must": termsFilters,
-						},
-					},
-				},
-			},
-		}
-	}
+	query, queryFilter, termsFilters := buildQuery(args)
 
 	query["size"] = args.Size
 	query["from"] = args.Skip
+
 	query["highlight"] = M{
 		"require_field_match": false,
 		"pre_tags":            []string{"<mark>"},
@@ -243,42 +219,13 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 		}
 	}
 
-	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		return nil, err
-	}
-	res, err := s.client.Search(
+	r, err := s.search(query,
 		s.client.Search.WithContext(context.Background()),
 		s.client.Search.WithIndex(s.indexName("rec")),
-		s.client.Search.WithBody(&buf),
 		s.client.Search.WithTrackTotalHits(true),
 	)
 	if err != nil {
 		return nil, err
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		var e map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
-	}
-
-	type resEnvelope struct {
-		Hits struct {
-			Total int
-			Hits  []struct {
-				Source    json.RawMessage `json:"_source"`
-				Highlight json.RawMessage
-			}
-		}
-		Aggregations json.RawMessage
-	}
-
-	var r resEnvelope
-	if err = json.NewDecoder(res.Body).Decode(&r); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
 	hits := engine.RecHits{
@@ -305,4 +252,43 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	}
 
 	return &hits, nil
+}
+
+func (s *store) SearchAllRecs(args engine.SearchArgs) engine.RecCursor {
+	return &recCursor{store: s, args: args}
+}
+
+func (s *store) search(body M, opts ...func(*esapi.SearchRequest)) (*resEnvelope, error) {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return nil, err
+	}
+
+	opts = append(opts, s.client.Search.WithBody(&buf))
+
+	res, err := s.client.Search(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRes(res)
+}
+
+func decodeRes(res *esapi.Response) (*resEnvelope, error) {
+	defer res.Body.Close()
+
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(e); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
+	}
+
+	var r resEnvelope
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, errors.Wrap(err, "Error parsing the response body")
+	}
+
+	return &r, nil
 }

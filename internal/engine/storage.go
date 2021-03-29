@@ -9,6 +9,7 @@ type Storage interface {
 
 type SearchStorage interface {
 	SearchRecs(SearchArgs) (*RecHits, error)
+	SearchAllRecs(SearchArgs) RecCursor
 	AddRecs(<-chan *Rec)
 	CreateRecIndex() error
 	DeleteRecIndex() error
