@@ -2,9 +2,16 @@
     "private": true,
     "scripts": {
         "postinstall": "npx mix --mix-config themes/ugent/webpack.mix.js",
-        "dev": "npx nodemon"
+        "dev": "npx nodemon",
+        "lint": "npx eslint --ext .js,.vue themes"
     },
     "devDependencies": {
+        "eslint": "^7.22.0",
+        "eslint-config-standard": "^16.0.2",
+        "eslint-loader": "^4.0.2",
+        "eslint-plugin-standard": "^5.0.0",
+        "eslint-plugin-vue": "^7.8.0",
+        "eslint-webpack-plugin": "^2.5.2",
         "font-awesome": "^4.7.0",
         "laravel-mix": "^6.0.11",
         "modularscale-sass": "^3.0.10",
