@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
@@ -24,6 +25,16 @@ type Config struct {
 type store struct {
 	client *elasticsearch.Client
 	Config
+}
+
+type esRec struct {
+	ID          string          `json:"id"`
+	Collection  string          `json:"collection"`
+	Type        string          `json:"type"`
+	RawMetadata json.RawMessage `json:"metadata"`
+	CreatedAt   string          `json:"created_at"`
+	UpdatedAt   string          `json:"updated_at"`
+	RawSource   json.RawMessage `json:"source"`
 }
 
 type resEnvelope struct {
@@ -136,7 +147,17 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 	}
 
 	for rec := range c {
-		payload, err := json.Marshal(rec)
+		// TODO not needed anymore in es7 with date nano type
+		r := esRec{
+			ID:          rec.ID,
+			Collection:  rec.Collection,
+			Type:        rec.Type,
+			RawMetadata: rec.RawMetadata,
+			CreatedAt:   rec.CreatedAt.UTC().Format(time.RFC3339),
+			UpdatedAt:   rec.UpdatedAt.UTC().Format(time.RFC3339),
+			RawSource:   rec.RawSource,
+		}
+		payload, err := json.Marshal(&r)
 		if err != nil {
 			log.Fatal(err)
 		}
