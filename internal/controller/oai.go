@@ -20,6 +20,7 @@ func OAI(e engine.Engine) http.Handler {
 			oaipmh.OAIDC,
 		},
 		Sets: []oaipmh.Set{},
+
 		GetRecord: func(id string, fmt string) *oaipmh.Record {
 			parts := strings.Split(id, ":")
 			rec, _ := e.GetRec(parts[0], strings.Join(parts[1:], ":"))
@@ -38,6 +39,26 @@ func OAI(e engine.Engine) http.Handler {
 				Metadata: oaipmh.Metadata{XML: b.Bytes()},
 			}
 			return &r
+		},
+
+		ListRecords: func() []*oaipmh.Record {
+			hits, _ := e.SearchRecs(engine.SearchArgs{Size: 100})
+			var records []*oaipmh.Record
+			for _, hit := range hits.Hits {
+				var b bytes.Buffer
+				enc := e.NewRecEncoder(&b, "oai_dc")
+				enc.Encode(&hit.Rec)
+				r := oaipmh.Record{
+					// TODO Sets
+					Header: oaipmh.Header{
+						Datestamp:  hit.UpdatedAt.UTC().Format(time.RFC3339),
+						Identifier: strings.Join([]string{hit.Collection, hit.ID}, ":"),
+					},
+					Metadata: oaipmh.Metadata{XML: b.Bytes()},
+				}
+				records = append(records, &r)
+			}
+			return records
 		},
 	})
 }

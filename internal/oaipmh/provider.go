@@ -74,6 +74,16 @@ type ListSets struct {
 	Sets    []Set    `xml:"set"`
 }
 
+type GetRecord struct {
+	XMLName xml.Name `xml:"GetRecord"`
+	Record  *Record  `xml:"record"`
+}
+
+type ListRecords struct {
+	XMLName xml.Name  `xml:"ListRecords"`
+	Records []*Record `xml:"records"`
+}
+
 type MetadataFormat struct {
 	MetadataPrefix    string `xml:"metadataPrefix"`
 	Schema            string `xml:"schema"`
@@ -116,6 +126,7 @@ type ProviderOptions struct {
 	MetadataFormats   []MetadataFormat
 	Sets              []Set
 	GetRecord         func(string, string) *Record
+	ListRecords       func() []*Record
 }
 
 func NewProvider(opts ProviderOptions) http.Handler {
@@ -170,7 +181,9 @@ func (p *provider) listIdentifiers(res *oaiResponse) {
 }
 
 func (p *provider) listRecords(res *oaiResponse) {
-	res.Body = errBadVerb
+	res.Body = &ListRecords{
+		Records: p.ListRecords(),
+	}
 }
 
 // TODO badArgument, cannotDisseminateFormat
@@ -181,7 +194,9 @@ func (p *provider) getRecord(res *oaiResponse) {
 		res.Body = errIDDoesNotExist
 		return
 	}
-	res.Body = rec
+	res.Body = &GetRecord{
+		Record: rec,
+	}
 }
 
 func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {

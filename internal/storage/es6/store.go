@@ -240,7 +240,7 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	for _, h := range r.Hits.Hits {
 		var hit engine.RecHit
 
-		if err := json.Unmarshal(h.Source, &hit); err != nil {
+		if err := json.Unmarshal(h.Source, &hit.Rec); err != nil {
 			return nil, err
 		}
 
