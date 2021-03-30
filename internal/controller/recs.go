@@ -63,7 +63,7 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
-	args := engine.SearchArgs{}
+	args := engine.SearchArgs{Facets: []string{"type"}, Highlight: true}
 	err := form.Decode(&args, r.URL.Query())
 	if err != nil {
 		log.Println(err)

@@ -3,10 +3,12 @@ package engine
 type Filters map[string][]string
 
 type SearchArgs struct {
-	Query   string  `form:"q"`
-	Filters Filters `form:"f"`
-	Size    int     `form:"size"`
-	Skip    int     `form:"skip"`
+	Query     string   `form:"q"`
+	Filters   Filters  `form:"f"`
+	Size      int      `form:"size"`
+	Skip      int      `form:"skip"`
+	Facets    []string `form:"-"`
+	Highlight bool     `form:"-"`
 }
 
 func (a SearchArgs) WithFilter(field string, terms ...string) SearchArgs {

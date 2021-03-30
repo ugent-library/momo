@@ -191,52 +191,55 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 }
 
 func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
-	facetFields := []string{"type"}
 	query, queryFilter, termsFilters := buildQuery(args)
 
 	query["size"] = args.Size
 	query["from"] = args.Skip
 
-	query["highlight"] = M{
-		"require_field_match": false,
-		"pre_tags":            []string{"<mark>"},
-		"post_tags":           []string{"</mark>"},
-		"fields": M{
-			"metadata.title.ngram": M{},
-		},
+	if args.Highlight {
+		query["highlight"] = M{
+			"require_field_match": false,
+			"pre_tags":            []string{"<mark>"},
+			"post_tags":           []string{"</mark>"},
+			"fields": M{
+				"metadata.title.ngram": M{},
+			},
+		}
 	}
 
-	query["aggs"] = M{
-		"facets": M{
-			"global": M{},
-			"aggs":   M{},
-		},
-	}
-
-	// facet filter contains all query and all filters except itself
-	for _, field := range facetFields {
-		filters := []M{queryFilter}
-
-		for _, filter := range termsFilters {
-			if _, found := filter["terms"].(M)[field]; found {
-				continue
-			} else {
-				filters = append(filters, filter)
-			}
+	if len(args.Facets) > 0 {
+		query["aggs"] = M{
+			"facets": M{
+				"global": M{},
+				"aggs":   M{},
+			},
 		}
 
-		query["aggs"].(M)["facets"].(M)["aggs"].(M)[field] = M{
-			"filter": M{"bool": M{"must": filters}},
-			"aggs": M{
-				"facet": M{
-					"terms": M{
-						"field":         field,
-						"min_doc_count": 1,
-						"order":         M{"_key": "asc"},
-						"size":          200,
+		// facet filter contains all query and all filters except itself
+		for _, field := range args.Facets {
+			filters := []M{queryFilter}
+
+			for _, filter := range termsFilters {
+				if _, found := filter["terms"].(M)[field]; found {
+					continue
+				} else {
+					filters = append(filters, filter)
+				}
+			}
+
+			query["aggs"].(M)["facets"].(M)["aggs"].(M)[field] = M{
+				"filter": M{"bool": M{"must": filters}},
+				"aggs": M{
+					"facet": M{
+						"terms": M{
+							"field":         field,
+							"min_doc_count": 1,
+							"order":         M{"_key": "asc"},
+							"size":          200,
+						},
 					},
 				},
-			},
+			}
 		}
 	}
 
