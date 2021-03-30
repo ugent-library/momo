@@ -6,5 +6,5 @@ const (
 	defaultEs6IndexPrefix = "momo_"
 	defaultHost           = "localhost"
 	defaultPort           = 3000
-	defaultRecformat      = "jsonl"
+	defaultRecformat      = "json"
 )

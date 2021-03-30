@@ -17,6 +17,7 @@ const (
 var (
 	errBadVerb        = oaiError{Code: "badVerb", Msg: "Illegal OAI verb"}
 	errNoSetHierarchy = oaiError{Code: "noSetHierarchy", Msg: "Sets are not supported"}
+	errIDDoesNotExist = oaiError{Code: "idDoesNotExist", Msg: "Identifier is unknown or illegal"}
 
 	OAIDC = MetadataFormat{
 		MetadataPrefix:    "oai_dc",
@@ -84,6 +85,22 @@ type Set struct {
 	SetName string `xml:"setName"`
 }
 
+type Header struct {
+	Status     string   `xml:"status,attr,omitempty"`
+	Identifier string   `xml:"identifier"`
+	Datestamp  string   `xml:"datestamp"`
+	SetSpec    []string `xml:"setSpec"`
+}
+
+type Metadata struct {
+	XML []byte `xml:",innerxml"`
+}
+
+type Record struct {
+	Header   Header   `xml:"header"`
+	Metadata Metadata `xml:"metadata"`
+}
+
 type provider struct {
 	ProviderOptions
 	formDecoder *form.Decoder
@@ -98,6 +115,7 @@ type ProviderOptions struct {
 	DeletedRecord     string
 	MetadataFormats   []MetadataFormat
 	Sets              []Set
+	GetRecord         func(string, string) *Record
 }
 
 func NewProvider(opts ProviderOptions) http.Handler {
@@ -117,8 +135,8 @@ func NewProvider(opts ProviderOptions) http.Handler {
 }
 
 // TODO badArgument, description, compression
-func (p *provider) identify(r *http.Request) *Identify {
-	return &Identify{
+func (p *provider) identify(res *oaiResponse) {
+	res.Body = &Identify{
 		RepositoryName:    p.RepositoryName,
 		BaseURL:           p.BaseURL,
 		ProtocolVersion:   "2.0",
@@ -130,32 +148,40 @@ func (p *provider) identify(r *http.Request) *Identify {
 }
 
 // TODO identifier, badArgument, idDoesNotExist, noMetadataFormats
-func (p *provider) listMetadataFormats(r *http.Request) interface{} {
-	return &ListMetadataFormats{
+func (p *provider) listMetadataFormats(res *oaiResponse) {
+	res.Body = &ListMetadataFormats{
 		MetadataFormats: p.MetadataFormats,
 	}
 }
 
 // TODO resumptionToken, badArgument, badResumptionToken
-func (p *provider) listSets(r *http.Request) interface{} {
+func (p *provider) listSets(res *oaiResponse) {
 	if len(p.Sets) == 0 {
-		return errNoSetHierarchy
+		res.Body = errNoSetHierarchy
+		return
 	}
-	return &ListSets{
+	res.Body = &ListSets{
 		Sets: p.Sets,
 	}
 }
 
-func (p *provider) listIdentifiers(r *http.Request) interface{} {
-	return errBadVerb
+func (p *provider) listIdentifiers(res *oaiResponse) {
+	res.Body = errBadVerb
 }
 
-func (p *provider) listRecords(r *http.Request) interface{} {
-	return errBadVerb
+func (p *provider) listRecords(res *oaiResponse) {
+	res.Body = errBadVerb
 }
 
-func (p *provider) getRecord(r *http.Request) interface{} {
-	return errBadVerb
+// TODO badArgument, cannotDisseminateFormat
+func (p *provider) getRecord(res *oaiResponse) {
+	// TODO also return error
+	rec := p.GetRecord(res.Request.Identifier, res.Request.MetadataPrefix)
+	if rec == nil {
+		res.Body = errIDDoesNotExist
+		return
+	}
+	res.Body = rec
 }
 
 func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +191,7 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	res := oaiResponse{
+	res := &oaiResponse{
 		XmlnsXsi:          xmlnsXsi,
 		XsiSchemaLocation: xsiSchemaLocation,
 		ResponseDate:      time.Now().UTC().Format(time.RFC3339),
@@ -174,17 +200,17 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Verb {
 	case "Identify":
-		res.Body = p.identify(r)
+		p.identify(res)
 	case "ListMetadataFormats":
-		res.Body = p.listMetadataFormats(r)
+		p.listMetadataFormats(res)
 	case "ListSets":
-		res.Body = p.listSets(r)
+		p.listSets(res)
 	case "ListIdentifiers":
-		res.Body = p.listIdentifiers(r)
+		p.listIdentifiers(res)
 	case "ListRecords":
-		res.Body = p.listRecords(r)
+		p.listRecords(res)
 	case "GetRecord":
-		res.Body = p.getRecord(r)
+		p.getRecord(res)
 	default:
 		res.Body = errBadVerb
 	}

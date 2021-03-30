@@ -20,8 +20,8 @@ func newEngine() engine.Engine {
 	return engine.New(
 		engine.WithStore(newStore()),
 		engine.WithSearchStore(newSearchStore()),
-		engine.WithRecEncoder("jsonl", jsonl.NewEncoder),
-		engine.WithRecEncoder("oaidc", oaidc.NewEncoder),
+		engine.WithRecEncoder("json", jsonl.NewEncoder),
+		engine.WithRecEncoder("oai_dc", oaidc.NewEncoder),
 		engine.WithRecEncoder("ris", ris.NewEncoder),
 		engine.WithI18n(gettext.New()),
 	)
