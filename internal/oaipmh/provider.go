@@ -189,7 +189,7 @@ func (p *provider) listIdentifiers(res *response) {
 	res.Body = ErrBadVerb
 }
 
-// TODO badArgument, badResumptionToken, cannotDisseminateFormat, noRecordsMatch, noSetHierarchy
+// TODO badArgument, badResumptionToken, cannotDisseminateFormat, noSetHierarchy
 func (p *provider) listRecords(res *response) {
 	recs, token := p.ListRecords(&res.Request)
 	if len(recs) == 0 {
