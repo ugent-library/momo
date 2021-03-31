@@ -9,6 +9,7 @@ type SearchArgs struct {
 	Skip      int      `form:"skip"`
 	Facets    []string `form:"-"`
 	Highlight bool     `form:"-"`
+	Cursor    bool     `form:"-"`
 }
 
 func (a SearchArgs) WithFilter(field string, terms ...string) SearchArgs {

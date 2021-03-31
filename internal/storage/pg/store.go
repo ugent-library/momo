@@ -51,7 +51,7 @@ func (s *store) GetRec(coll string, id string) (*engine.Rec, error) {
 	return reifyRec(&r), nil
 }
 
-func (s *store) AllRecs() engine.RecCursor {
+func (s *store) GetAllRecs() engine.RecCursor {
 	rows, err := s.db.Model(&Rec{}).Rows()
 	return &recCursor{db: s.db, rows: rows, err: err}
 }

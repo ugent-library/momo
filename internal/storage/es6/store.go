@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 	"time"
@@ -243,18 +244,65 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 		}
 	}
 
-	r, err := s.search(query,
+	opts := []func(*esapi.SearchRequest){
 		s.client.Search.WithContext(context.Background()),
 		s.client.Search.WithIndex(s.indexName("rec")),
 		s.client.Search.WithTrackTotalHits(true),
-	)
+		s.client.Search.WithSort("_doc"),
+	}
+
+	if args.Cursor {
+		opts = append(opts, s.client.Search.WithScroll(time.Minute))
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return nil, err
+	}
+
+	opts = append(opts, s.client.Search.WithBody(&buf))
+
+	res, err := s.client.Search(opts...)
 	if err != nil {
 		return nil, err
 	}
 
+	return decodeRes(res)
+}
+
+func (s *store) SearchMoreRecs(cursorID string) (*engine.RecHits, error) {
+	res, err := s.client.Scroll(
+		s.client.Scroll.WithScrollID(cursorID),
+		s.client.Scroll.WithScroll(time.Minute),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRes(res)
+}
+
+func decodeRes(res *esapi.Response) (*engine.RecHits, error) {
+	defer res.Body.Close()
+
+	if res.IsError() {
+		buf := new(strings.Builder)
+		if _, err := io.Copy(buf, res.Body); err != nil {
+			return nil, err
+		}
+		return nil, errors.New("Es6 error response: " + buf.String())
+	}
+
+	var r resEnvelope
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, errors.Wrap(err, "Error parsing the response body")
+	}
+
 	hits := engine.RecHits{
-		Total: r.Hits.Total,
-		Hits:  []*engine.RecHit{},
+		CursorID: r.ScrollID,
+		Total:    r.Hits.Total,
+		Hits:     []*engine.RecHit{},
 	}
 
 	if len(r.Aggregations) > 0 {
@@ -276,43 +324,5 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	}
 
 	return &hits, nil
-}
 
-func (s *store) SearchAllRecs(args engine.SearchArgs) engine.RecCursor {
-	return &recCursor{store: s, args: args}
-}
-
-func (s *store) search(body M, opts ...func(*esapi.SearchRequest)) (*resEnvelope, error) {
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(body); err != nil {
-		return nil, err
-	}
-
-	opts = append(opts, s.client.Search.WithBody(&buf))
-
-	res, err := s.client.Search(opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return decodeRes(res)
-}
-
-func decodeRes(res *esapi.Response) (*resEnvelope, error) {
-	defer res.Body.Close()
-
-	if res.IsError() {
-		var e map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(e); err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
-	}
-
-	var r resEnvelope
-	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-		return nil, errors.Wrap(err, "Error parsing the response body")
-	}
-
-	return &r, nil
 }

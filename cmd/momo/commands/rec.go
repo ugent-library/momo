@@ -49,7 +49,7 @@ var recGetCmd = &cobra.Command{
 			log.Fatalf("Unknown format %s", formatF)
 		}
 
-		c := e.AllRecs()
+		c := e.GetAllRecs()
 		defer c.Close()
 		for c.Next() {
 			if err := c.Error(); err != nil {

@@ -22,7 +22,7 @@ func Generate(e engine.Engine, baseURL string) (err error) {
 		path:       "static/sitemaps",
 	}
 
-	c := e.AllRecs()
+	c := e.GetAllRecs()
 	defer c.Close()
 
 	for c.Next() {

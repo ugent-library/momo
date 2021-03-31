@@ -10,7 +10,7 @@ import (
 
 type RecEngine interface {
 	GetRec(string, string) (*Rec, error)
-	AllRecs() RecCursor
+	GetAllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
 	SearchAllRecs(SearchArgs) RecCursor
 	AddRecs(<-chan *Rec)
@@ -60,6 +60,7 @@ type Text struct {
 }
 
 type RecHits struct {
+	CursorID       string          `json:"-"`
 	Total          int             `json:"total"`
 	Hits           []*RecHit       `json:"hits"`
 	RawAggregation json.RawMessage `json:"aggregation"`
@@ -68,6 +69,14 @@ type RecHits struct {
 type RecHit struct {
 	Rec
 	RawHighlight json.RawMessage `json:"highlight"`
+}
+
+type recHitsCursor struct {
+	args        SearchArgs
+	searchStore SearchStorage
+	hits        *RecHits
+	hitsIdx     int
+	err         error
 }
 
 func (rec *Rec) Metadata() *RecMetadata {
@@ -84,8 +93,8 @@ func (e *engine) GetRec(coll string, id string) (*Rec, error) {
 	return e.store.GetRec(coll, id)
 }
 
-func (e *engine) AllRecs() RecCursor {
-	return e.store.AllRecs()
+func (e *engine) GetAllRecs() RecCursor {
+	return e.store.GetAllRecs()
 }
 
 func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
@@ -93,7 +102,12 @@ func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
 }
 
 func (e *engine) SearchAllRecs(args SearchArgs) RecCursor {
-	return e.searchStore.SearchAllRecs(args)
+	args.Cursor = true
+	args.Size = 200
+	return &recHitsCursor{
+		searchStore: e.searchStore,
+		args:        args,
+	}
 }
 
 func (e *engine) AddRecs(storeC <-chan *Rec) {
@@ -145,7 +159,7 @@ func (e *engine) IndexRecs() (err error) {
 	}()
 
 	// send recs to indexer
-	c := e.store.AllRecs()
+	c := e.store.GetAllRecs()
 	defer c.Close()
 	for c.Next() {
 		if err = c.Error(); err != nil {
@@ -168,4 +182,37 @@ func (e *engine) CreateRecIndex() error {
 
 func (e *engine) DeleteRecIndex() error {
 	return e.searchStore.DeleteRecIndex()
+}
+
+func (c *recHitsCursor) Next() bool {
+	if c.hits == nil {
+		c.hits, c.err = c.searchStore.SearchRecs(c.args)
+	}
+	if c.err == nil && c.hitsIdx < len(c.hits.Hits) {
+		return true
+	} else if c.err == nil {
+		c.hits, c.err = c.searchStore.SearchMoreRecs(c.hits.CursorID)
+		c.hitsIdx = 0
+		if c.err == nil && len(c.hits.Hits) > 0 {
+			return true
+		}
+
+	}
+	return false
+}
+
+func (c *recHitsCursor) Value() *Rec {
+	if c.err != nil || c.hitsIdx >= len(c.hits.Hits) {
+		return nil
+	}
+	rec := &c.hits.Hits[c.hitsIdx].Rec
+	c.hitsIdx++
+	return rec
+}
+
+func (c *recHitsCursor) Error() error {
+	return c.err
+}
+
+func (c *recHitsCursor) Close() {
 }
