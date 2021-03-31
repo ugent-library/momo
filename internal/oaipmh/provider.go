@@ -15,9 +15,10 @@ const (
 )
 
 var (
-	errBadVerb        = oaiError{Code: "badVerb", Msg: "Illegal OAI verb"}
-	errNoSetHierarchy = oaiError{Code: "noSetHierarchy", Msg: "Sets are not supported"}
-	errIDDoesNotExist = oaiError{Code: "idDoesNotExist", Msg: "Identifier is unknown or illegal"}
+	ErrBadVerb        = Error{Code: "badVerb", Value: "Illegal OAI verb"}
+	ErrNoSetHierarchy = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
+	ErrIDDoesNotExist = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
+	ErrNoRecordsMatch = Error{Code: "noRecordsMatch", Value: "No records match"}
 
 	OAIDC = MetadataFormat{
 		MetadataPrefix:    "oai_dc",
@@ -26,7 +27,7 @@ var (
 	}
 )
 
-type oaiRequest struct {
+type Request struct {
 	XMLName         xml.Name `xml:"request"`
 	URL             string   `xml:",chardata"`
 	Verb            string   `xml:"verb,attr,omitempty" form:"verb"`
@@ -38,19 +39,19 @@ type oaiRequest struct {
 	ResumptionToken string   `xml:"resumptionToken,attr,omitempty" form:"resumptionToken"`
 }
 
-type oaiResponse struct {
+type response struct {
 	XMLName           xml.Name `xml:"http://www.openarchives.org/OAI/2.0/ OAI-PMH"`
 	XmlnsXsi          string   `xml:"xmlns:xsi,attr"`
 	XsiSchemaLocation string   `xml:"xsi:schemaLocation,attr"`
 	ResponseDate      string   `xml:"responseDate"`
-	Request           oaiRequest
+	Request           Request
 	Body              interface{}
 }
 
-type oaiError struct {
+type Error struct {
 	XMLName xml.Name `xml:"error"`
 	Code    string   `xml:"code,attr"`
-	Msg     string   `xml:",chardata"`
+	Value   string   `xml:",chardata"`
 }
 
 type Identify struct {
@@ -80,8 +81,9 @@ type GetRecord struct {
 }
 
 type ListRecords struct {
-	XMLName xml.Name  `xml:"ListRecords"`
-	Records []*Record `xml:"records"`
+	XMLName         xml.Name         `xml:"ListRecords"`
+	Records         []*Record        `xml:"records"`
+	ResumptionToken *ResumptionToken `xml:"resumptionToken"`
 }
 
 type MetadataFormat struct {
@@ -111,6 +113,13 @@ type Record struct {
 	Metadata Metadata `xml:"metadata"`
 }
 
+type ResumptionToken struct {
+	ExpirationDate   string `xml:"expirationDate,attr,omitempty"`
+	CompleteListSize int    `xml:"completeListSize,attr,omitempty"`
+	Cursor           int    `xml:"cursor,attr,omitempty"`
+	Value            string `xml:",chardata"`
+}
+
 type provider struct {
 	ProviderOptions
 	formDecoder *form.Decoder
@@ -126,7 +135,7 @@ type ProviderOptions struct {
 	MetadataFormats   []MetadataFormat
 	Sets              []Set
 	GetRecord         func(string, string) *Record
-	ListRecords       func() []*Record
+	ListRecords       func(*Request) ([]*Record, *ResumptionToken)
 }
 
 func NewProvider(opts ProviderOptions) http.Handler {
@@ -146,7 +155,7 @@ func NewProvider(opts ProviderOptions) http.Handler {
 }
 
 // TODO badArgument, description, compression
-func (p *provider) identify(res *oaiResponse) {
+func (p *provider) identify(res *response) {
 	res.Body = &Identify{
 		RepositoryName:    p.RepositoryName,
 		BaseURL:           p.BaseURL,
@@ -159,16 +168,16 @@ func (p *provider) identify(res *oaiResponse) {
 }
 
 // TODO identifier, badArgument, idDoesNotExist, noMetadataFormats
-func (p *provider) listMetadataFormats(res *oaiResponse) {
+func (p *provider) listMetadataFormats(res *response) {
 	res.Body = &ListMetadataFormats{
 		MetadataFormats: p.MetadataFormats,
 	}
 }
 
 // TODO resumptionToken, badArgument, badResumptionToken
-func (p *provider) listSets(res *oaiResponse) {
+func (p *provider) listSets(res *response) {
 	if len(p.Sets) == 0 {
-		res.Body = errNoSetHierarchy
+		res.Body = ErrNoSetHierarchy
 		return
 	}
 	res.Body = &ListSets{
@@ -176,22 +185,29 @@ func (p *provider) listSets(res *oaiResponse) {
 	}
 }
 
-func (p *provider) listIdentifiers(res *oaiResponse) {
-	res.Body = errBadVerb
+func (p *provider) listIdentifiers(res *response) {
+	res.Body = ErrBadVerb
 }
 
-func (p *provider) listRecords(res *oaiResponse) {
+// TODO badArgument, badResumptionToken, cannotDisseminateFormat, noRecordsMatch, noSetHierarchy
+func (p *provider) listRecords(res *response) {
+	recs, token := p.ListRecords(&res.Request)
+	if len(recs) == 0 {
+		res.Body = ErrNoRecordsMatch
+		return
+	}
 	res.Body = &ListRecords{
-		Records: p.ListRecords(),
+		Records:         recs,
+		ResumptionToken: token,
 	}
 }
 
 // TODO badArgument, cannotDisseminateFormat
-func (p *provider) getRecord(res *oaiResponse) {
+func (p *provider) getRecord(res *response) {
 	// TODO also return error
 	rec := p.GetRecord(res.Request.Identifier, res.Request.MetadataPrefix)
 	if rec == nil {
-		res.Body = errIDDoesNotExist
+		res.Body = ErrIDDoesNotExist
 		return
 	}
 	res.Body = &GetRecord{
@@ -200,13 +216,13 @@ func (p *provider) getRecord(res *oaiResponse) {
 }
 
 func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := oaiRequest{URL: p.BaseURL + r.URL.Path}
+	req := Request{URL: p.BaseURL + r.URL.Path}
 	err := p.formDecoder.Decode(&req, r.URL.Query())
 	if err != nil {
 		log.Panic(err)
 	}
 
-	res := &oaiResponse{
+	res := &response{
 		XmlnsXsi:          xmlnsXsi,
 		XsiSchemaLocation: xsiSchemaLocation,
 		ResponseDate:      time.Now().UTC().Format(time.RFC3339),
@@ -227,13 +243,13 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "GetRecord":
 		p.getRecord(res)
 	default:
-		res.Body = errBadVerb
+		res.Body = ErrBadVerb
 	}
 
 	res.render(200, w)
 }
 
-func (r oaiResponse) render(status int, w http.ResponseWriter) {
+func (r response) render(status int, w http.ResponseWriter) {
 	out, err := xml.MarshalIndent(r, "", " ")
 	if err != nil {
 		log.Panic(err)

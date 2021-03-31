@@ -41,8 +41,21 @@ func OAI(e engine.Engine) http.Handler {
 			return &r
 		},
 
-		ListRecords: func() []*oaipmh.Record {
-			hits, _ := e.SearchRecs(engine.SearchArgs{Size: 100})
+		// TODO from, until, set, metadataPrefix
+		ListRecords: func(r *oaipmh.Request) ([]*oaipmh.Record, *oaipmh.ResumptionToken) {
+			var hits *engine.RecHits
+			var err error
+
+			if r.ResumptionToken == "" {
+				hits, err = e.SearchRecs(engine.SearchArgs{Size: 200, Cursor: true})
+			} else {
+				hits, err = e.SearchMoreRecs(r.ResumptionToken)
+			}
+
+			if err != nil {
+				panic(err) // TODO don't die
+			}
+
 			var records []*oaipmh.Record
 			for _, hit := range hits.Hits {
 				var b bytes.Buffer
@@ -58,7 +71,14 @@ func OAI(e engine.Engine) http.Handler {
 				}
 				records = append(records, &r)
 			}
-			return records
+
+			token := &oaipmh.ResumptionToken{
+				ExpirationDate:   time.Now().Add(time.Minute).UTC().Format(time.RFC3339),
+				CompleteListSize: hits.Total,
+				Value:            hits.CursorID,
+			}
+
+			return records, token
 		},
 	})
 }

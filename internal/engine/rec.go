@@ -12,6 +12,7 @@ type RecEngine interface {
 	GetRec(string, string) (*Rec, error)
 	GetAllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
+	SearchMoreRecs(string) (*RecHits, error)
 	SearchAllRecs(SearchArgs) RecCursor
 	AddRecs(<-chan *Rec)
 	IndexRecs() error
@@ -99,6 +100,10 @@ func (e *engine) GetAllRecs() RecCursor {
 
 func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
 	return e.searchStore.SearchRecs(args)
+}
+
+func (e *engine) SearchMoreRecs(cursorID string) (*RecHits, error) {
+	return e.searchStore.SearchMoreRecs(cursorID)
 }
 
 func (e *engine) SearchAllRecs(args SearchArgs) RecCursor {

@@ -148,7 +148,7 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 	}
 
 	for rec := range c {
-		// TODO not needed anymore in es7 with date nano type
+		// not needed anymore in es7 with date nano type
 		r := esRec{
 			ID:          rec.ID,
 			Collection:  rec.Collection,
@@ -271,6 +271,7 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 }
 
 func (s *store) SearchMoreRecs(cursorID string) (*engine.RecHits, error) {
+	// use search after api in es7
 	res, err := s.client.Scroll(
 		s.client.Scroll.WithScrollID(cursorID),
 		s.client.Scroll.WithScroll(time.Minute),
