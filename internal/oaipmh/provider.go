@@ -2,11 +2,11 @@ package oaipmh
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
-
-	"github.com/go-playground/form/v4"
 )
 
 const (
@@ -30,13 +30,13 @@ var (
 type Request struct {
 	XMLName         xml.Name `xml:"request"`
 	URL             string   `xml:",chardata"`
-	Verb            string   `xml:"verb,attr,omitempty" form:"verb"`
-	MetadataPrefix  string   `xml:"metadataPrefix,attr,omitempty" form:"metadataPrefix"`
-	Identifier      string   `xml:"identifier,attr,omitempty" form:"identifier"`
-	Set             string   `xml:"set,attr,omitempty" form:"set"`
-	From            string   `xml:"from,attr,omitempty" form:"from"`
-	Until           string   `xml:"until,attr,omitempty" form:"until"`
-	ResumptionToken string   `xml:"resumptionToken,attr,omitempty" form:"resumptionToken"`
+	Verb            string   `xml:"verb,attr,omitempty"`
+	MetadataPrefix  string   `xml:"metadataPrefix,attr,omitempty"`
+	Identifier      string   `xml:"identifier,attr,omitempty"`
+	Set             string   `xml:"set,attr,omitempty"`
+	From            string   `xml:"from,attr,omitempty"`
+	Until           string   `xml:"until,attr,omitempty"`
+	ResumptionToken string   `xml:"resumptionToken,attr,omitempty"`
 }
 
 type response struct {
@@ -45,6 +45,7 @@ type response struct {
 	XsiSchemaLocation string   `xml:"xsi:schemaLocation,attr"`
 	ResponseDate      string   `xml:"responseDate"`
 	Request           Request
+	Errors            []Error
 	Body              interface{}
 }
 
@@ -122,7 +123,6 @@ type ResumptionToken struct {
 
 type provider struct {
 	ProviderOptions
-	formDecoder *form.Decoder
 }
 
 type ProviderOptions struct {
@@ -141,7 +141,6 @@ type ProviderOptions struct {
 func NewProvider(opts ProviderOptions) http.Handler {
 	p := &provider{
 		ProviderOptions: opts,
-		formDecoder:     form.NewDecoder(),
 	}
 
 	if p.Granularity == "" {
@@ -216,40 +215,59 @@ func (p *provider) getRecord(res *response) {
 }
 
 func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	req := Request{URL: p.BaseURL + r.URL.Path}
-	err := p.formDecoder.Decode(&req, r.URL.Query())
-	if err != nil {
-		log.Panic(err)
-	}
-
 	res := &response{
 		XmlnsXsi:          xmlnsXsi,
 		XsiSchemaLocation: xsiSchemaLocation,
 		ResponseDate:      time.Now().UTC().Format(time.RFC3339),
-		Request:           req,
+		Request: Request{
+			URL: p.BaseURL + r.URL.Path,
+		},
 	}
 
-	switch req.Verb {
+	q := r.URL.Query()
+
+	res.setVerb(q)
+
+	switch res.Request.Verb {
 	case "Identify":
-		p.identify(res)
+		res.allowAttrs(q)
+		if len(res.Errors) == 0 {
+			p.identify(res)
+		}
 	case "ListMetadataFormats":
-		p.listMetadataFormats(res)
+		res.allowAttrs(q, "metadataPrefix", "identifier")
+		if len(res.Errors) == 0 {
+			p.listMetadataFormats(res)
+		}
 	case "ListSets":
-		p.listSets(res)
+		res.allowAttrs(q, "resumptionToken")
+		if len(res.Errors) == 0 {
+			p.listSets(res)
+		}
 	case "ListIdentifiers":
-		p.listIdentifiers(res)
+		res.allowAttrs(q, "metadataPrefix", "from", "until", "set", "resumptionToken")
+		res.requireAttrs(q, "metadataPrefix")
+		if len(res.Errors) == 0 {
+			p.listIdentifiers(res)
+		}
 	case "ListRecords":
-		p.listRecords(res)
+		res.allowAttrs(q, "metadataPrefix", "from", "until", "set", "resumptionToken")
+		res.requireAttrs(q, "metadataPrefix")
+		if len(res.Errors) == 0 {
+			p.listRecords(res)
+		}
 	case "GetRecord":
-		p.getRecord(res)
-	default:
-		res.Body = ErrBadVerb
+		res.allowAttrs(q, "metadataPrefix", "identifier")
+		res.requireAttrs(q, "metadataPrefix", "identifier")
+		if len(res.Errors) == 0 {
+			p.getRecord(res)
+		}
 	}
 
 	res.render(200, w)
 }
 
-func (r response) render(status int, w http.ResponseWriter) {
+func (r *response) render(status int, w http.ResponseWriter) {
 	out, err := xml.MarshalIndent(r, "", " ")
 	if err != nil {
 		log.Panic(err)
@@ -258,4 +276,97 @@ func (r response) render(status int, w http.ResponseWriter) {
 	w.WriteHeader(status)
 	w.Write([]byte(xml.Header))
 	w.Write(out)
+}
+
+func (r *response) setVerb(q url.Values) {
+	vals, ok := q["verb"]
+
+	if !ok {
+		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: "Verb is missing"})
+		return
+	}
+	if len(vals) > 1 {
+		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: "Verb can't be repeated"})
+		return
+	}
+
+	verb := vals[0]
+
+	if verb != "Identify" && verb != "ListMetadataFormats" && verb != "ListSets" &&
+		verb != "ListIdentifiers" && verb != "ListRecords" && verb != "GetRecord" {
+		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: fmt.Sprintf("Verb '%s' is illegal", verb)})
+		return
+	}
+
+	r.Request.Verb = verb
+}
+
+func (r *response) allowAttrs(q url.Values, attrs ...string) {
+	for attr, vals := range q {
+		if attr == "verb" {
+			continue
+		}
+
+		var validAttr bool
+		for _, a := range attrs {
+			if attr == a {
+				validAttr = true
+				break
+			}
+		}
+
+		if !validAttr {
+			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' is illegal", attr)}
+			r.Errors = append(r.Errors, err)
+			continue
+		}
+		if len(vals) > 1 {
+			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' can't be repeated", attr)}
+			r.Errors = append(r.Errors, err)
+			continue
+		}
+
+		val := vals[0]
+
+		switch attr {
+		case "metadataPrefix":
+			r.Request.MetadataPrefix = val
+		case "identifier":
+			r.Request.Identifier = val
+		case "from":
+			r.Request.From = val
+		case "until":
+			r.Request.Until = val
+		case "set":
+			r.Request.Set = val
+		case "resumptionToken":
+			r.Request.ResumptionToken = val
+		}
+	}
+}
+
+func (r *response) requireAttrs(q url.Values, attrs ...string) {
+	for _, attr := range attrs {
+		var missing bool
+
+		switch attr {
+		case "metadataPrefix":
+			missing = r.Request.MetadataPrefix == ""
+		case "identifier":
+			missing = r.Request.Identifier == ""
+		case "from":
+			missing = r.Request.From == ""
+		case "until":
+			missing = r.Request.Until == ""
+		case "set":
+			missing = r.Request.Set == ""
+		case "resumptionToken":
+			missing = r.Request.ResumptionToken == ""
+		}
+
+		if missing {
+			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' is required", attr)}
+			r.Errors = append(r.Errors, err)
+		}
+	}
 }
