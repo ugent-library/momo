@@ -20,7 +20,7 @@ func OAI(e engine.Engine) http.Handler {
 			oaipmh.OAIDC,
 		},
 		Sets: []oaipmh.Set{
-			{SetName: "all", SetSpec: "All records"},
+			{Name: "all", Spec: "All records"},
 		},
 
 		GetRecord: func(r *oaipmh.Request) *oaipmh.Record {

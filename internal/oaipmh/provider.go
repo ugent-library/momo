@@ -115,9 +115,9 @@ type MetadataFormat struct {
 }
 
 type Set struct {
-	SetSpec        string   `xml:"setSpec"`
-	SetName        string   `xml:"setName"`
-	SetDescription *Payload `xml:"setDescription"`
+	Spec        string   `xml:"setSpec"`
+	Name        string   `xml:"setName"`
+	Description *Payload `xml:"setDescription"`
 }
 
 type Header struct {
@@ -145,6 +145,7 @@ type ResumptionToken struct {
 
 type provider struct {
 	ProviderOptions
+	setMap map[string]struct{}
 }
 
 type ProviderOptions struct {
@@ -164,6 +165,7 @@ type ProviderOptions struct {
 func NewProvider(opts ProviderOptions) http.Handler {
 	p := &provider{
 		ProviderOptions: opts,
+		setMap:          make(map[string]struct{}),
 	}
 
 	if p.Granularity == "" {
@@ -171,6 +173,10 @@ func NewProvider(opts ProviderOptions) http.Handler {
 	}
 	if p.DeletedRecord == "" {
 		p.DeletedRecord = "persistent"
+	}
+
+	for _, set := range p.Sets {
+		p.setMap[set.Name] = yes
 	}
 
 	return p
@@ -396,7 +402,12 @@ func (r *response) setSet(q url.Values) {
 		return
 	}
 
-	// TODO check set exists
+	if _, ok := r.provider.setMap[val]; !ok {
+		err := Error{Code: "badArgument", Value: fmt.Sprintf("Set '%s' does not exist", val)}
+		r.Errors = append(r.Errors, err)
+		return
+	}
+
 	r.Request.Set = val
 }
 
