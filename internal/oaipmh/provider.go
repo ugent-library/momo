@@ -30,12 +30,13 @@ var (
 		MetadataNamespace: "http://www.openarchives.org/OAI/2.0/oai_dc/",
 	}
 
-	verbs                    = []string{"Identify", "ListMetadataFormats", "ListSets", "ListIdentifiers", "ListRecords", "GetRecord"}
-	identifyAttrs            = []string{"verb"}
-	listMetadataFormatsAttrs = []string{"verb", "identifier"}
-	listSetsAttrs            = []string{"verb", "resumptionToken"}
-	listRecordsAttrs         = []string{"verb", "resumptionToken", "metadataPrefix", "set", "from", "until"}
-	getRecordAttrs           = []string{"verb", "metadataPrefix", "identifier"}
+	yes                      struct{}
+	verbs                    = map[string]struct{}{"Identify": yes, "ListMetadataFormats": yes, "ListSets": yes, "ListIdentifiers": yes, "ListRecords": yes, "GetRecord": yes}
+	identifyAttrs            = map[string]struct{}{"verb": yes}
+	listMetadataFormatsAttrs = map[string]struct{}{"verb": yes, "identifier": yes}
+	listSetsAttrs            = map[string]struct{}{"verb": yes, "resumptionToken": yes}
+	listRecordsAttrs         = map[string]struct{}{"verb": yes, "resumptionToken": yes, "metadataPrefix": yes, "set": yes, "from": yes, "until": yes}
+	getRecordAttrs           = map[string]struct{}{"verb": yes, "metadataPrefix": yes, "identifier": yes}
 )
 
 type Request struct {
@@ -323,9 +324,9 @@ func (r *response) render(status int, w http.ResponseWriter) {
 	w.Write(out)
 }
 
-func (r *response) validateAttrs(q url.Values, validAttrs []string) {
+func (r *response) validateAttrs(q url.Values, attrs map[string]struct{}) {
 	for attr := range q {
-		if !contains(validAttrs, attr) {
+		if _, ok := attrs[attr]; !ok {
 			r.Errors = append(r.Errors, Error{Code: "badArgument", Value: fmt.Sprintf("Attribute '%s' is illegal", attr)})
 		}
 	}
@@ -342,7 +343,7 @@ func (r *response) setVerb(q url.Values) {
 		r.Errors = append(r.Errors, ErrVerbRepeated)
 		return
 	}
-	if !contains(verbs, vals[0]) {
+	if _, ok := verbs[vals[0]]; !ok {
 		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: fmt.Sprintf("Verb '%s' is illegal", vals[0])})
 		return
 	}
@@ -418,13 +419,4 @@ func (r *response) getAttr(q url.Values, attr string) string {
 	}
 
 	return vals[0]
-}
-
-func contains(l []string, v string) bool {
-	for _, e := range l {
-		if v == e {
-			return true
-		}
-	}
-	return false
 }
