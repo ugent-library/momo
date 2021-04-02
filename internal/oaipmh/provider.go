@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 )
 
@@ -15,16 +16,23 @@ const (
 )
 
 var (
-	ErrBadVerb        = Error{Code: "badVerb", Value: "Illegal OAI verb"}
-	ErrNoSetHierarchy = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
-	ErrIDDoesNotExist = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
-	ErrNoRecordsMatch = Error{Code: "noRecordsMatch", Value: "No records match"}
+	ErrVerbMissing              = Error{Code: "badVerb", Value: "Verb is missing"}
+	ErrVerbRepeated             = Error{Code: "badVerb", Value: "Verb can't be repeated"}
+	ErrNoSetHierarchy           = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
+	ErrIDDoesNotExist           = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
+	ErrNoRecordsMatch           = Error{Code: "noRecordsMatch", Value: "No records match"}
+	ErrResumptiontokenRepeated  = Error{Code: "badArgument", Value: "Argument 'resumptionToken' can't be repeated"}
+	ErrResumptiontokenExclusive = Error{Code: "badArgument", Value: "resumptionToken cannot be combined with other attributes"}
+	ErrMetadataPrefixMissing    = Error{Code: "badArgument", Value: "Argument 'metadataPrefix' is missing"}
+	ErrIdentifierMissing        = Error{Code: "badArgument", Value: "Argument 'identifier' is missing"}
 
 	OAIDC = MetadataFormat{
 		MetadataPrefix:    "oai_dc",
 		Schema:            "http://www.openarchives.org/OAI/2.0/oai_dc.xsd",
 		MetadataNamespace: "http://www.openarchives.org/OAI/2.0/oai_dc/",
 	}
+
+	verbRe = regexp.MustCompile("^Identify|ListMetadataFormats|ListSets|ListIdentifiers|ListRecords|GetRecord$")
 )
 
 type Request struct {
@@ -185,7 +193,6 @@ func (p *provider) listSets(res *response) {
 }
 
 func (p *provider) listIdentifiers(res *response) {
-	res.Body = ErrBadVerb
 }
 
 // TODO badArgument, badResumptionToken, cannotDisseminateFormat, noSetHierarchy
@@ -240,25 +247,28 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			p.listMetadataFormats(res)
 		}
 	case "ListSets":
-		res.allowAttrs(q, "resumptionToken")
+		res.allowResumptionToken(q)
 		if len(res.Errors) == 0 {
 			p.listSets(res)
 		}
 	case "ListIdentifiers":
-		res.allowAttrs(q, "metadataPrefix", "from", "until", "set", "resumptionToken")
-		res.requireAttrs(q, "metadataPrefix")
+		res.allowResumptionToken(q)
+		res.allowAttrs(q, "metadataPrefix", "from", "until", "set")
+		res.requireMetadataPrefix()
 		if len(res.Errors) == 0 {
 			p.listIdentifiers(res)
 		}
 	case "ListRecords":
-		res.allowAttrs(q, "metadataPrefix", "from", "until", "set", "resumptionToken")
-		res.requireAttrs(q, "metadataPrefix")
+		res.allowResumptionToken(q)
+		res.allowAttrs(q, "metadataPrefix", "from", "until", "set")
+		res.requireMetadataPrefix()
 		if len(res.Errors) == 0 {
 			p.listRecords(res)
 		}
 	case "GetRecord":
 		res.allowAttrs(q, "metadataPrefix", "identifier")
-		res.requireAttrs(q, "metadataPrefix", "identifier")
+		res.requireMetadataPrefix()
+		res.requireIdentifier()
 		if len(res.Errors) == 0 {
 			p.getRecord(res)
 		}
@@ -279,29 +289,45 @@ func (r *response) render(status int, w http.ResponseWriter) {
 }
 
 func (r *response) setVerb(q url.Values) {
-	vals, ok := q["verb"]
+	vals, found := q["verb"]
 
-	if !ok {
-		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: "Verb is missing"})
+	if !found {
+		r.Errors = append(r.Errors, ErrVerbMissing)
+		return
+	}
+
+	if len(vals) > 1 {
+		r.Errors = append(r.Errors, ErrVerbRepeated)
+		return
+	}
+
+	if !verbRe.MatchString(vals[0]) {
+		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: fmt.Sprintf("Verb '%s' is illegal", vals[0])})
+		return
+	}
+
+	r.Request.Verb = vals[0]
+}
+
+func (r *response) allowResumptionToken(q url.Values) {
+	vals, found := q["resumptionToken"]
+	if !found {
 		return
 	}
 	if len(vals) > 1 {
-		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: "Verb can't be repeated"})
+		r.Errors = append(r.Errors, ErrResumptiontokenRepeated)
 		return
 	}
-
-	verb := vals[0]
-
-	if verb != "Identify" && verb != "ListMetadataFormats" && verb != "ListSets" &&
-		verb != "ListIdentifiers" && verb != "ListRecords" && verb != "GetRecord" {
-		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: fmt.Sprintf("Verb '%s' is illegal", verb)})
-		return
-	}
-
-	r.Request.Verb = verb
+	r.Request.ResumptionToken = vals[0]
 }
 
 func (r *response) allowAttrs(q url.Values, attrs ...string) {
+	// resumptionToken is exclusive
+	if r.Request.ResumptionToken != "" && len(q) > 2 {
+		r.Errors = append(r.Errors, ErrResumptiontokenExclusive)
+		return
+	}
+
 	for attr, vals := range q {
 		if attr == "verb" {
 			continue
@@ -328,7 +354,7 @@ func (r *response) allowAttrs(q url.Values, attrs ...string) {
 
 		val := vals[0]
 
-		switch attr {
+		switch attr { // TODO checks
 		case "metadataPrefix":
 			r.Request.MetadataPrefix = val
 		case "identifier":
@@ -339,34 +365,18 @@ func (r *response) allowAttrs(q url.Values, attrs ...string) {
 			r.Request.Until = val
 		case "set":
 			r.Request.Set = val
-		case "resumptionToken":
-			r.Request.ResumptionToken = val
 		}
 	}
 }
 
-func (r *response) requireAttrs(q url.Values, attrs ...string) {
-	for _, attr := range attrs {
-		var missing bool
+func (r *response) requireMetadataPrefix() {
+	if r.Request.ResumptionToken == "" && r.Request.MetadataPrefix == "" {
+		r.Errors = append(r.Errors, ErrMetadataPrefixMissing)
+	}
+}
 
-		switch attr {
-		case "metadataPrefix":
-			missing = r.Request.MetadataPrefix == ""
-		case "identifier":
-			missing = r.Request.Identifier == ""
-		case "from":
-			missing = r.Request.From == ""
-		case "until":
-			missing = r.Request.Until == ""
-		case "set":
-			missing = r.Request.Set == ""
-		case "resumptionToken":
-			missing = r.Request.ResumptionToken == ""
-		}
-
-		if missing {
-			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' is required", attr)}
-			r.Errors = append(r.Errors, err)
-		}
+func (r *response) requireIdentifier() {
+	if r.Request.ResumptionToken == "" && r.Request.Identifier == "" {
+		r.Errors = append(r.Errors, ErrIdentifierMissing)
 	}
 }
