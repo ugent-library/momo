@@ -15,15 +15,6 @@ const (
 )
 
 var (
-	ErrVerbMissing              = Error{Code: "badVerb", Value: "Verb is missing"}
-	ErrVerbRepeated             = Error{Code: "badVerb", Value: "Verb can't be repeated"}
-	ErrNoSetHierarchy           = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
-	ErrIDDoesNotExist           = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
-	ErrNoRecordsMatch           = Error{Code: "noRecordsMatch", Value: "No records match"}
-	ErrResumptiontokenExclusive = Error{Code: "badArgument", Value: "resumptionToken cannot be combined with other attributes"}
-	ErrMetadataPrefixMissing    = Error{Code: "badArgument", Value: "Argument 'metadataPrefix' is missing"}
-	ErrIdentifierMissing        = Error{Code: "badArgument", Value: "Argument 'identifier' is missing"}
-
 	OAIDC = MetadataFormat{
 		MetadataPrefix:    "oai_dc",
 		Schema:            "http://www.openarchives.org/OAI/2.0/oai_dc.xsd",
@@ -37,6 +28,17 @@ var (
 	listSetsAttrs            = map[string]struct{}{"verb": yes, "resumptionToken": yes}
 	listRecordsAttrs         = map[string]struct{}{"verb": yes, "resumptionToken": yes, "metadataPrefix": yes, "set": yes, "from": yes, "until": yes}
 	getRecordAttrs           = map[string]struct{}{"verb": yes, "metadataPrefix": yes, "identifier": yes}
+
+	errVerbMissing              = Error{Code: "badVerb", Value: "Verb is missing"}
+	errVerbRepeated             = Error{Code: "badVerb", Value: "Verb can't be repeated"}
+	errNoSetHierarchy           = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
+	errIDDoesNotExist           = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
+	errNoRecordsMatch           = Error{Code: "noRecordsMatch", Value: "No records match"}
+	errResumptiontokenExclusive = Error{Code: "badArgument", Value: "resumptionToken cannot be combined with other attributes"}
+	errMetadataPrefixMissing    = Error{Code: "badArgument", Value: "Argument 'metadataPrefix' is missing"}
+	errIdentifierMissing        = Error{Code: "badArgument", Value: "Argument 'identifier' is missing"}
+	errFromMissing              = Error{Code: "badArgument", Value: "Argument 'from' is missing"}
+	errUntilMissing             = Error{Code: "badArgument", Value: "Argument 'until' is missing"}
 )
 
 type Request struct {
@@ -196,7 +198,7 @@ func (p *provider) listMetadataFormats(r *response) {
 // TODO resumptionToken, badResumptionToken
 func (p *provider) listSets(r *response) {
 	if len(p.Sets) == 0 {
-		r.Errors = append(r.Errors, ErrNoSetHierarchy)
+		r.Errors = append(r.Errors, errNoSetHierarchy)
 		return
 	}
 	r.Body = &ListSets{
@@ -208,7 +210,7 @@ func (p *provider) listSets(r *response) {
 func (p *provider) listIdentifiers(r *response) {
 	headers, token := p.ListIdentifiers(&r.Request)
 	if len(headers) == 0 {
-		r.Errors = append(r.Errors, ErrNoRecordsMatch)
+		r.Errors = append(r.Errors, errNoRecordsMatch)
 		return
 	}
 	r.Body = &ListIdentifiers{
@@ -221,7 +223,7 @@ func (p *provider) listIdentifiers(r *response) {
 func (p *provider) listRecords(r *response) {
 	recs, token := p.ListRecords(&r.Request)
 	if len(recs) == 0 {
-		r.Errors = append(r.Errors, ErrNoRecordsMatch)
+		r.Errors = append(r.Errors, errNoRecordsMatch)
 		return
 	}
 	r.Body = &ListRecords{
@@ -235,7 +237,7 @@ func (p *provider) getRecord(r *response) {
 	// TODO also return error
 	rec := p.GetRecord(&r.Request)
 	if rec == nil {
-		r.Errors = append(r.Errors, ErrIDDoesNotExist)
+		r.Errors = append(r.Errors, errIDDoesNotExist)
 		return
 	}
 	r.Body = &GetRecord{
@@ -302,7 +304,7 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		res.setMetadataPrefix(q)
 		res.Request.Identifier = res.getAttr(q, "identifier")
 		if res.Request.Identifier == "" {
-			res.Errors = append(res.Errors, ErrIdentifierMissing)
+			res.Errors = append(res.Errors, errIdentifierMissing)
 		}
 
 		if len(res.Errors) == 0 {
@@ -336,11 +338,11 @@ func (r *response) setVerb(q url.Values) {
 	vals, ok := q["verb"]
 
 	if !ok {
-		r.Errors = append(r.Errors, ErrVerbMissing)
+		r.Errors = append(r.Errors, errVerbMissing)
 		return
 	}
 	if len(vals) > 1 {
-		r.Errors = append(r.Errors, ErrVerbRepeated)
+		r.Errors = append(r.Errors, errVerbRepeated)
 		return
 	}
 	if _, ok := verbs[vals[0]]; !ok {
@@ -355,12 +357,12 @@ func (r *response) setMetadataPrefix(q url.Values) {
 	val := r.getAttr(q, "metadataPrefix")
 
 	if val != "" && r.Request.ResumptionToken != "" {
-		r.Errors = append(r.Errors, ErrResumptiontokenExclusive)
+		r.Errors = append(r.Errors, errResumptiontokenExclusive)
 		return
 	}
 
 	if val == "" && r.Request.ResumptionToken == "" {
-		r.Errors = append(r.Errors, ErrMetadataPrefixMissing)
+		r.Errors = append(r.Errors, errMetadataPrefixMissing)
 		return
 	}
 
@@ -384,12 +386,12 @@ func (r *response) setSet(q url.Values) {
 	val := r.getAttr(q, "set")
 
 	if val != "" && r.Request.ResumptionToken != "" {
-		r.Errors = append(r.Errors, ErrResumptiontokenExclusive)
+		r.Errors = append(r.Errors, errResumptiontokenExclusive)
 		return
 	}
 
 	if val != "" && len(r.provider.Sets) == 0 {
-		r.Errors = append(r.Errors, ErrNoSetHierarchy)
+		r.Errors = append(r.Errors, errNoSetHierarchy)
 		return
 	}
 
@@ -398,6 +400,17 @@ func (r *response) setSet(q url.Values) {
 }
 
 func (r *response) setFromUntil(q url.Values) {
+	f := r.getAttr(q, "from")
+	u := r.getAttr(q, "until")
+	if f != "" && u != "" {
+		// TODO validate format
+		r.Request.From = f
+		r.Request.Until = u
+	} else if f == "" && u != "" {
+		r.Errors = append(r.Errors, errFromMissing)
+	} else if f != "" && u == "" {
+		r.Errors = append(r.Errors, errUntilMissing)
+	}
 }
 
 func (r *response) getAttr(q url.Values, attr string) string {
