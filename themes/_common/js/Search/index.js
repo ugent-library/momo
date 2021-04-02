@@ -2,6 +2,7 @@ import Vue from 'vue'
 import { BootstrapVue } from 'bootstrap-vue'
 
 import Search from './Search'
+import store from './store'
 
 export class SearchApp {
   static create (element) {
@@ -11,6 +12,7 @@ export class SearchApp {
     for (const match of matches) {
       if (document.body.contains(match)) {
         const vm = new Vue({
+          store,
           render: h => h(Search)
         })
         vm.$mount(match)

@@ -1,8 +1,8 @@
 <template>
-    <form v-on:submit.prevent="">
+    <form v-on:submit.prevent="submit">
         <div class="form-group">
             <input
-            v-model.lazy="query"
+            v-model="query"
             class="form-control"
             type="text"
             placeholder="Search..."
@@ -12,27 +12,23 @@
 </template>
 
 <script>
+
 export default {
   data () {
     return {
-      query: ""
+      query: this.$store.state.query
     }
   },
-  watch: {
-    query: function () {
-      const p = new URL(window.location).searchParams
-      p.set('q', this.query)
-      const pStr = '?' + p.toString()
-
-      window.history.pushState({}, '', pStr)
-
-      this.$emit('query-submitted', this.query)
+  methods: {
+    submit () {
+      this.$store.dispatch('submitQuery', this.query)
     }
   },
   mounted: function () {
     const p = new URL(window.location).searchParams
 
     if (p.has('q')) {
+      this.$store.dispatch('submitQuery', p.get('q'))
       this.query = p.get('q')
     }
   }
