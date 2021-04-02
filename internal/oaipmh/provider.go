@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"time"
 )
 
@@ -21,7 +20,6 @@ var (
 	ErrNoSetHierarchy           = Error{Code: "noSetHierarchy", Value: "Sets are not supported"}
 	ErrIDDoesNotExist           = Error{Code: "idDoesNotExist", Value: "Identifier is unknown or illegal"}
 	ErrNoRecordsMatch           = Error{Code: "noRecordsMatch", Value: "No records match"}
-	ErrResumptiontokenRepeated  = Error{Code: "badArgument", Value: "Argument 'resumptionToken' can't be repeated"}
 	ErrResumptiontokenExclusive = Error{Code: "badArgument", Value: "resumptionToken cannot be combined with other attributes"}
 	ErrMetadataPrefixMissing    = Error{Code: "badArgument", Value: "Argument 'metadataPrefix' is missing"}
 	ErrIdentifierMissing        = Error{Code: "badArgument", Value: "Argument 'identifier' is missing"}
@@ -32,7 +30,12 @@ var (
 		MetadataNamespace: "http://www.openarchives.org/OAI/2.0/oai_dc/",
 	}
 
-	verbRe = regexp.MustCompile("^Identify|ListMetadataFormats|ListSets|ListIdentifiers|ListRecords|GetRecord$")
+	verbs                    = []string{"Identify", "ListMetadataFormats", "ListSets", "ListIdentifiers", "ListRecords", "GetRecord"}
+	identifyAttrs            = []string{"verb"}
+	listMetadataFormatsAttrs = []string{"verb", "identifier"}
+	listSetsAttrs            = []string{"verb", "resumptionToken"}
+	listRecordsAttrs         = []string{"verb", "resumptionToken", "metadataPrefix", "set", "from", "until"}
+	getRecordAttrs           = []string{"verb", "metadataPrefix", "identifier"}
 )
 
 type Request struct {
@@ -48,6 +51,7 @@ type Request struct {
 }
 
 type response struct {
+	provider          *provider
 	XMLName           xml.Name `xml:"http://www.openarchives.org/OAI/2.0/ OAI-PMH"`
 	XmlnsXsi          string   `xml:"xmlns:xsi,attr"`
 	XsiSchemaLocation string   `xml:"xsi:schemaLocation,attr"`
@@ -89,9 +93,15 @@ type GetRecord struct {
 	Record  *Record  `xml:"record"`
 }
 
+type ListIdentifiers struct {
+	XMLName         xml.Name         `xml:"ListIdentifiers"`
+	Headers         []*Header        `xml:"header"`
+	ResumptionToken *ResumptionToken `xml:"resumptionToken"`
+}
+
 type ListRecords struct {
 	XMLName         xml.Name         `xml:"ListRecords"`
-	Records         []*Record        `xml:"records"`
+	Records         []*Record        `xml:"record"`
 	ResumptionToken *ResumptionToken `xml:"resumptionToken"`
 }
 
@@ -142,7 +152,8 @@ type ProviderOptions struct {
 	DeletedRecord     string
 	MetadataFormats   []MetadataFormat
 	Sets              []Set
-	GetRecord         func(string, string) *Record
+	GetRecord         func(*Request) *Record
+	ListIdentifiers   func(*Request) ([]*Header, *ResumptionToken)
 	ListRecords       func(*Request) ([]*Record, *ResumptionToken)
 }
 
@@ -192,10 +203,20 @@ func (p *provider) listSets(r *response) {
 	}
 }
 
+// TODO badResumptionToken, cannotDisseminateFormat
 func (p *provider) listIdentifiers(r *response) {
+	headers, token := p.ListIdentifiers(&r.Request)
+	if len(headers) == 0 {
+		r.Errors = append(r.Errors, ErrNoRecordsMatch)
+		return
+	}
+	r.Body = &ListIdentifiers{
+		Headers:         headers,
+		ResumptionToken: token,
+	}
 }
 
-// TODO badResumptionToken, cannotDisseminateFormat, noSetHierarchy
+// TODO badResumptionToken, cannotDisseminateFormat
 func (p *provider) listRecords(r *response) {
 	recs, token := p.ListRecords(&r.Request)
 	if len(recs) == 0 {
@@ -211,7 +232,7 @@ func (p *provider) listRecords(r *response) {
 // TODO cannotDisseminateFormat
 func (p *provider) getRecord(r *response) {
 	// TODO also return error
-	rec := p.GetRecord(r.Request.Identifier, r.Request.MetadataPrefix)
+	rec := p.GetRecord(&r.Request)
 	if rec == nil {
 		r.Errors = append(r.Errors, ErrIDDoesNotExist)
 		return
@@ -223,6 +244,7 @@ func (p *provider) getRecord(r *response) {
 
 func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res := &response{
+		provider:          p,
 		XmlnsXsi:          xmlnsXsi,
 		XsiSchemaLocation: xsiSchemaLocation,
 		ResponseDate:      time.Now().UTC().Format(time.RFC3339),
@@ -237,38 +259,51 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch res.Request.Verb {
 	case "Identify":
-		res.allowAttrs(q)
 		if len(res.Errors) == 0 {
 			p.identify(res)
 		}
 	case "ListMetadataFormats":
-		res.allowAttrs(q, "metadataPrefix", "identifier")
+		res.validateAttrs(q, listMetadataFormatsAttrs)
+		res.Request.Identifier = res.getAttr(q, "identifier")
+
 		if len(res.Errors) == 0 {
 			p.listMetadataFormats(res)
 		}
 	case "ListSets":
-		res.allowResumptionToken(q)
+		res.validateAttrs(q, listSetsAttrs)
+		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
+
 		if len(res.Errors) == 0 {
 			p.listSets(res)
 		}
 	case "ListIdentifiers":
-		res.allowResumptionToken(q)
-		res.allowAttrs(q, "metadataPrefix", "from", "until", "set")
-		res.requireMetadataPrefix()
+		res.validateAttrs(q, listRecordsAttrs)
+		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
+		res.setMetadataPrefix(q)
+		res.setSet(q)
+		res.setFromUntil(q)
+
 		if len(res.Errors) == 0 {
 			p.listIdentifiers(res)
 		}
 	case "ListRecords":
-		res.allowResumptionToken(q)
-		res.allowAttrs(q, "metadataPrefix", "from", "until", "set")
-		res.requireMetadataPrefix()
+		res.validateAttrs(q, listRecordsAttrs)
+		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
+		res.setMetadataPrefix(q)
+		res.setSet(q)
+		res.setFromUntil(q)
+
 		if len(res.Errors) == 0 {
 			p.listRecords(res)
 		}
 	case "GetRecord":
-		res.allowAttrs(q, "metadataPrefix", "identifier")
-		res.requireMetadataPrefix()
-		res.requireIdentifier()
+		res.validateAttrs(q, getRecordAttrs)
+		res.setMetadataPrefix(q)
+		res.Request.Identifier = res.getAttr(q, "identifier")
+		if res.Request.Identifier == "" {
+			res.Errors = append(res.Errors, ErrIdentifierMissing)
+		}
+
 		if len(res.Errors) == 0 {
 			p.getRecord(res)
 		}
@@ -288,20 +323,26 @@ func (r *response) render(status int, w http.ResponseWriter) {
 	w.Write(out)
 }
 
-func (r *response) setVerb(q url.Values) {
-	vals, found := q["verb"]
+func (r *response) validateAttrs(q url.Values, validAttrs []string) {
+	for attr := range q {
+		if !contains(validAttrs, attr) {
+			r.Errors = append(r.Errors, Error{Code: "badArgument", Value: fmt.Sprintf("Attribute '%s' is illegal", attr)})
+		}
+	}
+}
 
-	if !found {
+func (r *response) setVerb(q url.Values) {
+	vals, ok := q["verb"]
+
+	if !ok {
 		r.Errors = append(r.Errors, ErrVerbMissing)
 		return
 	}
-
 	if len(vals) > 1 {
 		r.Errors = append(r.Errors, ErrVerbRepeated)
 		return
 	}
-
-	if !verbRe.MatchString(vals[0]) {
+	if !contains(verbs, vals[0]) {
 		r.Errors = append(r.Errors, Error{Code: "badVerb", Value: fmt.Sprintf("Verb '%s' is illegal", vals[0])})
 		return
 	}
@@ -309,74 +350,81 @@ func (r *response) setVerb(q url.Values) {
 	r.Request.Verb = vals[0]
 }
 
-func (r *response) allowResumptionToken(q url.Values) {
-	vals, found := q["resumptionToken"]
-	if !found {
-		return
-	}
-	if len(vals) > 1 {
-		r.Errors = append(r.Errors, ErrResumptiontokenRepeated)
-		return
-	}
-	r.Request.ResumptionToken = vals[0]
-}
+func (r *response) setMetadataPrefix(q url.Values) {
+	val := r.getAttr(q, "metadataPrefix")
 
-func (r *response) allowAttrs(q url.Values, attrs ...string) {
-	// resumptionToken is exclusive
-	if r.Request.ResumptionToken != "" && len(q) > 2 {
+	if val != "" && r.Request.ResumptionToken != "" {
 		r.Errors = append(r.Errors, ErrResumptiontokenExclusive)
 		return
 	}
 
-	for attr, vals := range q {
-		if attr == "verb" {
-			continue
-		}
-
-		var validAttr bool
-		for _, a := range attrs {
-			if attr == a {
-				validAttr = true
-				break
-			}
-		}
-
-		if !validAttr {
-			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' is illegal", attr)}
-			r.Errors = append(r.Errors, err)
-			continue
-		}
-		if len(vals) > 1 {
-			err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' can't be repeated", attr)}
-			r.Errors = append(r.Errors, err)
-			continue
-		}
-
-		val := vals[0]
-
-		switch attr { // TODO checks
-		case "metadataPrefix":
-			r.Request.MetadataPrefix = val
-		case "identifier":
-			r.Request.Identifier = val
-		case "from":
-			r.Request.From = val
-		case "until":
-			r.Request.Until = val
-		case "set":
-			r.Request.Set = val
-		}
-	}
-}
-
-func (r *response) requireMetadataPrefix() {
-	if r.Request.ResumptionToken == "" && r.Request.MetadataPrefix == "" {
+	if val == "" && r.Request.ResumptionToken == "" {
 		r.Errors = append(r.Errors, ErrMetadataPrefixMissing)
+		return
 	}
+
+	var valid bool
+	for _, fmt := range r.provider.MetadataFormats {
+		if val == fmt.MetadataPrefix {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		err := Error{Code: "cannotDisseminateFormat", Value: fmt.Sprintf("Metadata format '%s' is not supported", val)}
+		r.Errors = append(r.Errors, err)
+		return
+	}
+
+	r.Request.MetadataPrefix = val
 }
 
-func (r *response) requireIdentifier() {
-	if r.Request.ResumptionToken == "" && r.Request.Identifier == "" {
-		r.Errors = append(r.Errors, ErrIdentifierMissing)
+func (r *response) setSet(q url.Values) {
+	val := r.getAttr(q, "set")
+
+	if val != "" && r.Request.ResumptionToken != "" {
+		r.Errors = append(r.Errors, ErrResumptiontokenExclusive)
+		return
 	}
+
+	if val != "" && len(r.provider.Sets) == 0 {
+		r.Errors = append(r.Errors, ErrNoSetHierarchy)
+		return
+	}
+
+	// TODO check set exists
+	r.Request.Set = val
+}
+
+func (r *response) setFromUntil(q url.Values) {
+}
+
+func (r *response) getAttr(q url.Values, attr string) string {
+	vals, ok := q[attr]
+	if !ok {
+		return ""
+	}
+
+	if len(vals) > 1 {
+		err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' can't be repeated", attr)}
+		r.Errors = append(r.Errors, err)
+		return ""
+	}
+
+	if vals[0] == "" {
+		err := Error{Code: "badArgument", Value: fmt.Sprintf("Argument '%s' can't be empty", attr)}
+		r.Errors = append(r.Errors, err)
+		return ""
+	}
+
+	return vals[0]
+}
+
+func contains(l []string, v string) bool {
+	for _, e := range l {
+		if v == e {
+			return true
+		}
+	}
+	return false
 }
