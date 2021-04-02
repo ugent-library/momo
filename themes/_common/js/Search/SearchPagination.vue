@@ -9,36 +9,36 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
-  props: [
-    'total'
-  ],
   data () {
     return {
-      page: 1,
-      size: 10
+      page: this.$store.getters.getPage,
+      size: this.$store.getters.getSize
     }
   },
+  computed: {
+    ...mapState([
+      'total',
+    ])
+  },
   watch: {
-    page: function () {
-      const p = new URL(window.location).searchParams
-      p.set('skip', (this.page - 1) * this.size)
-      p.set('size', this.size)
-      const pStr = '?' + p.toString()
-
-      window.history.pushState({}, '', pStr)
-
-      this.$emit('page-selected', this.page)
+    page: function (newPage, oldPage) {
+      if (newPage !== oldPage) {
+        this.$store.dispatch('changePage', newPage)
+      }
     }
   },
   mounted: function () {
     const p = new URL(window.location).searchParams
 
     if (p.has('size')) {
-      this.size = parseInt(p.get('size'), 10)
+      this.$store.dispatch('changeSize', p.get('size'))
     }
-    if (p.has('skip')) {
-      this.page = Math.ceil((parseInt(p.get('skip'), 10) + 1) / this.size)
+
+    if (p.has('page')) {
+      this.$store.dispatch('changePage', p.get('page'))
     }
   }
 }

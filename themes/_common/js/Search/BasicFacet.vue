@@ -28,24 +28,25 @@ export default {
   ],
   data () {
     return {
+      // Keep local state separate from store state, the latter is used for Elastic.
+      // The former is used for tracking the active state of the checkbox.
       selected: []
     }
   },
   watch: {
-    selected: function () {
-      const p = new URL(window.location).searchParams
-      const k = `f[${this.facetId}]`
-      p.delete(k)
-
-      for (const bucket of this.selected) {
-        p.append(k, bucket)
+    selected: function (newSelected, oldSelected) {
+      if (newSelected.length !== oldSelected.length) {
+        this.$store.dispatch('toggleFacet', { facetId: this.facetId, buckets: this.selected })
       }
+    }
+  },
+  mounted: function () {
+    const p = new URL(window.location).searchParams
+    const pKey = `f[${this.facetId}]`
 
-      const pStr = '?' + p.toString()
-
-      window.history.pushState({}, '', pStr)
-
-      this.$emit('bucket-selected', { facetId: this.facetId, buckets: this.selected })
+    if (p.has(pKey)) {
+      this.selected = p.getAll(pKey)
+      this.$store.dispatch('toggleFacet', { facetId: this.facetId, buckets: this.selected })
     }
   }
 }
