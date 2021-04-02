@@ -161,9 +161,9 @@ func NewProvider(opts ProviderOptions) http.Handler {
 	return p
 }
 
-// TODO badArgument, description, compression
-func (p *provider) identify(res *response) {
-	res.Body = &Identify{
+// TODO description, compression
+func (p *provider) identify(r *response) {
+	r.Body = &Identify{
 		RepositoryName:    p.RepositoryName,
 		BaseURL:           p.BaseURL,
 		ProtocolVersion:   "2.0",
@@ -174,49 +174,49 @@ func (p *provider) identify(res *response) {
 	}
 }
 
-// TODO identifier, badArgument, idDoesNotExist, noMetadataFormats
-func (p *provider) listMetadataFormats(res *response) {
-	res.Body = &ListMetadataFormats{
+// TODO identifier, idDoesNotExist, noMetadataFormats
+func (p *provider) listMetadataFormats(r *response) {
+	r.Body = &ListMetadataFormats{
 		MetadataFormats: p.MetadataFormats,
 	}
 }
 
-// TODO resumptionToken, badArgument, badResumptionToken
-func (p *provider) listSets(res *response) {
+// TODO resumptionToken, badResumptionToken
+func (p *provider) listSets(r *response) {
 	if len(p.Sets) == 0 {
-		res.Body = ErrNoSetHierarchy
+		r.Errors = append(r.Errors, ErrNoSetHierarchy)
 		return
 	}
-	res.Body = &ListSets{
+	r.Body = &ListSets{
 		Sets: p.Sets,
 	}
 }
 
-func (p *provider) listIdentifiers(res *response) {
+func (p *provider) listIdentifiers(r *response) {
 }
 
-// TODO badArgument, badResumptionToken, cannotDisseminateFormat, noSetHierarchy
-func (p *provider) listRecords(res *response) {
-	recs, token := p.ListRecords(&res.Request)
+// TODO badResumptionToken, cannotDisseminateFormat, noSetHierarchy
+func (p *provider) listRecords(r *response) {
+	recs, token := p.ListRecords(&r.Request)
 	if len(recs) == 0 {
-		res.Body = ErrNoRecordsMatch
+		r.Errors = append(r.Errors, ErrNoRecordsMatch)
 		return
 	}
-	res.Body = &ListRecords{
+	r.Body = &ListRecords{
 		Records:         recs,
 		ResumptionToken: token,
 	}
 }
 
-// TODO badArgument, cannotDisseminateFormat
-func (p *provider) getRecord(res *response) {
+// TODO cannotDisseminateFormat
+func (p *provider) getRecord(r *response) {
 	// TODO also return error
-	rec := p.GetRecord(res.Request.Identifier, res.Request.MetadataPrefix)
+	rec := p.GetRecord(r.Request.Identifier, r.Request.MetadataPrefix)
 	if rec == nil {
-		res.Body = ErrIDDoesNotExist
+		r.Errors = append(r.Errors, ErrIDDoesNotExist)
 		return
 	}
-	res.Body = &GetRecord{
+	r.Body = &GetRecord{
 		Record: rec,
 	}
 }
