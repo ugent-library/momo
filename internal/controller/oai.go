@@ -19,7 +19,9 @@ func OAI(e engine.Engine) http.Handler {
 		MetadataFormats: []oaipmh.MetadataFormat{
 			oaipmh.OAIDC,
 		},
-		Sets: []oaipmh.Set{},
+		Sets: []oaipmh.Set{
+			{SetName: "all", SetSpec: "All records"},
+		},
 
 		GetRecord: func(r *oaipmh.Request) *oaipmh.Record {
 			parts := strings.Split(r.Identifier, ":")
@@ -32,11 +34,11 @@ func OAI(e engine.Engine) http.Handler {
 			enc.Encode(rec)
 			oaiRec := oaipmh.Record{
 				// TODO Sets
-				Header: oaipmh.Header{
+				Header: &oaipmh.Header{
 					Datestamp:  rec.UpdatedAt.UTC().Format(time.RFC3339),
 					Identifier: r.Identifier,
 				},
-				Metadata: oaipmh.Metadata{XML: b.Bytes()},
+				Metadata: &oaipmh.Payload{XML: b.Bytes()},
 			}
 			return &oaiRec
 		},
@@ -99,11 +101,11 @@ func OAI(e engine.Engine) http.Handler {
 				enc.Encode(&hit.Rec)
 				r := oaipmh.Record{
 					// TODO Sets
-					Header: oaipmh.Header{
+					Header: &oaipmh.Header{
 						Datestamp:  hit.UpdatedAt.UTC().Format(time.RFC3339),
 						Identifier: strings.Join([]string{hit.Collection, hit.ID}, ":"),
 					},
-					Metadata: oaipmh.Metadata{XML: b.Bytes()},
+					Metadata: &oaipmh.Payload{XML: b.Bytes()},
 				}
 				records = append(records, &r)
 			}

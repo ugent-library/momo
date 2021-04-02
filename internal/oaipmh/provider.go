@@ -115,8 +115,9 @@ type MetadataFormat struct {
 }
 
 type Set struct {
-	SetSpec string `xml:"setSpec"`
-	SetName string `xml:"setName"`
+	SetSpec        string   `xml:"setSpec"`
+	SetName        string   `xml:"setName"`
+	SetDescription *Payload `xml:"setDescription"`
 }
 
 type Header struct {
@@ -126,13 +127,13 @@ type Header struct {
 	SetSpec    []string `xml:"setSpec"`
 }
 
-type Metadata struct {
+type Payload struct {
 	XML []byte `xml:",innerxml"`
 }
 
 type Record struct {
-	Header   Header   `xml:"header"`
-	Metadata Metadata `xml:"metadata"`
+	Header   *Header  `xml:"header"`
+	Metadata *Payload `xml:"metadata"`
 }
 
 type ResumptionToken struct {
