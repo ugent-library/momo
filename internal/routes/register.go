@@ -27,12 +27,11 @@ func Register(r chi.Router, e engine.Engine) {
 	r.Get("/robots.txt", controller.Robots(e))
 
 	uiRoutes := func(r chi.Router) {
-		for _, lens := range e.Lenses() {
-			r.Route("/"+lens.Name, func(r chi.Router) {
+		for _, collection := range e.Collections() {
+			r.Route("/collection/"+collection.Name, func(r chi.Router) {
 				r.Use(mw.SetLocale(e))
-				r.Use(chimw.WithValue(ctx.ScopeKey, lens.Scope))
-				r.Use(chimw.WithValue(ctx.ThemeKey, lens.Theme))
-
+				r.Use(chimw.WithValue(ctx.CollectionKey, collection.Name))
+				r.Use(chimw.WithValue(ctx.ThemeKey, collection.Theme))
 				r.Get("/", recs.List)
 				r.Get("/search", recs.Search)
 				r.Get("/{id}", recs.Show)

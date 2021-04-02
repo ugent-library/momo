@@ -9,78 +9,64 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/lib/pq"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
 type Model struct {
 	PK        int64          `gorm:"primaryKey"`
-	CreatedAt time.Time      `gorm:"autoCreateTime:milli;type:timestamp;index"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli;type:timestamp;index"`
+	CreatedAt time.Time      `gorm:"not null;autoCreateTime:milli;type:timestamp;index"`
+	UpdatedAt time.Time      `gorm:"not null;autoUpdateTime:milli;type:timestamp;index"`
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamp;index"`
 }
 
 type Rec struct {
 	Model
-	ID         string         `gorm:"not null;uniqueIndex"`
+	ID         string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
+	Collection string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
 	Type       string         `gorm:"not null;index"`
-	Collection pq.StringArray `gorm:"type:text[];not null;index"`
 	Metadata   datatypes.JSON `gorm:"not null"`
 	Source     datatypes.JSON
 }
 
-type Store struct {
+type store struct {
 	db *gorm.DB
 }
 
-func New(dsn string) (*Store, error) {
+func New(dsn string) (*store, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{db: db}
+	s := &store{db: db}
 	s.db.AutoMigrate(&Rec{})
 	return s, nil
 }
 
-func (s *Store) GetRec(id string) (*engine.Rec, error) {
+func (s *store) GetRec(coll string, id string) (*engine.Rec, error) {
 	r := Rec{}
-	res := s.db.Where("id = ?", id).First(&r)
+	res := s.db.Where("collection = ?", coll).Where("id = ?", id).First(&r)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	return reifyRec(&r), nil
 }
 
-func (s *Store) GetAllRecs(c chan<- *engine.Rec) error {
+func (s *store) AllRecs() engine.RecCursor {
 	rows, err := s.db.Model(&Rec{}).Rows()
-	defer rows.Close()
-	if err != nil {
-		return err
-	}
-
-	for rows.Next() {
-		r := Rec{}
-		if err := s.db.ScanRows(rows, &r); err != nil {
-			return err
-		}
-		c <- reifyRec(&r)
-	}
-
-	return nil
+	return &recCursor{db: s.db, rows: rows, err: err}
 }
 
-func (s *Store) AddRec(rec *engine.Rec) error {
+func (s *store) AddRec(rec *engine.Rec) error {
 	r := Rec{
 		ID:         rec.ID,
 		Type:       rec.Type,
-		Collection: pq.StringArray(rec.Collection),
+		Collection: rec.Collection,
 		Metadata:   datatypes.JSON(rec.RawMetadata),
 		Source:     datatypes.JSON(rec.RawSource),
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "id"}},
+		Columns: []clause.Column{{Name: "id"}, {Name: "collection"}},
 		DoUpdates: clause.AssignmentColumns([]string{"type", "collection",
 			"metadata", "source", "updated_at"}),
 	}).Create(&r)
@@ -88,7 +74,7 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 	return res.Error
 }
 
-func (s *Store) Reset() error {
+func (s *store) Reset() error {
 	err := s.db.Migrator().DropTable(&Rec{})
 	if err != nil {
 		return err

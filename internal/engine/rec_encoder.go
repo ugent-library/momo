@@ -13,8 +13,6 @@ type RecEncoder interface {
 }
 
 func (e *engine) NewRecEncoder(w io.Writer, format string) RecEncoder {
-	e.recEncodersMu.Lock()
-	defer e.recEncodersMu.Unlock()
 	factory, found := e.recEncoders[format]
 	if !found {
 		return nil

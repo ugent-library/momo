@@ -21,7 +21,6 @@ var visitors = []visitor{
 	addEdition,
 	addPublisher,
 	addPlaceOfPublication,
-	addPublicationDate,
 	addDOI,
 	addISBN,
 	addEndOfRecord,
@@ -90,13 +89,6 @@ func addPublisher(w io.Writer, rec *engine.Rec) error {
 func addPlaceOfPublication(w io.Writer, rec *engine.Rec) error {
 	if v := rec.Metadata().PlaceOfPublication; v != "" {
 		return addTag(w, "CY", v)
-	}
-	return nil
-}
-
-func addPublicationDate(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().PublicationDate; v != "" {
-		// TODO
 	}
 	return nil
 }

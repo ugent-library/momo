@@ -7,12 +7,10 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
-	"sync"
 )
 
 var (
-	themesMu sync.RWMutex
-	themes   = make(map[string]Theme)
+	themes = make(map[string]Theme)
 )
 
 type Theme interface {
@@ -27,8 +25,6 @@ type theme struct {
 }
 
 func Register(t Theme) {
-	themesMu.Lock()
-	defer themesMu.Unlock()
 	if t == nil {
 		panic("momo: theme is nil")
 	}
@@ -43,8 +39,6 @@ func Register(t Theme) {
 
 // Themes returns a list of registered themes.
 func Themes() []Theme {
-	themesMu.Lock()
-	defer themesMu.Unlock()
 	list := make([]Theme, 0, len(themes))
 	for _, theme := range themes {
 		list = append(list, theme)

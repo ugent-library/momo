@@ -9,19 +9,27 @@ import (
 )
 
 type RecEngine interface {
-	GetRec(string) (*Rec, error)
-	GetAllRecs(chan<- *Rec) error
+	GetRec(string, string) (*Rec, error)
+	AllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
+	SearchAllRecs(SearchArgs) RecCursor
 	AddRecs(<-chan *Rec)
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
 }
 
+type RecCursor interface {
+	Next() bool
+	Value() *Rec
+	Error() error
+	Close()
+}
+
 type Rec struct {
 	ID          string          `json:"id"`
+	Collection  string          `json:"collection"`
 	Type        string          `json:"type"`
-	Collection  []string        `json:"collection"`
 	RawMetadata json.RawMessage `json:"metadata"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
@@ -72,20 +80,22 @@ func (rec *Rec) Metadata() *RecMetadata {
 	return rec.metadata
 }
 
-func (e *engine) GetRec(id string) (*Rec, error) {
-	return e.store.GetRec(id)
+func (e *engine) GetRec(coll string, id string) (*Rec, error) {
+	return e.store.GetRec(coll, id)
 }
 
-func (e *engine) GetAllRecs(c chan<- *Rec) error {
-	return e.store.GetAllRecs(c)
+func (e *engine) AllRecs() RecCursor {
+	return e.store.AllRecs()
 }
 
 func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
 	return e.searchStore.SearchRecs(args)
 }
 
-// TODO don't die
-// TODO send errors back over a channel
+func (e *engine) SearchAllRecs(args SearchArgs) RecCursor {
+	return e.searchStore.SearchAllRecs(args)
+}
+
 func (e *engine) AddRecs(storeC <-chan *Rec) {
 	var storeWG sync.WaitGroup
 	var indexWG sync.WaitGroup
@@ -101,7 +111,7 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 	}()
 
 	// store recs
-	for i := 0; i < runtime.NumCPU()/2; i++ { // TODO make configurable
+	for i := 0; i < runtime.NumCPU()/2; i++ {
 		storeWG.Add(1)
 		go func() {
 			defer storeWG.Done()
@@ -123,12 +133,33 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 	indexWG.Wait()
 }
 
-func (e *engine) IndexRecs() error {
-	c := make(chan *Rec)
-	defer close(c)
-	go e.searchStore.AddRecs(c)
-	err := e.store.GetAllRecs(c)
-	return err
+func (e *engine) IndexRecs() (err error) {
+	var indexWG sync.WaitGroup
+	// indexing channel
+	indexC := make(chan *Rec)
+
+	go func() {
+		indexWG.Add(1)
+		defer indexWG.Done()
+		e.searchStore.AddRecs(indexC)
+	}()
+
+	// send recs to indexer
+	c := e.store.AllRecs()
+	defer c.Close()
+	for c.Next() {
+		if err = c.Error(); err != nil {
+			break
+		}
+		indexC <- c.Value()
+	}
+
+	close(indexC)
+
+	// wait for indexing to finish
+	indexWG.Wait()
+
+	return
 }
 
 func (e *engine) CreateRecIndex() error {

@@ -11,25 +11,50 @@ import (
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
 	"github.com/elastic/go-elasticsearch/v6/esutil"
+	"github.com/pkg/errors"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
-// TODO constructor
-type Store struct {
-	Client       *elasticsearch.Client
+type Config struct {
+	ClientConfig elasticsearch.Config
 	IndexPrefix  string
 	IndexMapping string
 }
 
+type store struct {
+	client *elasticsearch.Client
+	Config
+}
+
+type resEnvelope struct {
+	ScrollID string `json:"_scroll_id"`
+	Hits     struct {
+		Total int
+		Hits  []struct {
+			Source    json.RawMessage `json:"_source"`
+			Highlight json.RawMessage
+		}
+	}
+	Aggregations json.RawMessage
+}
+
 type M map[string]interface{}
 
-func (s *Store) indexName(idx string) string {
+func New(c Config) (*store, error) {
+	client, err := elasticsearch.NewClient(c.ClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &store{client, c}, nil
+}
+
+func (s *store) indexName(idx string) string {
 	return s.IndexPrefix + idx
 }
 
-func (s *Store) CreateRecIndex() error {
+func (s *store) CreateRecIndex() error {
 	r := strings.NewReader(s.IndexMapping)
-	res, err := s.Client.Indices.Create(s.indexName("rec"), s.Client.Indices.Create.WithBody(r))
+	res, err := s.client.Indices.Create(s.indexName("rec"), s.client.Indices.Create.WithBody(r))
 	if err != nil {
 		return err
 	}
@@ -39,8 +64,8 @@ func (s *Store) CreateRecIndex() error {
 	return nil
 }
 
-func (s *Store) DeleteRecIndex() error {
-	res, err := s.Client.Indices.Delete([]string{s.indexName("rec")})
+func (s *store) DeleteRecIndex() error {
+	res, err := s.client.Indices.Delete([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -50,8 +75,8 @@ func (s *Store) DeleteRecIndex() error {
 	return nil
 }
 
-func (s *Store) Reset() error {
-	res, err := s.Client.Indices.Exists([]string{s.indexName("rec")})
+func (s *store) Reset() error {
+	res, err := s.client.Indices.Exists([]string{s.indexName("rec")})
 	if err != nil {
 		return err
 	}
@@ -71,7 +96,7 @@ func (s *Store) Reset() error {
 	return s.CreateRecIndex()
 }
 
-func (s *Store) AddRec(rec *engine.Rec) error {
+func (s *store) AddRec(rec *engine.Rec) error {
 	payload, err := json.Marshal(rec)
 	if err != nil {
 		return err
@@ -81,7 +106,7 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 		Index:      s.indexName("rec"),
 		DocumentID: rec.ID,
 		Body:       bytes.NewReader(payload),
-	}.Do(ctx, s.Client)
+	}.Do(ctx, s.client)
 	if err != nil {
 		return err
 	}
@@ -98,12 +123,10 @@ func (s *Store) AddRec(rec *engine.Rec) error {
 	return nil
 }
 
-// TODO don't die
-// TODO send errors back over a channel
-func (s *Store) AddRecs(c <-chan *engine.Rec) {
+func (s *store) AddRecs(c <-chan *engine.Rec) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:  s.indexName("rec"),
-		Client: s.Client,
+		Client: s.client,
 		OnError: func(c context.Context, e error) {
 			log.Printf("ERROR: %s", e)
 		},
@@ -146,50 +169,13 @@ func (s *Store) AddRecs(c <-chan *engine.Rec) {
 	}
 }
 
-func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
-	facetFields := []string{"collection", "type"}
-	var buf bytes.Buffer
-	var query M
-	var queryFilter M
-	var termsFilters []M
-
-	if len(args.Query) == 0 {
-		queryFilter = M{
-			"match_all": M{},
-		}
-	} else {
-		queryFilter = M{
-			"multi_match": M{
-				"query":    args.Query,
-				"fields":   []string{"id^100", "metadata.title.ngram"},
-				"operator": "and",
-			},
-		}
-	}
-
-	if args.Scope == nil {
-		query = M{"query": queryFilter}
-	} else {
-		for field, terms := range args.Scope {
-			termsFilters = append(termsFilters, M{"terms": M{field: terms}})
-		}
-
-		query = M{
-			"query": M{
-				"bool": M{
-					"must": queryFilter,
-					"filter": M{
-						"bool": M{
-							"must": termsFilters,
-						},
-					},
-				},
-			},
-		}
-	}
+func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
+	facetFields := []string{"type"}
+	query, queryFilter, termsFilters := buildQuery(args)
 
 	query["size"] = args.Size
 	query["from"] = args.Skip
+
 	query["highlight"] = M{
 		"require_field_match": false,
 		"pre_tags":            []string{"<mark>"},
@@ -198,6 +184,7 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 			"metadata.title.ngram": M{},
 		},
 	}
+
 	query["aggs"] = M{
 		"facets": M{
 			"global": M{},
@@ -225,49 +212,20 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 						"field":         field,
 						"min_doc_count": 1,
 						"order":         M{"_key": "asc"},
-						"size":          500, // TODO give better value or use nested facets or composite aggregation
+						"size":          200,
 					},
 				},
 			},
 		}
 	}
 
-	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		return nil, err
-	}
-	res, err := s.Client.Search(
-		s.Client.Search.WithContext(context.Background()),
-		s.Client.Search.WithIndex(s.indexName("rec")),
-		s.Client.Search.WithBody(&buf),
-		s.Client.Search.WithTrackTotalHits(true),
+	r, err := s.search(query,
+		s.client.Search.WithContext(context.Background()),
+		s.client.Search.WithIndex(s.indexName("rec")),
+		s.client.Search.WithTrackTotalHits(true),
 	)
 	if err != nil {
 		return nil, err
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		var e map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
-	}
-
-	type resEnvelope struct {
-		Hits struct {
-			Total int
-			Hits  []struct {
-				Source    json.RawMessage `json:"_source"`
-				Highlight json.RawMessage
-			}
-		}
-		Aggregations json.RawMessage
-	}
-
-	var r resEnvelope
-	if err = json.NewDecoder(res.Body).Decode(&r); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
 	hits := engine.RecHits{
@@ -294,4 +252,43 @@ func (s *Store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 	}
 
 	return &hits, nil
+}
+
+func (s *store) SearchAllRecs(args engine.SearchArgs) engine.RecCursor {
+	return &recCursor{store: s, args: args}
+}
+
+func (s *store) search(body M, opts ...func(*esapi.SearchRequest)) (*resEnvelope, error) {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return nil, err
+	}
+
+	opts = append(opts, s.client.Search.WithBody(&buf))
+
+	res, err := s.client.Search(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeRes(res)
+}
+
+func decodeRes(res *esapi.Response) (*resEnvelope, error) {
+	defer res.Body.Close()
+
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(e); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
+	}
+
+	var r resEnvelope
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, errors.Wrap(err, "Error parsing the response body")
+	}
+
+	return &r, nil
 }

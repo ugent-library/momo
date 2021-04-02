@@ -41,7 +41,6 @@ func WithPort(p int) option {
 	}
 }
 
-// TODO make timeouts configurable
 func (s *Server) Start() {
 	// mostly taken from examples here:
 	// https://marcofranssen.nl/go-webserver-with-graceful-shutdown/
