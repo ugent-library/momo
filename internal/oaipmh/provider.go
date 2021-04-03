@@ -37,8 +37,8 @@ var (
 	errResumptiontokenExclusive = Error{Code: "badArgument", Value: "resumptionToken cannot be combined with other attributes"}
 	errMetadataPrefixMissing    = Error{Code: "badArgument", Value: "Argument 'metadataPrefix' is missing"}
 	errIdentifierMissing        = Error{Code: "badArgument", Value: "Argument 'identifier' is missing"}
-	errFromMissing              = Error{Code: "badArgument", Value: "Argument 'from' is missing"}
-	errUntilMissing             = Error{Code: "badArgument", Value: "Argument 'until' is missing"}
+	errFromInvalid              = Error{Code: "badArgument", Value: "Argument 'from' is not a valid datestamp"}
+	errUntilInvalid             = Error{Code: "badArgument", Value: "Argument 'until' is not a valid datestamp"}
 )
 
 type Request struct {
@@ -145,7 +145,8 @@ type ResumptionToken struct {
 
 type provider struct {
 	ProviderOptions
-	setMap map[string]struct{}
+	dateFormat string
+	setMap     map[string]struct{}
 }
 
 type ProviderOptions struct {
@@ -171,6 +172,16 @@ func NewProvider(opts ProviderOptions) http.Handler {
 	if p.Granularity == "" {
 		p.Granularity = "YYYY-MM-DDThh:mm:ssZ"
 	}
+
+	if p.Granularity == "YYYY-MM-DD" {
+		p.dateFormat = "2006-01-02"
+	} else if p.Granularity == "YYYY-MM-DDThh:mm:ssZ" {
+		p.dateFormat = "2006-01-02T15:04:05Z"
+	} else {
+		// TODO don't panic?
+		log.Panic("OAI-PMH granularity should be YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ")
+	}
+
 	if p.DeletedRecord == "" {
 		p.DeletedRecord = "persistent"
 	}
@@ -414,14 +425,19 @@ func (r *response) setSet(q url.Values) {
 func (r *response) setFromUntil(q url.Values) {
 	f := r.getAttr(q, "from")
 	u := r.getAttr(q, "until")
-	if f != "" && u != "" {
-		// TODO validate format
-		r.Request.From = f
-		r.Request.Until = u
-	} else if f == "" && u != "" {
-		r.Errors = append(r.Errors, errFromMissing)
-	} else if f != "" && u == "" {
-		r.Errors = append(r.Errors, errUntilMissing)
+	if f != "" {
+		if _, err := time.Parse(r.provider.dateFormat, f); err == nil {
+			r.Request.From = f
+		} else {
+			r.Errors = append(r.Errors, errFromInvalid)
+		}
+	}
+	if u != "" {
+		if _, err := time.Parse(r.provider.dateFormat, u); err == nil {
+			r.Request.From = f
+		} else {
+			r.Errors = append(r.Errors, errUntilInvalid)
+		}
 	}
 }
 
