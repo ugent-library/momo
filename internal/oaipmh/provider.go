@@ -285,22 +285,22 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case "ListMetadataFormats":
 		res.validateAttrs(q, listMetadataFormatsAttrs)
-		res.Request.Identifier = res.getAttr(q, "identifier")
+		res.setIdentifier(q)
 
 		if len(res.Errors) == 0 {
 			p.listMetadataFormats(res)
 		}
 	case "ListSets":
 		res.validateAttrs(q, listSetsAttrs)
-		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
+		res.setResumptionToken(q)
 
 		if len(res.Errors) == 0 {
 			p.listSets(res)
 		}
 	case "ListIdentifiers":
 		res.validateAttrs(q, listRecordsAttrs)
-		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
-		res.setMetadataPrefix(q)
+		res.setResumptionToken(q)
+		res.setRequiredMetadataPrefix(q)
 		res.setSet(q)
 		res.setFromUntil(q)
 
@@ -309,8 +309,8 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case "ListRecords":
 		res.validateAttrs(q, listRecordsAttrs)
-		res.Request.ResumptionToken = res.getAttr(q, "resumptionToken")
-		res.setMetadataPrefix(q)
+		res.setResumptionToken(q)
+		res.setRequiredMetadataPrefix(q)
 		res.setSet(q)
 		res.setFromUntil(q)
 
@@ -319,11 +319,8 @@ func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case "GetRecord":
 		res.validateAttrs(q, getRecordAttrs)
-		res.setMetadataPrefix(q)
-		res.Request.Identifier = res.getAttr(q, "identifier")
-		if res.Request.Identifier == "" {
-			res.Errors = append(res.Errors, errIdentifierMissing)
-		}
+		res.setRequiredMetadataPrefix(q)
+		res.setRequiredIdentifier(q)
 
 		if len(res.Errors) == 0 {
 			p.getRecord(res)
@@ -371,7 +368,11 @@ func (r *response) setVerb(q url.Values) {
 	r.Request.Verb = vals[0]
 }
 
-func (r *response) setMetadataPrefix(q url.Values) {
+func (r *response) setResumptionToken(q url.Values) {
+	r.Request.ResumptionToken = r.getAttr(q, "resumptionToken")
+}
+
+func (r *response) setRequiredMetadataPrefix(q url.Values) {
 	val := r.getAttr(q, "metadataPrefix")
 
 	if val != "" && r.Request.ResumptionToken != "" {
@@ -398,6 +399,17 @@ func (r *response) setMetadataPrefix(q url.Values) {
 	}
 
 	r.Request.MetadataPrefix = val
+}
+
+func (r *response) setIdentifier(q url.Values) {
+	r.Request.Identifier = r.getAttr(q, "identifier")
+}
+
+func (r *response) setRequiredIdentifier(q url.Values) {
+	r.Request.Identifier = r.getAttr(q, "identifier")
+	if r.Request.Identifier == "" {
+		r.Errors = append(r.Errors, errIdentifierMissing)
+	}
 }
 
 func (r *response) setSet(q url.Values) {
