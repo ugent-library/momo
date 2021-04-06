@@ -1,5 +1,10 @@
 package sql
 
+// edit schema
+// go run entgo.io/ent/cmd/ent init Rec --target internal/storage/sql/ent/schema
+// generate client
+// go run entgo.io/ent/cmd/ent generate --idtype string --target internal/storage/sql/ent ./internal/storage/sql/ent/schema
+
 import (
 	"context"
 
