@@ -17,7 +17,7 @@ func buildQuery(args engine.SearchArgs) (M, M, []M) {
 		queryFilter = M{
 			"multi_match": M{
 				"query":    args.Query,
-				"fields":   []string{"id^100", "metadata.title.ngram"},
+				"fields":   []string{"id^100", "metadata.identifier^50", "metadata.title.ngram"},
 				"operator": "and",
 			},
 		}

@@ -62,43 +62,30 @@ func addID(w io.Writer, rec *engine.Rec) error {
 }
 
 func addTitle(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().Title; v != "" {
-		return addTag(w, "title", v)
-	}
-	return nil
+	return addTag(w, "title", rec.GetString("title"))
 }
 
 func addAuthor(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().Author {
-		if err := addTag(w, "contributor", v.Name); err != nil {
-			return err
-		}
-	}
-	return nil
+	vals := rec.GetStringSlice("author[*].name")
+	return addTag(w, "contributor", vals...)
 }
 
 func addAbstract(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().Abstract {
-		if err := addTag(w, "description", v.Text); err != nil {
-			return err
-		}
-	}
-	return nil
+	vals := rec.GetStringSlice("abstract[*].text")
+	return addTag(w, "description", vals...)
 }
 
 func addPublisher(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().Publisher; v != "" {
-		return addTag(w, "publisher", v)
-	}
-	return nil
+	return addTag(w, "publisher", rec.GetString("publisher"))
 }
 
 func addDOI(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "identifier", rec.Metadata().DOI...)
+	vals := rec.GetStringSlice("doi")
+	return addTag(w, "identifier", vals...)
 }
 
 func addISBN(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().ISBN {
+	for _, v := range rec.GetStringSlice("isbn") {
 		if err := addTag(w, "identifier", "ISBN: "+v); err != nil {
 			return err
 		}
@@ -108,6 +95,9 @@ func addISBN(w io.Writer, rec *engine.Rec) error {
 
 func addTag(w io.Writer, tag string, vals ...string) error {
 	for _, val := range vals {
+		if val == "" {
+			continue
+		}
 		// TODO catch errors
 		io.WriteString(w, `<dc:`)
 		io.WriteString(w, tag)

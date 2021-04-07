@@ -24,8 +24,7 @@ func OAI(e engine.Engine) http.Handler {
 		},
 
 		GetRecord: func(r *oaipmh.Request) *oaipmh.Record {
-			parts := strings.Split(r.Identifier, ":")
-			rec, _ := e.GetRec(parts[0], strings.Join(parts[1:], ":"))
+			rec, _ := e.GetRec(r.Identifier)
 			if rec == nil {
 				return nil
 			}

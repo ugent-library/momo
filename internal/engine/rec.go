@@ -6,10 +6,12 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/jmespath/go-jmespath"
 )
 
 type RecEngine interface {
-	GetRec(string, string) (*Rec, error)
+	GetRec(string) (*Rec, error)
 	GetAllRecs() RecCursor
 	SearchRecs(SearchArgs) (*RecHits, error)
 	SearchMoreRecs(string) (*RecHits, error)
@@ -32,33 +34,20 @@ type Rec struct {
 	Collection  string          `json:"collection"`
 	Type        string          `json:"type"`
 	RawMetadata json.RawMessage `json:"metadata"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
+	CreatedAt   time.Time       `json:"createdAt"`
+	UpdatedAt   time.Time       `json:"updatedAt"`
 	RawSource   json.RawMessage `json:"source"`
-	metadata    *RecMetadata
+	metadata    map[string]interface{}
 }
 
-type RecMetadata struct {
-	Title              string
-	Author             []Contributor
-	Abstract           []Text
-	Edition            string
-	Publisher          string
-	PlaceOfPublication string
-	PublicationDate    string
-	DOI                []string
-	ISBN               []string
-	Note               []Text
-}
+// type Contributor struct {
+// 	Name string
+// }
 
-type Contributor struct {
-	Name string
-}
-
-type Text struct {
-	Lang string
-	Text string
-}
+// type Text struct {
+// 	Lang string
+// 	Text string
+// }
 
 type RecHits struct {
 	CursorID       string          `json:"-"`
@@ -80,18 +69,51 @@ type recHitsCursor struct {
 	err         error
 }
 
-func (rec *Rec) Metadata() *RecMetadata {
-	if rec.metadata == nil {
-		rec.metadata = &RecMetadata{}
-		if err := json.Unmarshal(rec.RawMetadata, rec.metadata); err != nil {
-			panic("momo: invalid metadata in rec " + rec.ID + ": " + err.Error())
-		}
+func (r *Rec) parseMetadata() {
+	if r.metadata != nil {
+		return
 	}
-	return rec.metadata
+	r.metadata = make(map[string]interface{})
+	if err := json.Unmarshal(r.RawMetadata, &r.metadata); err != nil {
+		panic(err)
+	}
 }
 
-func (e *engine) GetRec(coll string, id string) (*Rec, error) {
-	return e.store.GetRec(coll, id)
+func (r *Rec) Get(path string) interface{} {
+	r.parseMetadata()
+	// TODO cache
+	jp := jmespath.MustCompile(path)
+	// TODO detect simple key lookup?
+	v, err := jp.Search(r.metadata)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (r *Rec) GetString(path string) string {
+	val := r.Get(path)
+	if str, ok := val.(string); ok {
+		return str
+	}
+	return ""
+}
+
+func (r *Rec) GetStringSlice(path string) (strs []string) {
+	vals, ok := r.Get(path).([]interface{})
+	if !ok {
+		return
+	}
+	for _, v := range vals {
+		if str, ok := v.(string); ok {
+			strs = append(strs, str)
+		}
+	}
+	return
+}
+
+func (e *engine) GetRec(id string) (*Rec, error) {
+	return e.store.GetRec(id)
 }
 
 func (e *engine) GetAllRecs() RecCursor {

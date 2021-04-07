@@ -50,10 +50,9 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 		Rec *engine.Rec
 	}
 
-	collection := ctx.GetCollection(r)
 	id := chi.URLParam(r, "id")
-	rec, err := c.engine.GetRec(collection, id)
-	if err != nil {
+	rec, err := c.engine.GetRec(id)
+	if err != nil || rec.Collection != ctx.GetCollection(r) {
 		log.Println(err)
 		http.Error(w, err.Error(), 404)
 		return

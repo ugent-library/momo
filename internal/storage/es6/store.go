@@ -33,8 +33,8 @@ type esRec struct {
 	Collection  string          `json:"collection"`
 	Type        string          `json:"type"`
 	RawMetadata json.RawMessage `json:"metadata"`
-	CreatedAt   string          `json:"created_at"`
-	UpdatedAt   string          `json:"updated_at"`
+	CreatedAt   string          `json:"createdAt"`
+	UpdatedAt   string          `json:"updatedAt"`
 	RawSource   json.RawMessage `json:"source"`
 }
 

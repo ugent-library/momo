@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/google/uuid"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
@@ -21,8 +22,8 @@ type Model struct {
 
 type Rec struct {
 	Model
-	ID         string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
-	Collection string         `gorm:"not null;uniqueIndex:idx_recs_id_collection"`
+	ID         string         `gorm:"type:uuid;not null;uniqueIndex"`
+	Collection string         `gorm:"not null;index"`
 	Type       string         `gorm:"not null;index"`
 	Metadata   datatypes.JSON `gorm:"not null"`
 	Source     datatypes.JSON
@@ -42,9 +43,9 @@ func New(dsn string) (*store, error) {
 	return s, nil
 }
 
-func (s *store) GetRec(coll string, id string) (*engine.Rec, error) {
+func (s *store) GetRec(id string) (*engine.Rec, error) {
 	r := Rec{}
-	res := s.db.Where("collection = ?", coll).Where("id = ?", id).First(&r)
+	res := s.db.Where("id = ?", id).First(&r)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -57,6 +58,9 @@ func (s *store) GetAllRecs() engine.RecCursor {
 }
 
 func (s *store) AddRec(rec *engine.Rec) error {
+	if rec.ID == "" {
+		rec.ID = uuid.NewString()
+	}
 	r := Rec{
 		ID:         rec.ID,
 		Type:       rec.Type,
@@ -66,10 +70,13 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	}
 
 	res := s.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "id"}, {Name: "collection"}},
+		Columns: []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"type", "collection",
 			"metadata", "source", "updated_at"}),
 	}).Create(&r)
+
+	rec.CreatedAt = r.CreatedAt
+	rec.UpdatedAt = r.UpdatedAt
 
 	return res.Error
 }

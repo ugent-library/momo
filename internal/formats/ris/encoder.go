@@ -52,70 +52,46 @@ func addID(w io.Writer, rec *engine.Rec) error {
 }
 
 func addTitle(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().Title; v != "" {
-		return addTag(w, "TI", v)
-	}
-	return nil
+	return addTag(w, "TI", rec.GetString("title"))
 }
 
 func addAuthor(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().Author {
-		if err := addTag(w, "AU", v.Name); err != nil {
-			return err
-		}
-	}
-	return nil
+	vals := rec.GetStringSlice("author[*].name")
+	return addTag(w, "AU", vals...)
 }
 
 func addAbstract(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().Abstract {
-		if err := addTag(w, "AB", v.Text); err != nil {
-			return err
-		}
-	}
-	return nil
+	vals := rec.GetStringSlice("abstract[*].text")
+	return addTag(w, "AB", vals...)
 }
 
 func addEdition(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().Edition; v != "" {
-		return addTag(w, "ET", v)
-	}
-	return nil
+	return addTag(w, "ET", rec.GetString("edition"))
 }
 
 func addPublisher(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().Publisher; v != "" {
-		return addTag(w, "PB", v)
-	}
-	return nil
+	return addTag(w, "PB", rec.GetString("publisher"))
 }
 
 func addPlaceOfPublication(w io.Writer, rec *engine.Rec) error {
-	if v := rec.Metadata().PlaceOfPublication; v != "" {
-		return addTag(w, "CY", v)
-	}
-	return nil
+	return addTag(w, "CY", rec.GetString("placeOfPublication"))
 }
 
 func addDOI(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "DO", rec.Metadata().DOI...)
+	vals := rec.GetStringSlice("doi")
+	return addTag(w, "DO", vals...)
 }
 
 func addISBN(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "SN", rec.Metadata().ISBN...)
-}
-
-func addNote(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.Metadata().Note {
-		if err := addTag(w, "N1", v.Text); err != nil {
-			return err
-		}
-	}
-	return nil
+	vals := rec.GetStringSlice("isbn")
+	return addTag(w, "SN", vals...)
 }
 
 func addTag(w io.Writer, tag string, vals ...string) error {
 	for _, val := range vals {
+		if val == "" {
+			continue
+		}
 		if _, err := fmt.Fprintf(w, "%s  - %s\r\n", tag, val); err != nil {
 			return err
 		}

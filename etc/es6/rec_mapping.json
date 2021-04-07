@@ -41,10 +41,10 @@
                 "type": {
                     "type": "keyword"
                 },
-                "created_at": {
+                "createdAt": {
                     "type": "date"
                 },
-                "updated_at": {
+                "updatedAt": {
                     "type": "date"
                 },
                 "metadata": {
@@ -78,7 +78,7 @@
                             }
                         },
                         "edition": {
-                            "enabled": "false"
+                            "type": "text"
                         },
                         "publisher": {
                             "type": "text"
@@ -88,6 +88,9 @@
                         },
                         "publicationDate": {
                             "type": "text"
+                        },
+                        "identifier": {
+                            "type": "keyword"
                         },
                         "doi": {
                             "type": "keyword"
