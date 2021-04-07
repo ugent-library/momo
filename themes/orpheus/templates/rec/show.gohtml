@@ -18,22 +18,31 @@
     {{renderInternalView .Data.Rec}}
 
     <h3>RIS</h3>
-    <code><pre>
-    {{renderRIS .Data.Rec}}
-    </pre></code>
+    <code><pre>{{renderRIS .Data.Rec}}</pre></code>
 
+    {{if .Data.Rec.GetString "iiif.manifest"}}
     <script type="text/javascript">
         window.addEventListener('DOMContentLoaded', () => {
-            const config = {
-                initialZoom: 2,
-                initialOptions: {
-                    tileFormat: 'jpg',
-                    tileSize: 512
-                },
-                initialInfoUrl: "http://iiif.hualab.nl:8080/iiif/2/saftleven-panorama-1684.jpg/info.json"
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                if (request.status == 200) {
+                    var data = JSON.parse(request.responseText);
+                    var infoUrl = data.sequences[0].canvases[0].images[0].resource.service["@id"]+"/info.json";
+                    IIIFViewer.init('#iiif-viewer', {
+                        initialZoom: 2,
+                        initialOptions: {
+                            tileFormat: 'jpg',
+                            tileSize: 512
+                        },
+                        initialInfoUrl: infoUrl
+                    });
+                } else {
+                }
             };
-            IIIFViewer.init('#iiif-viewer', config);
+            request.open("get", {{.Data.Rec.GetString "iiif.manifest"}}, true);
+            request.send();
         });
     </script>
+    {{end}}
 </div>
 {{end}}
