@@ -7,7 +7,7 @@ export default {
     const p = new URLSearchParams()
 
     p.append('q', query)
-    p.append('skip', page * size)
+    p.append('skip', (page - 1) * size)
     p.append('size', size)
 
     Object

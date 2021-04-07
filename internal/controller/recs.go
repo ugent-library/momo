@@ -69,7 +69,9 @@ func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	if args.Size == 0 {
+		args.Size = 10
+	}
 	hits, err := c.engine.SearchRecs(args.WithFilter("collection", ctx.GetCollection(r)))
 	if err != nil {
 		log.Println(err)

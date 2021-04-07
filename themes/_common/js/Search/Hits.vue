@@ -12,7 +12,7 @@
                 </li>
             </ul>
             <a :href="hitUrl(hit)">
-                <h2 class="title" v-html="hit.title"></h2>
+                <h3 class="title" v-html="hit.title"></h3>
             </a>
         </li>
     </ul>

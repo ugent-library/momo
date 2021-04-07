@@ -1,39 +1,39 @@
 {{define "content"}}
+<div class="container">
+    <h1>
+        {{renderTitle .Data.Rec.RawMetadata}}
+        {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
+    </h1>
 
-<h1>
-    {{renderTitle .Data.Rec.RawMetadata}}
-    {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
-</h1>
+    <div id="iiif-viewer"></div>
 
-<div id="iiif-viewer"></div>
+    {{renderMetadata .Data.Rec.RawMetadata}}
 
-{{renderMetadata .Data.Rec.RawMetadata}}
+    {{if .Data.Rec.RawSource }}
+    <h3>{{.Locale.Get "Librarian view"}}</h3>
+    {{renderSourceView .Data.Rec.RawSource}}
+    {{end}}
 
-{{if .Data.Rec.RawSource }}
-<h3>{{.Locale.Get "Librarian view"}}</h3>
-{{renderSourceView .Data.Rec.RawSource}}
-{{end}}
+    <h3>{{.Locale.Get "Developer view"}}</h3>
+    {{renderInternalView .Data.Rec}}
 
-<h3>{{.Locale.Get "Developer view"}}</h3>
-{{renderInternalView .Data.Rec}}
+    <h3>RIS</h3>
+    <code><pre>
+    {{renderRIS .Data.Rec}}
+    </pre></code>
 
-<h3>RIS</h3>
-<code><pre>
-{{renderRIS .Data.Rec}}
-</pre></code>
-
-<script type="text/javascript">
-    window.addEventListener('DOMContentLoaded', () => {
-        const config = {
-            initialZoom: 2,
-            initialOptions: {
-                tileFormat: 'jpg',
-                tileSize: 512
-            },
-            initialInfoUrl: "http://iiif.hualab.nl:8080/iiif/2/saftleven-panorama-1684.jpg/info.json"
-        };
-        IIIFViewer.init('#iiif-viewer', config);
-    });
-</script>
-
+    <script type="text/javascript">
+        window.addEventListener('DOMContentLoaded', () => {
+            const config = {
+                initialZoom: 2,
+                initialOptions: {
+                    tileFormat: 'jpg',
+                    tileSize: 512
+                },
+                initialInfoUrl: "http://iiif.hualab.nl:8080/iiif/2/saftleven-panorama-1684.jpg/info.json"
+            };
+            IIIFViewer.init('#iiif-viewer', config);
+        });
+    </script>
+</div>
 {{end}}
