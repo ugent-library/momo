@@ -7,7 +7,12 @@ import (
 	"sync"
 	"time"
 
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/jmespath/go-jmespath"
+)
+
+var (
+	getterCache *lru.Cache
 )
 
 type RecEngine interface {
@@ -69,6 +74,14 @@ type recHitsCursor struct {
 	err         error
 }
 
+func init() {
+	var err error
+	getterCache, err = lru.New(512)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func (r *Rec) parseMetadata() {
 	if r.metadata != nil {
 		return
@@ -81,12 +94,16 @@ func (r *Rec) parseMetadata() {
 
 func (r *Rec) Get(path string) interface{} {
 	r.parseMetadata()
-	// TODO cache
-	jp := jmespath.MustCompile(path)
-	// TODO detect simple key lookup?
+	var jp *jmespath.JMESPath
+	if c, ok := getterCache.Get(path); ok {
+		jp = c.(*jmespath.JMESPath)
+	} else {
+		jp = jmespath.MustCompile(path)
+		getterCache.Add(path, jp)
+	}
 	v, err := jp.Search(r.metadata)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	return v
 }
