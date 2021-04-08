@@ -5,7 +5,14 @@
         {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
     </h1>
 
+    {{if .Data.Rec.GetString "iiif.manifest"}}
     <div id="iiif-viewer"></div>
+    {{end}}
+    {{if .Data.Rec.GetString "iiif.miradorViewer"}}
+    <p>
+        <a href={{.Data.Rec.GetString "iiif.miradorViewer"}}>Mirador viewer</a>
+    </p>
+    {{end}}
 
     {{renderMetadata .Data.Rec.RawMetadata}}
 
