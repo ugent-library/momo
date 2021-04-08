@@ -1,11 +1,15 @@
 package commands
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/ugent-library/momo/internal/engine"
@@ -51,16 +55,12 @@ var recGetCmd = &cobra.Command{
 			log.Fatalf("Unknown format %s", formatF)
 		}
 
-		c := e.GetAllRecs()
-		defer c.Close()
-		for c.Next() {
-			if err := c.Error(); err != nil {
+		e.EachRec(func(rec *engine.Rec) bool {
+			if err := encoder.Encode(rec); err != nil {
 				log.Fatal(err)
 			}
-			if err := encoder.Encode(c.Value()); err != nil {
-				log.Fatal(err)
-			}
-		}
+			return true
+		})
 	},
 }
 
@@ -74,16 +74,12 @@ var recSearchCmd = &cobra.Command{
 			log.Fatalf("Unknown format %s", formatF)
 		}
 
-		c := e.SearchAllRecs(engine.SearchArgs{Query: queryF})
-		defer c.Close()
-		for c.Next() {
-			if err := c.Error(); err != nil {
+		e.SearchEachRec(engine.SearchArgs{Query: queryF}, func(rec *engine.Rec) bool {
+			if err := encoder.Encode(rec); err != nil {
 				log.Fatal(err)
 			}
-			if err := encoder.Encode(c.Value()); err != nil {
-				log.Fatal(err)
-			}
-		}
+			return true
+		})
 	},
 }
 
@@ -187,17 +183,35 @@ var recAddCitationsCmd = &cobra.Command{
 	Short: "",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		encoder := csljson.NewEncoder(os.Stdout)
-
-		c := e.GetAllRecs()
-		defer c.Close()
-		for c.Next() {
-			if err := c.Error(); err != nil {
-				log.Fatal(err)
-			}
-			if err := encoder.Encode(c.Value()); err != nil {
-				log.Fatal(err)
-			}
+		client := http.Client{
+			Timeout: 10 * time.Second,
 		}
+
+		e.EachRec(func(rec *engine.Rec) bool {
+			body := struct {
+				Items []json.RawMessage `json:"items"`
+			}{}
+			var buf bytes.Buffer
+			encoder := csljson.NewEncoder(&buf)
+			if err := encoder.Encode(rec); err != nil {
+				log.Fatal(err)
+			}
+			body.Items = append(body.Items, buf.Bytes())
+			jsonBody, _ := json.Marshal(body)
+			req, err := http.NewRequest("POST", "http://127.0.0.1:8085", bytes.NewBuffer(jsonBody))
+			req.Header.Set("Content-Type", "application/json")
+			res, err := client.Do(req)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer res.Body.Close()
+			cites, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Print(string(cites))
+
+			return true
+		})
 	},
 }

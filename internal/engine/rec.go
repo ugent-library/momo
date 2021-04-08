@@ -17,21 +17,14 @@ var (
 
 type RecEngine interface {
 	GetRec(string) (*Rec, error)
-	GetAllRecs() RecCursor
+	EachRec(func(*Rec) bool) error
 	SearchRecs(SearchArgs) (*RecHits, error)
 	SearchMoreRecs(string) (*RecHits, error)
-	SearchAllRecs(SearchArgs) RecCursor
+	SearchEachRec(SearchArgs, func(*Rec) bool) error
 	AddRecs(<-chan *Rec)
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
-}
-
-type RecCursor interface {
-	Next() bool
-	Value() *Rec
-	Error() error
-	Close()
 }
 
 type Rec struct {
@@ -64,14 +57,6 @@ type RecHits struct {
 type RecHit struct {
 	Rec
 	RawHighlight json.RawMessage `json:"highlight"`
-}
-
-type recHitsCursor struct {
-	args        SearchArgs
-	searchStore SearchStorage
-	hits        *RecHits
-	hitsIdx     int
-	err         error
 }
 
 func init() {
@@ -133,8 +118,8 @@ func (e *engine) GetRec(id string) (*Rec, error) {
 	return e.store.GetRec(id)
 }
 
-func (e *engine) GetAllRecs() RecCursor {
-	return e.store.GetAllRecs()
+func (e *engine) EachRec(fn func(*Rec) bool) error {
+	return e.store.EachRec(fn)
 }
 
 func (e *engine) SearchRecs(args SearchArgs) (*RecHits, error) {
@@ -145,13 +130,26 @@ func (e *engine) SearchMoreRecs(cursorID string) (*RecHits, error) {
 	return e.searchStore.SearchMoreRecs(cursorID)
 }
 
-func (e *engine) SearchAllRecs(args SearchArgs) RecCursor {
-	args.Cursor = true
-	args.Size = 200
-	return &recHitsCursor{
-		searchStore: e.searchStore,
-		args:        args,
+func (e *engine) SearchEachRec(args SearchArgs, fn func(*Rec) bool) error {
+	if args.Size == 0 {
+		args.Size = 200
 	}
+	args.Cursor = true
+	hits, err := e.searchStore.SearchRecs(args)
+	if err != nil {
+		return err
+	}
+	for len(hits.Hits) > 0 {
+		for _, hit := range hits.Hits {
+			if ok := fn(&hit.Rec); !ok {
+				return nil
+			}
+		}
+		if hits, err = e.searchStore.SearchMoreRecs(hits.CursorID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *engine) AddRecs(storeC <-chan *Rec) {
@@ -193,6 +191,7 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 
 func (e *engine) IndexRecs() (err error) {
 	var indexWG sync.WaitGroup
+
 	// indexing channel
 	indexC := make(chan *Rec)
 
@@ -203,14 +202,10 @@ func (e *engine) IndexRecs() (err error) {
 	}()
 
 	// send recs to indexer
-	c := e.store.GetAllRecs()
-	defer c.Close()
-	for c.Next() {
-		if err = c.Error(); err != nil {
-			break
-		}
-		indexC <- c.Value()
-	}
+	e.EachRec(func(rec *Rec) bool {
+		indexC <- rec
+		return true
+	})
 
 	close(indexC)
 
@@ -226,37 +221,4 @@ func (e *engine) CreateRecIndex() error {
 
 func (e *engine) DeleteRecIndex() error {
 	return e.searchStore.DeleteRecIndex()
-}
-
-func (c *recHitsCursor) Next() bool {
-	if c.hits == nil {
-		c.hits, c.err = c.searchStore.SearchRecs(c.args)
-	}
-	if c.err == nil && c.hitsIdx < len(c.hits.Hits) {
-		return true
-	} else if c.err == nil {
-		c.hits, c.err = c.searchStore.SearchMoreRecs(c.hits.CursorID)
-		c.hitsIdx = 0
-		if c.err == nil && len(c.hits.Hits) > 0 {
-			return true
-		}
-
-	}
-	return false
-}
-
-func (c *recHitsCursor) Value() *Rec {
-	if c.err != nil || c.hitsIdx >= len(c.hits.Hits) {
-		return nil
-	}
-	rec := &c.hits.Hits[c.hitsIdx].Rec
-	c.hitsIdx++
-	return rec
-}
-
-func (c *recHitsCursor) Error() error {
-	return c.err
-}
-
-func (c *recHitsCursor) Close() {
 }

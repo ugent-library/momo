@@ -22,16 +22,7 @@ func Generate(e engine.Engine, baseURL string) (err error) {
 		path:       "static/sitemaps",
 	}
 
-	c := e.GetAllRecs()
-	defer c.Close()
-
-	for c.Next() {
-		if err = c.Error(); err != nil {
-			break
-		}
-
-		rec := c.Value()
-
+	e.EachRec(func(rec *engine.Rec) bool {
 		for _, lang := range langs {
 			alts := make([]alternate, len(langs))
 			for i, l := range langs {
@@ -49,11 +40,14 @@ func Generate(e engine.Engine, baseURL string) (err error) {
 				priority:   "0.9",
 				alternates: alts,
 			})
+
 			if err != nil {
-				return
+				return false
 			}
 		}
-	}
+
+		return true
+	})
 
 	err = sm.finish()
 
