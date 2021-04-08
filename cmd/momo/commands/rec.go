@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/formats/csljson"
 )
 
 var (
@@ -30,6 +31,7 @@ func init() {
 	recCmd.AddCommand(recSearchCmd)
 	recCmd.AddCommand(recAddCmd)
 	recCmd.AddCommand(recIndexCmd)
+	recCmd.AddCommand(recAddCitationsCmd)
 
 	rootCmd.AddCommand(recCmd)
 }
@@ -176,6 +178,26 @@ var recIndexDeleteCmd = &cobra.Command{
 		err := e.DeleteRecIndex()
 		if err != nil {
 			log.Fatal(err)
+		}
+	},
+}
+
+var recAddCitationsCmd = &cobra.Command{
+	Use:   "add-citations",
+	Short: "",
+	Run: func(cmd *cobra.Command, args []string) {
+		e := newEngine()
+		encoder := csljson.NewEncoder(os.Stdout)
+
+		c := e.GetAllRecs()
+		defer c.Close()
+		for c.Next() {
+			if err := c.Error(); err != nil {
+				log.Fatal(err)
+			}
+			if err := encoder.Encode(c.Value()); err != nil {
+				log.Fatal(err)
+			}
 		}
 	},
 }
