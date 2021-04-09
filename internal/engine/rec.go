@@ -40,15 +40,6 @@ type Rec struct {
 	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
-// type Contributor struct {
-// 	Name string
-// }
-
-// type Text struct {
-// 	Lang string
-// 	Text string
-// }
-
 type RecHits struct {
 	CursorID       string          `json:"-"`
 	Total          int             `json:"total"`
