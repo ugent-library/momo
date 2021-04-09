@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v6"
+	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/formats/jsonl"
@@ -13,7 +14,7 @@ import (
 	"github.com/ugent-library/momo/internal/formats/ris"
 	"github.com/ugent-library/momo/internal/i18n/gettext"
 	"github.com/ugent-library/momo/internal/storage/es6"
-	"github.com/ugent-library/momo/internal/storage/pg"
+	"github.com/ugent-library/momo/internal/storage/sql"
 )
 
 func newEngine() engine.Engine {
@@ -28,7 +29,8 @@ func newEngine() engine.Engine {
 }
 
 func newStore() engine.Storage {
-	store, err := pg.New(viper.GetString("pg-conn"))
+	// store, err := pg.New(viper.GetString("pg-conn"))
+	store, err := sql.New("postgres", viper.GetString("pg-conn"))
 	if err != nil {
 		log.Fatal(err)
 	}

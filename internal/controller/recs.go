@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"bytes"
 	"encoding/json"
 	"html"
 	"html/template"
@@ -29,7 +28,6 @@ func NewRecs(e engine.Engine) *Recs {
 		engine:   e,
 		listView: render.NewView(e, "app", []string{"rec/list"}),
 		showView: render.NewView(e, "app", []string{"rec/show"}, template.FuncMap{
-			"renderTitle":        renderTitle,
 			"renderMetadata":     renderMetadata,
 			"renderSourceView":   renderSourceView,
 			"renderInternalView": renderInternalView,
@@ -82,12 +80,8 @@ func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, hits)
 }
 
-func renderTitle(j json.RawMessage) template.HTML {
-	title := gjson.GetBytes(j, "title").String()
-	return template.HTML(title)
-}
-
-func renderMetadata(j json.RawMessage) template.HTML {
+func renderMetadata(rec *engine.Rec) template.HTML {
+	j, _ := json.Marshal(rec.Metadata)
 	var b strings.Builder
 	m := gjson.ParseBytes(j)
 	b.WriteString("<dl>")
@@ -152,9 +146,8 @@ func renderSourceView(j json.RawMessage) template.HTML {
 }
 
 func renderInternalView(rec *engine.Rec) template.HTML {
-	var b bytes.Buffer
-	json.Indent(&b, rec.RawMetadata, "", "\t")
-	return template.HTML("<code><pre>" + b.String() + "</pre></code>")
+	b, _ := json.MarshalIndent(rec.Metadata, "", "\t")
+	return template.HTML("<code><pre>" + string(b) + "</pre></code>")
 }
 
 func renderRIS(rec *engine.Rec) (string, error) {

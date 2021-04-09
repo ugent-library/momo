@@ -1,7 +1,7 @@
 {{define "content"}}
 <div class="container">
     <h1>
-        {{renderTitle .Data.Rec.RawMetadata}}
+        {{.Data.Rec.GetString "title"}}
         {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
     </h1>
 
@@ -14,7 +14,7 @@
     </p>
     {{end}}
 
-    {{renderMetadata .Data.Rec.RawMetadata}}
+    {{renderMetadata .Data.Rec}}
 
     {{if .Data.Rec.RawSource }}
     <h3>{{.Locale.Get "Librarian view"}}</h3>

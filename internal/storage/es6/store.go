@@ -29,13 +29,13 @@ type store struct {
 }
 
 type esRec struct {
-	ID          string          `json:"id"`
-	Collection  string          `json:"collection"`
-	Type        string          `json:"type"`
-	RawMetadata json.RawMessage `json:"metadata"`
-	CreatedAt   string          `json:"createdAt"`
-	UpdatedAt   string          `json:"updatedAt"`
-	RawSource   json.RawMessage `json:"source"`
+	ID         string                 `json:"id"`
+	Collection string                 `json:"collection"`
+	Type       string                 `json:"type"`
+	Metadata   map[string]interface{} `json:"metadata"`
+	CreatedAt  string                 `json:"createdAt"`
+	UpdatedAt  string                 `json:"updatedAt"`
+	RawSource  json.RawMessage        `json:"source"`
 }
 
 type resEnvelope struct {
@@ -150,13 +150,13 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 	for rec := range c {
 		// not needed anymore in es7 with date nano type
 		r := esRec{
-			ID:          rec.ID,
-			Collection:  rec.Collection,
-			Type:        rec.Type,
-			RawMetadata: rec.RawMetadata,
-			CreatedAt:   rec.CreatedAt.UTC().Format(time.RFC3339),
-			UpdatedAt:   rec.UpdatedAt.UTC().Format(time.RFC3339),
-			RawSource:   rec.RawSource,
+			ID:         rec.ID,
+			Collection: rec.Collection,
+			Type:       rec.Type,
+			Metadata:   rec.Metadata,
+			CreatedAt:  rec.CreatedAt.UTC().Format(time.RFC3339),
+			UpdatedAt:  rec.UpdatedAt.UTC().Format(time.RFC3339),
+			RawSource:  rec.RawSource,
 		}
 		payload, err := json.Marshal(&r)
 		if err != nil {

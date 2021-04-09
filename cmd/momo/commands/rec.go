@@ -1,14 +1,19 @@
 package commands
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/formats/csljson"
 )
 
 var (
@@ -179,45 +184,38 @@ var recAddCitationsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
 
-		rec, _ := e.GetRec("f7d2bf28-ee73-436b-8247-c7fe8fe22e1b")
-		e.AddRepresentation(rec.ID,
-			"mla",
-			[]byte("foobar"),
-		)
-		// client := http.Client{
-		// 	Timeout: 10 * time.Second,
-		// }
+		client := http.Client{
+			Timeout: 10 * time.Second,
+		}
 
-		// e.EachRec(func(rec *engine.Rec) bool {
-		// 	body := struct {
-		// 		Items []json.RawMessage `json:"items"`
-		// 	}{}
-		// 	var buf bytes.Buffer
-		// 	encoder := csljson.NewEncoder(&buf)
-		// 	if err := encoder.Encode(rec); err != nil {
-		// 		log.Fatal(err)
-		// 	}
-		// 	body.Items = append(body.Items, buf.Bytes())
-		// 	jsonBody, _ := json.Marshal(body)
-		// 	req, err := http.NewRequest("POST", "http://127.0.0.1:8085?style=vancouver", bytes.NewBuffer(jsonBody))
-		// 	req.Header.Set("Content-Type", "application/json")
-		// 	res, err := client.Do(req)
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
-		// 	defer res.Body.Close()
-		// 	cites, err := ioutil.ReadAll(res.Body)
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
+		e.EachRec(func(rec *engine.Rec) bool {
+			body := struct {
+				Items []json.RawMessage `json:"items"`
+			}{}
+			var buf bytes.Buffer
+			encoder := csljson.NewEncoder(&buf)
+			if err := encoder.Encode(rec); err != nil {
+				log.Fatal(err)
+			}
+			body.Items = append(body.Items, buf.Bytes())
+			jsonBody, _ := json.Marshal(body)
+			req, err := http.NewRequest("POST", "http://127.0.0.1:8085?style=vancouver", bytes.NewBuffer(jsonBody))
+			req.Header.Set("Content-Type", "application/json")
+			res, err := client.Do(req)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer res.Body.Close()
+			cites, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		// 	log.Print(string(cites))
+			if err = e.AddRepresentation(rec.ID, "mla", cites); err != nil {
+				log.Print(err)
+			}
 
-		// 	if err = e.AddRepresentation(rec.ID, "mla", cites); err != nil {
-		// 		log.Fatal(err)
-		// 	}
-
-		// 	return true
-		// })
+			return true
+		})
 	},
 }

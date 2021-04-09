@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/jmespath/go-jmespath"
 )
@@ -30,14 +31,13 @@ type RecEngine interface {
 }
 
 type Rec struct {
-	ID          string          `json:"id"`
-	Collection  string          `json:"collection"`
-	Type        string          `json:"type"`
-	RawMetadata json.RawMessage `json:"metadata"`
-	CreatedAt   time.Time       `json:"createdAt"`
-	UpdatedAt   time.Time       `json:"updatedAt"`
-	RawSource   json.RawMessage `json:"source"`
-	metadata    map[string]interface{}
+	ID         string                 `json:"id"`
+	Collection string                 `json:"collection"`
+	Type       string                 `json:"type"`
+	Metadata   map[string]interface{} `json:"metadata"`
+	CreatedAt  time.Time              `json:"createdAt"`
+	UpdatedAt  time.Time              `json:"updatedAt"`
+	RawSource  json.RawMessage        `json:"source"`
 }
 
 // type Contributor struct {
@@ -69,18 +69,7 @@ func init() {
 	}
 }
 
-func (r *Rec) parseMetadata() {
-	if r.metadata != nil {
-		return
-	}
-	r.metadata = make(map[string]interface{})
-	if err := json.Unmarshal(r.RawMetadata, &r.metadata); err != nil {
-		panic(err)
-	}
-}
-
 func (r *Rec) Get(path string) interface{} {
-	r.parseMetadata()
 	var jp *jmespath.JMESPath
 	if c, ok := getterCache.Get(path); ok {
 		jp = c.(*jmespath.JMESPath)
@@ -88,7 +77,7 @@ func (r *Rec) Get(path string) interface{} {
 		jp = jmespath.MustCompile(path)
 		getterCache.Add(path, jp)
 	}
-	v, err := jp.Search(r.metadata)
+	v, err := jp.Search(r.Metadata)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -174,6 +163,9 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 		go func() {
 			defer storeWG.Done()
 			for r := range storeC {
+				if r.ID == "" {
+					r.ID = uuid.NewString()
+				}
 				err := e.store.AddRec(r)
 				if err != nil {
 					log.Fatal(err)
