@@ -37,7 +37,7 @@ type Rec struct {
 	Metadata   map[string]interface{} `json:"metadata"`
 	CreatedAt  time.Time              `json:"createdAt"`
 	UpdatedAt  time.Time              `json:"updatedAt"`
-	RawSource  json.RawMessage        `json:"source"`
+	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
 // type Contributor struct {
