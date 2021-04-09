@@ -68,6 +68,12 @@ func (rc *RecCreate) SetMetadata(m map[string]interface{}) *RecCreate {
 	return rc
 }
 
+// SetSource sets the "source" field.
+func (rc *RecCreate) SetSource(b []byte) *RecCreate {
+	rc.mutation.SetSource(b)
+	return rc
+}
+
 // SetID sets the "id" field.
 func (rc *RecCreate) SetID(u uuid.UUID) *RecCreate {
 	rc.mutation.SetID(u)
@@ -250,6 +256,14 @@ func (rc *RecCreate) createSpec() (*Rec, *sqlgraph.CreateSpec) {
 			Column: rec.FieldMetadata,
 		})
 		_node.Metadata = value
+	}
+	if value, ok := rc.mutation.Source(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSource,
+		})
+		_node.Source = value
 	}
 	if nodes := rc.mutation.RepresentationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

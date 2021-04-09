@@ -31,6 +31,8 @@ func (Rec) Fields() []ent.Field {
 			UpdateDefault(time.Now).
 			Immutable(),
 		field.JSON("metadata", map[string]interface{}{}),
+		field.Bytes("source").
+			Optional(),
 	}
 }
 

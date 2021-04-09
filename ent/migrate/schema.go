@@ -16,6 +16,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "metadata", Type: field.TypeJSON},
+		{Name: "source", Type: field.TypeBytes, Nullable: true},
 	}
 	// RecsTable holds the schema information for the "recs" table.
 	RecsTable = &schema.Table{

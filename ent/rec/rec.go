@@ -23,6 +23,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
+	// FieldSource holds the string denoting the source field in the database.
+	FieldSource = "source"
 	// EdgeRepresentations holds the string denoting the representations edge name in mutations.
 	EdgeRepresentations = "representations"
 	// Table holds the table name of the rec in the database.
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldMetadata,
+	FieldSource,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

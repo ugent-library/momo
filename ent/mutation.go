@@ -40,6 +40,7 @@ type RecMutation struct {
 	created_at             *time.Time
 	updated_at             *time.Time
 	metadata               *map[string]interface{}
+	source                 *[]byte
 	clearedFields          map[string]struct{}
 	representations        map[uuid.UUID]struct{}
 	removedrepresentations map[uuid.UUID]struct{}
@@ -314,6 +315,55 @@ func (m *RecMutation) ResetMetadata() {
 	m.metadata = nil
 }
 
+// SetSource sets the "source" field.
+func (m *RecMutation) SetSource(b []byte) {
+	m.source = &b
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *RecMutation) Source() (r []byte, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldSource(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ClearSource clears the value of the "source" field.
+func (m *RecMutation) ClearSource() {
+	m.source = nil
+	m.clearedFields[rec.FieldSource] = struct{}{}
+}
+
+// SourceCleared returns if the "source" field was cleared in this mutation.
+func (m *RecMutation) SourceCleared() bool {
+	_, ok := m.clearedFields[rec.FieldSource]
+	return ok
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *RecMutation) ResetSource() {
+	m.source = nil
+	delete(m.clearedFields, rec.FieldSource)
+}
+
 // AddRepresentationIDs adds the "representations" edge to the Representation entity by ids.
 func (m *RecMutation) AddRepresentationIDs(ids ...uuid.UUID) {
 	if m.representations == nil {
@@ -381,7 +431,7 @@ func (m *RecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RecMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.collection != nil {
 		fields = append(fields, rec.FieldCollection)
 	}
@@ -396,6 +446,9 @@ func (m *RecMutation) Fields() []string {
 	}
 	if m.metadata != nil {
 		fields = append(fields, rec.FieldMetadata)
+	}
+	if m.source != nil {
+		fields = append(fields, rec.FieldSource)
 	}
 	return fields
 }
@@ -415,6 +468,8 @@ func (m *RecMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case rec.FieldMetadata:
 		return m.Metadata()
+	case rec.FieldSource:
+		return m.Source()
 	}
 	return nil, false
 }
@@ -434,6 +489,8 @@ func (m *RecMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldUpdatedAt(ctx)
 	case rec.FieldMetadata:
 		return m.OldMetadata(ctx)
+	case rec.FieldSource:
+		return m.OldSource(ctx)
 	}
 	return nil, fmt.Errorf("unknown Rec field %s", name)
 }
@@ -478,6 +535,13 @@ func (m *RecMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMetadata(v)
 		return nil
+	case rec.FieldSource:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Rec field %s", name)
 }
@@ -507,7 +571,11 @@ func (m *RecMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *RecMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(rec.FieldSource) {
+		fields = append(fields, rec.FieldSource)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -520,6 +588,11 @@ func (m *RecMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *RecMutation) ClearField(name string) error {
+	switch name {
+	case rec.FieldSource:
+		m.ClearSource()
+		return nil
+	}
 	return fmt.Errorf("unknown Rec nullable field %s", name)
 }
 
@@ -541,6 +614,9 @@ func (m *RecMutation) ResetField(name string) error {
 		return nil
 	case rec.FieldMetadata:
 		m.ResetMetadata()
+		return nil
+	case rec.FieldSource:
+		m.ResetSource()
 		return nil
 	}
 	return fmt.Errorf("unknown Rec field %s", name)

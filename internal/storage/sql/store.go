@@ -50,6 +50,7 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 		Metadata:   r.Metadata,
 		CreatedAt:  r.CreatedAt,
 		UpdatedAt:  r.UpdatedAt,
+		RawSource:  r.Source,
 	}
 	return rec, nil
 }
@@ -75,6 +76,7 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 				Metadata:   r.Metadata,
 				CreatedAt:  r.CreatedAt,
 				UpdatedAt:  r.UpdatedAt,
+				RawSource:  r.Source,
 			}
 			if ok := fn(&rec); !ok {
 				return nil
@@ -98,6 +100,7 @@ func (s *store) AddRec(rec *engine.Rec) error {
 		SetCollection(rec.Collection).
 		SetType(rec.Type).
 		SetMetadata(rec.Metadata).
+		SetSource(rec.RawSource).
 		Save(context.Background())
 	if err != nil {
 		return err

@@ -28,6 +28,8 @@ type Rec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Metadata holds the value of the "metadata" field.
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// Source holds the value of the "source" field.
+	Source []byte `json:"source,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RecQuery when eager-loading is set.
 	Edges RecEdges `json:"edges"`
@@ -56,7 +58,7 @@ func (*Rec) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case rec.FieldMetadata:
+		case rec.FieldMetadata, rec.FieldSource:
 			values[i] = &[]byte{}
 		case rec.FieldCollection, rec.FieldType:
 			values[i] = &sql.NullString{}
@@ -118,6 +120,12 @@ func (r *Rec) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
 			}
+		case rec.FieldSource:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value != nil {
+				r.Source = *value
+			}
 		}
 	}
 	return nil
@@ -161,6 +169,8 @@ func (r *Rec) String() string {
 	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", metadata=")
 	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
+	builder.WriteString(", source=")
+	builder.WriteString(fmt.Sprintf("%v", r.Source))
 	builder.WriteByte(')')
 	return builder.String()
 }

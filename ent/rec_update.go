@@ -46,6 +46,18 @@ func (ru *RecUpdate) SetMetadata(m map[string]interface{}) *RecUpdate {
 	return ru
 }
 
+// SetSource sets the "source" field.
+func (ru *RecUpdate) SetSource(b []byte) *RecUpdate {
+	ru.mutation.SetSource(b)
+	return ru
+}
+
+// ClearSource clears the value of the "source" field.
+func (ru *RecUpdate) ClearSource() *RecUpdate {
+	ru.mutation.ClearSource()
+	return ru
+}
+
 // AddRepresentationIDs adds the "representations" edge to the Representation entity by IDs.
 func (ru *RecUpdate) AddRepresentationIDs(ids ...uuid.UUID) *RecUpdate {
 	ru.mutation.AddRepresentationIDs(ids...)
@@ -214,6 +226,19 @@ func (ru *RecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: rec.FieldMetadata,
 		})
 	}
+	if value, ok := ru.mutation.Source(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSource,
+		})
+	}
+	if ru.mutation.SourceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Column: rec.FieldSource,
+		})
+	}
 	if ru.mutation.RepresentationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -301,6 +326,18 @@ func (ruo *RecUpdateOne) SetType(s string) *RecUpdateOne {
 // SetMetadata sets the "metadata" field.
 func (ruo *RecUpdateOne) SetMetadata(m map[string]interface{}) *RecUpdateOne {
 	ruo.mutation.SetMetadata(m)
+	return ruo
+}
+
+// SetSource sets the "source" field.
+func (ruo *RecUpdateOne) SetSource(b []byte) *RecUpdateOne {
+	ruo.mutation.SetSource(b)
+	return ruo
+}
+
+// ClearSource clears the value of the "source" field.
+func (ruo *RecUpdateOne) ClearSource() *RecUpdateOne {
+	ruo.mutation.ClearSource()
 	return ruo
 }
 
@@ -475,6 +512,19 @@ func (ruo *RecUpdateOne) sqlSave(ctx context.Context) (_node *Rec, err error) {
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: rec.FieldMetadata,
+		})
+	}
+	if value, ok := ruo.mutation.Source(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSource,
+		})
+	}
+	if ruo.mutation.SourceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Column: rec.FieldSource,
 		})
 	}
 	if ruo.mutation.RepresentationsCleared() {
