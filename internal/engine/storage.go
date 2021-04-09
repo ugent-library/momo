@@ -4,6 +4,7 @@ type Storage interface {
 	GetRec(string) (*Rec, error)
 	EachRec(func(*Rec) bool) error
 	AddRec(*Rec) error
+	AddRepresentation(string, string, []byte) error
 	Reset() error
 }
 

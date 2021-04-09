@@ -22,11 +22,19 @@ type Model struct {
 
 type Rec struct {
 	Model
-	ID         string         `gorm:"type:uuid;not null;uniqueIndex"`
-	Collection string         `gorm:"not null;index"`
-	Type       string         `gorm:"not null;index"`
-	Metadata   datatypes.JSON `gorm:"not null"`
-	Source     datatypes.JSON
+	ID              string         `gorm:"type:uuid;not null;uniqueIndex"`
+	Collection      string         `gorm:"not null;index"`
+	Type            string         `gorm:"not null;index"`
+	Metadata        datatypes.JSON `gorm:"not null"`
+	Source          datatypes.JSON
+	Representations []Representation `gorm:"foreignKey:RecFK"`
+}
+
+type Representation struct {
+	Model
+	RecFK int64
+	Name  string `gorm:"not null;index"`
+	Data  []byte `gorm:"not null"`
 }
 
 type store struct {
@@ -39,7 +47,7 @@ func New(dsn string) (*store, error) {
 		return nil, err
 	}
 	s := &store{db: db}
-	s.db.AutoMigrate(&Rec{})
+	s.db.AutoMigrate(&Rec{}, &Representation{})
 	return s, nil
 }
 
@@ -94,12 +102,28 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	return res.Error
 }
 
+func (s *store) AddRepresentation(recID, name string, data []byte) error {
+	rec := Rec{}
+	res := s.db.Where("id = ?", recID).First(&rec)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	rep := Representation{
+		RecFK: rec.PK,
+		Name:  name,
+		Data:  data,
+	}
+
+	return s.db.Model(&rec).Association("Representations").Append(&rep)
+}
+
 func (s *store) Reset() error {
-	err := s.db.Migrator().DropTable(&Rec{})
+	err := s.db.Migrator().DropTable(&Rec{}, &Representation{})
 	if err != nil {
 		return err
 	}
-	return s.db.AutoMigrate(&Rec{})
+	return s.db.AutoMigrate(&Rec{}, &Representation{})
 
 }
 
