@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -45,5 +46,8 @@ func (Rec) Edges() []ent.Edge {
 
 // Indexes of the Rec.
 func (Rec) Indexes() []ent.Index {
-	return nil
+	return []ent.Index{
+		index.Fields("created_at"),
+		index.Fields("updated_at"),
+	}
 }

@@ -24,6 +24,18 @@ var (
 		Columns:     RecsColumns,
 		PrimaryKey:  []*schema.Column{RecsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
+		Indexes: []*schema.Index{
+			{
+				Name:    "rec_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[3]},
+			},
+			{
+				Name:    "rec_updated_at",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[4]},
+			},
+		},
 	}
 	// RepresentationsColumns holds the columns for the "representations" table.
 	RepresentationsColumns = []*schema.Column{
