@@ -6,6 +6,7 @@ package sql
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	entsql "entgo.io/ent/dialect/sql"
@@ -55,41 +56,36 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 	return rec, nil
 }
 
-// ent: cursor support
-// TODO scan directly in type?
+// ent: https://github.com/ent/ent/issues/215
 func (s *store) EachRec(fn func(*engine.Rec) bool) error {
-	offset := 0
-	limit := 200
+	rows, err := s.db.Query("SELECT id, collection, type, metadata, created_at, updated_at, source FROM recs")
 
-	ctx := context.Background()
-	recs, err := s.client.Rec.Query().Limit(limit).All(ctx)
-	if err != nil {
-		return err
-	}
+	defer rows.Close()
 
-	for len(recs) > 0 {
-		for _, r := range recs {
-			rec := engine.Rec{
-				ID:         r.ID.String(),
-				Collection: r.Collection,
-				Type:       r.Type,
-				Metadata:   r.Metadata,
-				CreatedAt:  r.CreatedAt,
-				UpdatedAt:  r.UpdatedAt,
-				RawSource:  r.Source,
-			}
-			if ok := fn(&rec); !ok {
-				return nil
-			}
-		}
-
-		offset += limit
-		if recs, err = s.client.Rec.Query().Limit(limit).Offset(offset).All(ctx); err != nil {
+	for rows.Next() {
+		var rec engine.Rec
+		var rawMetadata json.RawMessage
+		err = rows.Scan(
+			&rec.ID,
+			&rec.Collection,
+			&rec.Type,
+			&rawMetadata,
+			&rec.CreatedAt,
+			&rec.UpdatedAt,
+			&rec.RawSource,
+		)
+		if err != nil {
 			return err
 		}
+		if err = json.Unmarshal(rawMetadata, &rec.Metadata); err != nil {
+			return err
+		}
+		if ok := fn(&rec); !ok {
+			return nil
+		}
 	}
 
-	return nil
+	return rows.Err()
 }
 
 // ent: support upsert
