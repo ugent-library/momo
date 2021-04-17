@@ -284,12 +284,12 @@ func (rq *RepresentationQuery) WithRec(opts ...func(*RecQuery)) *RepresentationQ
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Format string `json:"format,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Representation.Query().
-//		GroupBy(representation.FieldName).
+//		GroupBy(representation.FieldFormat).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -311,11 +311,11 @@ func (rq *RepresentationQuery) GroupBy(field string, fields ...string) *Represen
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Format string `json:"format,omitempty"`
 //	}
 //
 //	client.Representation.Query().
-//		Select(representation.FieldName).
+//		Select(representation.FieldFormat).
 //		Scan(ctx, &v)
 //
 func (rq *RepresentationQuery) Select(field string, fields ...string) *RepresentationSelect {

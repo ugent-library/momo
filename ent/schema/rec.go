@@ -15,7 +15,6 @@ type Rec struct {
 	ent.Schema
 }
 
-// Fields of the Rec.
 func (Rec) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -37,7 +36,6 @@ func (Rec) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Rec.
 func (Rec) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("representations", Representation.Type).
@@ -45,7 +43,6 @@ func (Rec) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Rec.
 func (Rec) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("created_at"),

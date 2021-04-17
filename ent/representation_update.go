@@ -28,9 +28,9 @@ func (ru *RepresentationUpdate) Where(ps ...predicate.Representation) *Represent
 	return ru
 }
 
-// SetName sets the "name" field.
-func (ru *RepresentationUpdate) SetName(s string) *RepresentationUpdate {
-	ru.mutation.SetName(s)
+// SetFormat sets the "format" field.
+func (ru *RepresentationUpdate) SetFormat(s string) *RepresentationUpdate {
+	ru.mutation.SetFormat(s)
 	return ru
 }
 
@@ -138,9 +138,9 @@ func (ru *RepresentationUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ru *RepresentationUpdate) check() error {
-	if v, ok := ru.mutation.Name(); ok {
-		if err := representation.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+	if v, ok := ru.mutation.Format(); ok {
+		if err := representation.FormatValidator(v); err != nil {
+			return &ValidationError{Name: "format", err: fmt.Errorf("ent: validator failed for field \"format\": %w", err)}
 		}
 	}
 	return nil
@@ -164,11 +164,11 @@ func (ru *RepresentationUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			}
 		}
 	}
-	if value, ok := ru.mutation.Name(); ok {
+	if value, ok := ru.mutation.Format(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: representation.FieldName,
+			Column: representation.FieldFormat,
 		})
 	}
 	if value, ok := ru.mutation.Data(); ok {
@@ -238,9 +238,9 @@ type RepresentationUpdateOne struct {
 	mutation *RepresentationMutation
 }
 
-// SetName sets the "name" field.
-func (ruo *RepresentationUpdateOne) SetName(s string) *RepresentationUpdateOne {
-	ruo.mutation.SetName(s)
+// SetFormat sets the "format" field.
+func (ruo *RepresentationUpdateOne) SetFormat(s string) *RepresentationUpdateOne {
+	ruo.mutation.SetFormat(s)
 	return ruo
 }
 
@@ -348,9 +348,9 @@ func (ruo *RepresentationUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ruo *RepresentationUpdateOne) check() error {
-	if v, ok := ruo.mutation.Name(); ok {
-		if err := representation.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+	if v, ok := ruo.mutation.Format(); ok {
+		if err := representation.FormatValidator(v); err != nil {
+			return &ValidationError{Name: "format", err: fmt.Errorf("ent: validator failed for field \"format\": %w", err)}
 		}
 	}
 	return nil
@@ -379,11 +379,11 @@ func (ruo *RepresentationUpdateOne) sqlSave(ctx context.Context) (_node *Represe
 			}
 		}
 	}
-	if value, ok := ruo.mutation.Name(); ok {
+	if value, ok := ruo.mutation.Format(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: representation.FieldName,
+			Column: representation.FieldFormat,
 		})
 	}
 	if value, ok := ruo.mutation.Data(); ok {

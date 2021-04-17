@@ -41,10 +41,10 @@ func init() {
 	rec.DefaultID = recDescID.Default.(func() uuid.UUID)
 	representationFields := schema.Representation{}.Fields()
 	_ = representationFields
-	// representationDescName is the schema descriptor for name field.
-	representationDescName := representationFields[1].Descriptor()
-	// representation.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	representation.NameValidator = representationDescName.Validators[0].(func(string) error)
+	// representationDescFormat is the schema descriptor for format field.
+	representationDescFormat := representationFields[1].Descriptor()
+	// representation.FormatValidator is a validator for the "format" field. It is called by the builders before save.
+	representation.FormatValidator = representationDescFormat.Validators[0].(func(string) error)
 	// representationDescCreatedAt is the schema descriptor for created_at field.
 	representationDescCreatedAt := representationFields[3].Descriptor()
 	// representation.DefaultCreatedAt holds the default value on creation for the created_at field.

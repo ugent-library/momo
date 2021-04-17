@@ -1,7 +1,7 @@
 package sql
 
 // edit schema in './ent/schema'
-// generate client with 'ent generate --idtype string ./ent/schema'
+// generate client with 'ent generate --idtype string ./ent/schema/'
 
 import (
 	"context"
@@ -114,14 +114,14 @@ func (s *store) GetRepresentation(recID, name string) (*engine.Representation, e
 		Query().
 		Where(
 			entrep.HasRecWith(entrec.ID(uuid.MustParse(recID))),
-			entrep.Name(name)).
+			entrep.Format(name)).
 		Only(context.Background())
 	if err != nil {
 		return nil, err
 	}
 	rep := &engine.Representation{
 		ID:        r.ID.String(),
-		Name:      r.Name,
+		Format:    r.Format,
 		Data:      r.Data,
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
@@ -132,7 +132,7 @@ func (s *store) GetRepresentation(recID, name string) (*engine.Representation, e
 func (s *store) AddRepresentation(recID, name string, data []byte) error {
 	_, err := s.client.Representation.
 		Create().
-		SetName(name).
+		SetFormat(name).
 		SetData(data).
 		SetRecID(uuid.MustParse(recID)).
 		Save(context.Background())

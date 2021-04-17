@@ -18,8 +18,8 @@ type Representation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	// Format holds the value of the "format" field.
+	Format string `json:"format,omitempty"`
 	// Data holds the value of the "data" field.
 	Data []byte `json:"data,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -62,7 +62,7 @@ func (*Representation) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case representation.FieldData:
 			values[i] = &[]byte{}
-		case representation.FieldName:
+		case representation.FieldFormat:
 			values[i] = &sql.NullString{}
 		case representation.FieldCreatedAt, representation.FieldUpdatedAt:
 			values[i] = &sql.NullTime{}
@@ -91,11 +91,11 @@ func (r *Representation) assignValues(columns []string, values []interface{}) er
 			} else if value != nil {
 				r.ID = *value
 			}
-		case representation.FieldName:
+		case representation.FieldFormat:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field format", values[i])
 			} else if value.Valid {
-				r.Name = value.String
+				r.Format = value.String
 			}
 		case representation.FieldData:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -154,8 +154,8 @@ func (r *Representation) String() string {
 	var builder strings.Builder
 	builder.WriteString("Representation(")
 	builder.WriteString(fmt.Sprintf("id=%v", r.ID))
-	builder.WriteString(", name=")
-	builder.WriteString(r.Name)
+	builder.WriteString(", format=")
+	builder.WriteString(r.Format)
 	builder.WriteString(", data=")
 	builder.WriteString(fmt.Sprintf("%v", r.Data))
 	builder.WriteString(", created_at=")

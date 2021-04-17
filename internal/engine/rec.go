@@ -34,14 +34,6 @@ type Rec struct {
 	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
-type Representation struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Data      []byte    `json:"data"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 type RecHits struct {
 	CursorID       string          `json:"-"`
 	Total          int             `json:"total"`

@@ -40,7 +40,7 @@ var (
 	// RepresentationsColumns holds the columns for the "representations" table.
 	RepresentationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
+		{Name: "format", Type: field.TypeString},
 		{Name: "data", Type: field.TypeBytes},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -61,7 +61,7 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "representation_name_rec_id",
+				Name:    "representation_format_rec_id",
 				Unique:  true,
 				Columns: []*schema.Column{RepresentationsColumns[1], RepresentationsColumns[5]},
 			},

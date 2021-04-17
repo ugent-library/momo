@@ -22,9 +22,9 @@ type RepresentationCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the "name" field.
-func (rc *RepresentationCreate) SetName(s string) *RepresentationCreate {
-	rc.mutation.SetName(s)
+// SetFormat sets the "format" field.
+func (rc *RepresentationCreate) SetFormat(s string) *RepresentationCreate {
+	rc.mutation.SetFormat(s)
 	return rc
 }
 
@@ -155,12 +155,12 @@ func (rc *RepresentationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rc *RepresentationCreate) check() error {
-	if _, ok := rc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+	if _, ok := rc.mutation.Format(); !ok {
+		return &ValidationError{Name: "format", err: errors.New("ent: missing required field \"format\"")}
 	}
-	if v, ok := rc.mutation.Name(); ok {
-		if err := representation.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf("ent: validator failed for field \"name\": %w", err)}
+	if v, ok := rc.mutation.Format(); ok {
+		if err := representation.FormatValidator(v); err != nil {
+			return &ValidationError{Name: "format", err: fmt.Errorf("ent: validator failed for field \"format\": %w", err)}
 		}
 	}
 	if _, ok := rc.mutation.Data(); !ok {
@@ -201,13 +201,13 @@ func (rc *RepresentationCreate) createSpec() (*Representation, *sqlgraph.CreateS
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := rc.mutation.Name(); ok {
+	if value, ok := rc.mutation.Format(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: representation.FieldName,
+			Column: representation.FieldFormat,
 		})
-		_node.Name = value
+		_node.Format = value
 	}
 	if value, ok := rc.mutation.Data(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

@@ -13,8 +13,8 @@ const (
 	Label = "representation"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldFormat holds the string denoting the format field in the database.
+	FieldFormat = "format"
 	// FieldData holds the string denoting the data field in the database.
 	FieldData = "data"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -37,7 +37,7 @@ const (
 // Columns holds all SQL columns for representation fields.
 var Columns = []string{
 	FieldID,
-	FieldName,
+	FieldFormat,
 	FieldData,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -65,8 +65,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
+	// FormatValidator is a validator for the "format" field. It is called by the builders before save.
+	FormatValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

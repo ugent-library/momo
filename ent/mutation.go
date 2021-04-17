@@ -712,7 +712,7 @@ type RepresentationMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	name          *string
+	format        *string
 	data          *[]byte
 	created_at    *time.Time
 	updated_at    *time.Time
@@ -809,40 +809,40 @@ func (m *RepresentationMutation) ID() (id uuid.UUID, exists bool) {
 	return *m.id, true
 }
 
-// SetName sets the "name" field.
-func (m *RepresentationMutation) SetName(s string) {
-	m.name = &s
+// SetFormat sets the "format" field.
+func (m *RepresentationMutation) SetFormat(s string) {
+	m.format = &s
 }
 
-// Name returns the value of the "name" field in the mutation.
-func (m *RepresentationMutation) Name() (r string, exists bool) {
-	v := m.name
+// Format returns the value of the "format" field in the mutation.
+func (m *RepresentationMutation) Format() (r string, exists bool) {
+	v := m.format
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldName returns the old "name" field's value of the Representation entity.
+// OldFormat returns the old "format" field's value of the Representation entity.
 // If the Representation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RepresentationMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *RepresentationMutation) OldFormat(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldName is only allowed on UpdateOne operations")
+		return v, fmt.Errorf("OldFormat is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+		return v, fmt.Errorf("OldFormat requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
+		return v, fmt.Errorf("querying old value for OldFormat: %w", err)
 	}
-	return oldValue.Name, nil
+	return oldValue.Format, nil
 }
 
-// ResetName resets all changes to the "name" field.
-func (m *RepresentationMutation) ResetName() {
-	m.name = nil
+// ResetFormat resets all changes to the "format" field.
+func (m *RepresentationMutation) ResetFormat() {
+	m.format = nil
 }
 
 // SetData sets the "data" field.
@@ -1007,8 +1007,8 @@ func (m *RepresentationMutation) Type() string {
 // AddedFields().
 func (m *RepresentationMutation) Fields() []string {
 	fields := make([]string, 0, 4)
-	if m.name != nil {
-		fields = append(fields, representation.FieldName)
+	if m.format != nil {
+		fields = append(fields, representation.FieldFormat)
 	}
 	if m.data != nil {
 		fields = append(fields, representation.FieldData)
@@ -1027,8 +1027,8 @@ func (m *RepresentationMutation) Fields() []string {
 // schema.
 func (m *RepresentationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case representation.FieldName:
-		return m.Name()
+	case representation.FieldFormat:
+		return m.Format()
 	case representation.FieldData:
 		return m.Data()
 	case representation.FieldCreatedAt:
@@ -1044,8 +1044,8 @@ func (m *RepresentationMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *RepresentationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case representation.FieldName:
-		return m.OldName(ctx)
+	case representation.FieldFormat:
+		return m.OldFormat(ctx)
 	case representation.FieldData:
 		return m.OldData(ctx)
 	case representation.FieldCreatedAt:
@@ -1061,12 +1061,12 @@ func (m *RepresentationMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *RepresentationMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case representation.FieldName:
+	case representation.FieldFormat:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetName(v)
+		m.SetFormat(v)
 		return nil
 	case representation.FieldData:
 		v, ok := value.([]byte)
@@ -1138,8 +1138,8 @@ func (m *RepresentationMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *RepresentationMutation) ResetField(name string) error {
 	switch name {
-	case representation.FieldName:
-		m.ResetName()
+	case representation.FieldFormat:
+		m.ResetFormat()
 		return nil
 	case representation.FieldData:
 		m.ResetData()

@@ -15,12 +15,11 @@ type Representation struct {
 	ent.Schema
 }
 
-// Fields of the Representation.
 func (Representation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.String("name").
+		field.String("format").
 			NotEmpty(),
 		// ent: why no NotEmpty?
 		field.Bytes("data"),
@@ -34,7 +33,6 @@ func (Representation) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Representation.
 func (Representation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("rec", Rec.Type).
@@ -43,10 +41,9 @@ func (Representation) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Representation.
 func (Representation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("name").
+		index.Fields("format").
 			Edges("rec").
 			Unique(),
 	}
