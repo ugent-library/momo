@@ -81,6 +81,10 @@ func (r Rec) ISBN() []string {
 	return r.stringSlice("isbn")
 }
 
+func (r Rec) Note() []Text {
+	return r.textSlice("note")
+}
+
 func (r Rec) PlaceOfPublication() string {
 	return r.string("placeOfPublication")
 }

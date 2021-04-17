@@ -14,7 +14,54 @@
     </p>
     {{end}}
 
-    {{renderMetadata .Yield.Rec.Rec}}
+    <dl>
+        {{if .Yield.Rec.Author}}
+        <dt>Authors</dt>
+        {{range .Yield.Rec.Author}}
+        <dd>{{.Name}}</dd>
+        {{end}}
+        {{end}}
+        {{if .Yield.Rec.Abstract}}
+        <dt>Abstract</dt>
+        {{range .Yield.Rec.Abstract}}
+        <dd>{{.Text}}</dd>
+        {{end}}
+        {{end}}
+        {{if .Yield.Rec.Edition}}
+        <dt>Edition</dt>
+        <dd>{{.Yield.Rec.Edition}}</dd>
+        {{end}}
+        {{if .Yield.Rec.Publisher}}
+        <dt>Publisher</dt>
+        <dd>{{.Yield.Rec.Publisher}}</dd>
+        {{end}}
+        {{if .Yield.Rec.PlaceOfPublication}}
+        <dt>Place of publication</dt>
+        <dd>{{.Yield.Rec.PlaceOfPublication}}</dd>
+        {{end}}
+        {{if .Yield.Rec.PublicationDate}}
+        <dt>Date published</dt>
+        <dd>{{.Yield.Rec.PublicationDate}}</dd>
+        {{end}}
+        {{if .Yield.Rec.DOI}}
+        <dt>DOI</dt>
+        {{range .Yield.Rec.DOI}}
+        <dd>{{.}}</dd>
+        {{end}}
+        {{end}}
+        {{if .Yield.Rec.ISBN}}
+        <dt>ISBN</dt>
+        {{range .Yield.Rec.ISBN}}
+        <dd>{{.}}</dd>
+        {{end}}
+        {{end}}
+        {{if .Yield.Rec.Note}}
+        <dt>Note</dt>
+        {{range .Yield.Rec.Note}}
+        <dd>{{.Text}}</dd>
+        {{end}}
+        {{end}}
+    </dl>
 
     {{if .Yield.Rec.RawSource }}
     <h3>{{.Locale.Get "Librarian view"}}</h3>

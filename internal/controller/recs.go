@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"html"
 	"html/template"
 	"log"
 	"net/http"
@@ -29,7 +28,6 @@ func NewRecs(e engine.Engine) *Recs {
 		engine:   e,
 		listView: render.NewView(e, "app", []string{"rec/list"}),
 		showView: render.NewView(e, "app", []string{"rec/show"}, template.FuncMap{
-			"renderMetadata":     renderMetadata,
 			"renderSourceView":   renderSourceView,
 			"renderInternalView": renderInternalView,
 			"renderRIS":          renderRIS,
@@ -79,35 +77,6 @@ func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, hits)
-}
-
-func renderMetadata(rec *engine.Rec) template.HTML {
-	j, _ := json.Marshal(rec.Metadata)
-	var b strings.Builder
-	m := gjson.ParseBytes(j)
-	b.WriteString("<dl>")
-	renderMetadataField(&b, &m, "author.#.name", "Authors")
-	renderMetadataField(&b, &m, "abstract.#.text", "Abstract")
-	renderMetadataField(&b, &m, "edition", "Edition")
-	renderMetadataField(&b, &m, "publisher", "Publisher")
-	renderMetadataField(&b, &m, "placeOfPublication", "Place of publication")
-	renderMetadataField(&b, &m, "publicationDate", "Date published")
-	renderMetadataField(&b, &m, "doi", "DOI")
-	renderMetadataField(&b, &m, "isbn", "ISBN")
-	renderMetadataField(&b, &m, "note.#.text", "Note")
-	b.WriteString("</dl>")
-	return template.HTML(b.String())
-}
-
-func renderMetadataField(b *strings.Builder, m *gjson.Result, path string, dt string) {
-	res := m.Get(path)
-	if res.Exists() {
-		b.WriteString("<dt>" + html.EscapeString(dt) + "</dt>")
-		res.ForEach(func(_, v gjson.Result) bool {
-			b.WriteString("<dd>" + html.EscapeString(v.String()) + "</dd>")
-			return true
-		})
-	}
 }
 
 func renderSourceView(j json.RawMessage) template.HTML {
