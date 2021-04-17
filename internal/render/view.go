@@ -19,7 +19,7 @@ type Data struct {
 	request *http.Request
 	Locales []engine.Locale
 	Locale  engine.Locale
-	Data    interface{}
+	Yield   interface{}
 }
 
 type View struct {
@@ -83,7 +83,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 			request: r,
 			Locales: v.engine.Locales(),
 			Locale:  ctx.GetLocale(r),
-			Data:    data,
+			Yield:   data,
 		}
 	}
 

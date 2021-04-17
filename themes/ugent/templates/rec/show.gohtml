@@ -1,23 +1,23 @@
 {{define "content"}}
 
 <h1>
-    {{.Data.Rec.Title}}
-    {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
+    {{.Yield.Rec.Title}}
+    {{if .Yield.Rec.Type}}<span class="badge badge-secondary">{{.Yield.Rec.Type}}</span>{{end}}
 </h1>
 
-{{renderMetadata .Data.Rec.Rec}}
+{{renderMetadata .Yield.Rec.Rec}}
 
-{{if .Data.Rec.RawSource }}
+{{if .Yield.Rec.RawSource }}
 <h3>{{.Locale.Get "Librarian view"}}</h3>
-{{renderSourceView .Data.Rec.RawSource}}
+{{renderSourceView .Yield.Rec.RawSource}}
 {{end}}
 
 <h3>{{.Locale.Get "Developer view"}}</h3>
-{{renderInternalView .Data.Rec.Rec}}
+{{renderInternalView .Yield.Rec.Rec}}
 
 <h3>RIS</h3>
 <code><pre>
-{{renderRIS .Data.Rec.Rec}}
+{{renderRIS .Yield.Rec.Rec}}
 </pre></code>
 
 {{end}}

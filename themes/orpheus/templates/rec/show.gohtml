@@ -1,33 +1,33 @@
 {{define "content"}}
 <div class="container">
     <h1>
-        {{.Data.Rec.Title}}
-        {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
+        {{.Yield.Rec.Title}}
+        {{if .Yield.Rec.Type}}<span class="badge badge-secondary">{{.Yield.Rec.Type}}</span>{{end}}
     </h1>
 
-    {{if .Data.Rec.IIIFManifest}}
+    {{if .Yield.Rec.IIIFManifest}}
     <div id="iiif-viewer"></div>
     {{end}}
-    {{if .Data.Rec.IIIFViewer "mirador"}}
+    {{if .Yield.Rec.IIIFViewer "mirador"}}
     <p>
-        <a href={{.Data.Rec.IIIFViewer "mirador"}}>Mirador viewer</a>
+        <a href={{.Yield.Rec.IIIFViewer "mirador"}}>Mirador viewer</a>
     </p>
     {{end}}
 
-    {{renderMetadata .Data.Rec.Rec}}
+    {{renderMetadata .Yield.Rec.Rec}}
 
-    {{if .Data.Rec.RawSource }}
+    {{if .Yield.Rec.RawSource }}
     <h3>{{.Locale.Get "Librarian view"}}</h3>
-    {{renderSourceView .Data.Rec.RawSource}}
+    {{renderSourceView .Yield.Rec.RawSource}}
     {{end}}
 
     <h3>{{.Locale.Get "Developer view"}}</h3>
-    {{renderInternalView .Data.Rec.Rec}}
+    {{renderInternalView .Yield.Rec.Rec}}
 
     <h3>RIS</h3>
-    <code><pre>{{renderRIS .Data.Rec.Rec}}</pre></code>
+    <code><pre>{{renderRIS .Yield.Rec.Rec}}</pre></code>
 
-    {{if .Data.Rec.IIIFManifest}}
+    {{if .Yield.Rec.IIIFManifest}}
     <script type="text/javascript">
         window.addEventListener('DOMContentLoaded', () => {
             var request = new XMLHttpRequest();
@@ -46,7 +46,7 @@
                 } else {
                 }
             };
-            request.open("get", {{.Data.Rec.IIIFManifest}}, true);
+            request.open("get", {{.Yield.Rec.IIIFManifest}}, true);
             request.send();
         });
     </script>
