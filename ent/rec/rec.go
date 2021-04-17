@@ -35,7 +35,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "representation" package.
 	RepresentationsInverseTable = "representations"
 	// RepresentationsColumn is the table column denoting the representations relation/edge.
-	RepresentationsColumn = "rec_representations"
+	RepresentationsColumn = "rec_id"
 )
 
 // Columns holds all SQL columns for rec fields.

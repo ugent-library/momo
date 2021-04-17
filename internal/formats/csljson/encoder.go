@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/metadata"
 )
 
 type Item struct {
@@ -38,14 +39,17 @@ func NewEncoder(w io.Writer) engine.RecEncoder {
 }
 
 func (e *encoder) Encode(rec *engine.Rec) error {
+	r := metadata.WrapRec(rec)
+
 	item := Item{
-		ID:             rec.ID,
-		Title:          rec.GetString("title"),
-		Edition:        rec.GetString("edition"),
-		Publisher:      rec.GetString("publisher"),
-		PublisherPlace: rec.GetString("placeOfPublication"),
+		ID:             r.ID,
+		Title:          r.Title(),
+		Edition:        r.Edition(),
+		Publisher:      r.Publisher(),
+		PublisherPlace: r.PlaceOfPublication(),
 	}
-	switch rec.Type {
+
+	switch r.Type {
 	case "Book":
 		item.Type = "book"
 	case "JournalArticle":
@@ -55,16 +59,16 @@ func (e *encoder) Encode(rec *engine.Rec) error {
 	case "Thesis":
 		item.Type = "thesis"
 	}
-	item.Issued.Raw = rec.GetString("publicationDate")
-	for _, v := range rec.GetStringSlice("author[*].name") {
-		item.Author = append(item.Author, Person{Family: v})
+	item.Issued.Raw = r.PublicationDate()
+	for _, v := range r.Author() {
+		item.Author = append(item.Author, Person{Family: v.Name})
 		break
 	}
-	for _, v := range rec.GetStringSlice("doi") {
+	for _, v := range r.DOI() {
 		item.DOI = v
 		break
 	}
-	for _, v := range rec.GetStringSlice("isbn") {
+	for _, v := range r.ISBN() {
 		item.ISBN = v
 		break
 	}

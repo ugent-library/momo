@@ -1,11 +1,11 @@
 {{define "content"}}
 
 <h1>
-    {{.Data.Rec.GetString "title"}}
+    {{.Data.Rec.Title}}
     {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
 </h1>
 
-{{renderMetadata .Data.Rec}}
+{{renderMetadata .Data.Rec.Rec}}
 
 {{if .Data.Rec.RawSource }}
 <h3>{{.Locale.Get "Librarian view"}}</h3>
@@ -13,11 +13,11 @@
 {{end}}
 
 <h3>{{.Locale.Get "Developer view"}}</h3>
-{{renderInternalView .Data.Rec}}
+{{renderInternalView .Data.Rec.Rec}}
 
 <h3>RIS</h3>
 <code><pre>
-{{renderRIS .Data.Rec}}
+{{renderRIS .Data.Rec.Rec}}
 </pre></code>
 
 {{end}}

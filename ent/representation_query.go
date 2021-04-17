@@ -378,7 +378,7 @@ func (rq *RepresentationQuery) sqlAll(ctx context.Context) ([]*Representation, e
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Representation)
 		for i := range nodes {
-			fk := nodes[i].rec_representations
+			fk := nodes[i].rec_id
 			if fk != nil {
 				ids = append(ids, *fk)
 				nodeids[*fk] = append(nodeids[*fk], nodes[i])
@@ -392,7 +392,7 @@ func (rq *RepresentationQuery) sqlAll(ctx context.Context) ([]*Representation, e
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "rec_representations" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "rec_id" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.Rec = n

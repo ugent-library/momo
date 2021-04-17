@@ -28,8 +28,8 @@ type Representation struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RepresentationQuery when eager-loading is set.
-	Edges               RepresentationEdges `json:"edges"`
-	rec_representations *uuid.UUID
+	Edges  RepresentationEdges `json:"edges"`
+	rec_id *uuid.UUID
 }
 
 // RepresentationEdges holds the relations/edges for other nodes in the graph.
@@ -68,7 +68,7 @@ func (*Representation) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = &sql.NullTime{}
 		case representation.FieldID:
 			values[i] = &uuid.UUID{}
-		case representation.ForeignKeys[0]: // rec_representations
+		case representation.ForeignKeys[0]: // rec_id
 			values[i] = &uuid.UUID{}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Representation", columns[i])
@@ -117,9 +117,9 @@ func (r *Representation) assignValues(columns []string, values []interface{}) er
 			}
 		case representation.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field rec_representations", values[i])
+				return fmt.Errorf("unexpected type %T for field rec_id", values[i])
 			} else if value != nil {
-				r.rec_representations = value
+				r.rec_id = value
 			}
 		}
 	}

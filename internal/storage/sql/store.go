@@ -14,6 +14,7 @@ import (
 	"github.com/ugent-library/momo/ent"
 	"github.com/ugent-library/momo/ent/migrate"
 	entrec "github.com/ugent-library/momo/ent/rec"
+	entrep "github.com/ugent-library/momo/ent/representation"
 	"github.com/ugent-library/momo/internal/engine"
 )
 
@@ -106,6 +107,26 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	rec.UpdatedAt = r.UpdatedAt
 
 	return nil
+}
+
+func (s *store) GetRepresentation(recID, name string) (*engine.Representation, error) {
+	r, err := s.client.Representation.
+		Query().
+		Where(
+			entrep.HasRecWith(entrec.ID(uuid.MustParse(recID))),
+			entrep.Name(name)).
+		Only(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	rep := &engine.Representation{
+		ID:        r.ID.String(),
+		Name:      r.Name,
+		Data:      r.Data,
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
+	}
+	return rep, nil
 }
 
 func (s *store) AddRepresentation(recID, name string, data []byte) error {

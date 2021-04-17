@@ -14,6 +14,7 @@ import (
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/form"
 	"github.com/ugent-library/momo/internal/formats/ris"
+	"github.com/ugent-library/momo/internal/metadata"
 	"github.com/ugent-library/momo/internal/render"
 )
 
@@ -45,7 +46,7 @@ func (c *Recs) List(w http.ResponseWriter, r *http.Request) {
 
 func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 	type data struct {
-		Rec *engine.Rec
+		Rec metadata.Rec
 	}
 
 	id := chi.URLParam(r, "id")
@@ -56,7 +57,7 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.showView.Render(w, r, data{Rec: rec})
+	c.showView.Render(w, r, data{Rec: metadata.WrapRec(rec)})
 }
 
 func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {

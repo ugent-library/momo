@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/ugent-library/momo/internal/engine"
+	"github.com/ugent-library/momo/internal/metadata"
 )
 
 const startTag = `
@@ -21,7 +22,7 @@ type encoder struct {
 	writer io.Writer
 }
 
-type visitor func(io.Writer, *engine.Rec) error
+type visitor func(io.Writer, metadata.Rec) error
 
 var visitors = []visitor{
 	addID,
@@ -39,13 +40,14 @@ func NewEncoder(w io.Writer) engine.RecEncoder {
 
 func (e *encoder) Encode(rec *engine.Rec) (err error) {
 	w := e.writer
+	r := metadata.WrapRec(rec)
 
 	if _, err = io.WriteString(w, startTag); err != nil {
 		return
 	}
 
 	for _, v := range visitors {
-		if err = v(w, rec); err != nil {
+		if err = v(w, r); err != nil {
 			return
 		}
 	}
@@ -57,35 +59,42 @@ func (e *encoder) Encode(rec *engine.Rec) (err error) {
 	return
 }
 
-func addID(w io.Writer, rec *engine.Rec) error {
+func addID(w io.Writer, rec metadata.Rec) error {
 	return addTag(w, "identifier", rec.ID)
 }
 
-func addTitle(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "title", rec.GetString("title"))
+func addTitle(w io.Writer, rec metadata.Rec) error {
+	return addTag(w, "title", rec.Title())
 }
 
-func addAuthor(w io.Writer, rec *engine.Rec) error {
-	vals := rec.GetStringSlice("author[*].name")
-	return addTag(w, "contributor", vals...)
+func addAuthor(w io.Writer, rec metadata.Rec) error {
+	for _, val := range rec.Author() {
+		if err := addTag(w, "contributor", val.Name); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func addAbstract(w io.Writer, rec *engine.Rec) error {
-	vals := rec.GetStringSlice("abstract[*].text")
-	return addTag(w, "description", vals...)
+func addAbstract(w io.Writer, rec metadata.Rec) error {
+	for _, val := range rec.Abstract() {
+		if err := addTag(w, "description", val.Text); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func addPublisher(w io.Writer, rec *engine.Rec) error {
-	return addTag(w, "publisher", rec.GetString("publisher"))
+func addPublisher(w io.Writer, rec metadata.Rec) error {
+	return addTag(w, "publisher", rec.Publisher())
 }
 
-func addDOI(w io.Writer, rec *engine.Rec) error {
-	vals := rec.GetStringSlice("doi")
-	return addTag(w, "identifier", vals...)
+func addDOI(w io.Writer, rec metadata.Rec) error {
+	return addTag(w, "identifier", rec.DOI()...)
 }
 
-func addISBN(w io.Writer, rec *engine.Rec) error {
-	for _, v := range rec.GetStringSlice("isbn") {
+func addISBN(w io.Writer, rec metadata.Rec) error {
+	for _, v := range rec.ISBN() {
 		if err := addTag(w, "identifier", "ISBN: "+v); err != nil {
 			return err
 		}

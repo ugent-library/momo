@@ -1,20 +1,20 @@
 {{define "content"}}
 <div class="container">
     <h1>
-        {{.Data.Rec.GetString "title"}}
+        {{.Data.Rec.Title}}
         {{if .Data.Rec.Type}}<span class="badge badge-secondary">{{.Data.Rec.Type}}</span>{{end}}
     </h1>
 
-    {{if .Data.Rec.GetString "iiif.manifest"}}
+    {{if .Data.Rec.IIIFManifest}}
     <div id="iiif-viewer"></div>
     {{end}}
-    {{if .Data.Rec.GetString "iiif.miradorViewer"}}
+    {{if .Data.Rec.IIIFViewer "mirador"}}
     <p>
-        <a href={{.Data.Rec.GetString "iiif.miradorViewer"}}>Mirador viewer</a>
+        <a href={{.Data.Rec.IIIFViewer "mirador"}}>Mirador viewer</a>
     </p>
     {{end}}
 
-    {{renderMetadata .Data.Rec}}
+    {{renderMetadata .Data.Rec.Rec}}
 
     {{if .Data.Rec.RawSource }}
     <h3>{{.Locale.Get "Librarian view"}}</h3>
@@ -22,12 +22,12 @@
     {{end}}
 
     <h3>{{.Locale.Get "Developer view"}}</h3>
-    {{renderInternalView .Data.Rec}}
+    {{renderInternalView .Data.Rec.Rec}}
 
     <h3>RIS</h3>
-    <code><pre>{{renderRIS .Data.Rec}}</pre></code>
+    <code><pre>{{renderRIS .Data.Rec.Rec}}</pre></code>
 
-    {{if .Data.Rec.GetString "iiif.manifest"}}
+    {{if .Data.Rec.IIIFManifest}}
     <script type="text/javascript">
         window.addEventListener('DOMContentLoaded', () => {
             var request = new XMLHttpRequest();
@@ -46,7 +46,7 @@
                 } else {
                 }
             };
-            request.open("get", {{.Data.Rec.GetString "iiif.manifest"}}, true);
+            request.open("get", {{.Data.Rec.IIIFManifest}}, true);
             request.send();
         });
     </script>

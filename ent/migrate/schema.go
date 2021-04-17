@@ -44,7 +44,7 @@ var (
 		{Name: "data", Type: field.TypeBytes},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "rec_representations", Type: field.TypeUUID, Nullable: true},
+		{Name: "rec_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// RepresentationsTable holds the schema information for the "representations" table.
 	RepresentationsTable = &schema.Table{
@@ -61,7 +61,7 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "representation_name_rec_representations",
+				Name:    "representation_name_rec_id",
 				Unique:  true,
 				Columns: []*schema.Column{RepresentationsColumns[1], RepresentationsColumns[5]},
 			},

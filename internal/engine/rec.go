@@ -8,12 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	lru "github.com/hashicorp/golang-lru"
-	"github.com/jmespath/go-jmespath"
-)
-
-var (
-	getterCache *lru.Cache
 )
 
 type RecEngine interface {
@@ -40,6 +34,14 @@ type Rec struct {
 	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
+type Representation struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Data      []byte    `json:"data"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type RecHits struct {
 	CursorID       string          `json:"-"`
 	Total          int             `json:"total"`
@@ -50,50 +52,6 @@ type RecHits struct {
 type RecHit struct {
 	Rec
 	RawHighlight json.RawMessage `json:"highlight"`
-}
-
-func init() {
-	var err error
-	getterCache, err = lru.New(512)
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
-func (r *Rec) Get(path string) interface{} {
-	var jp *jmespath.JMESPath
-	if c, ok := getterCache.Get(path); ok {
-		jp = c.(*jmespath.JMESPath)
-	} else {
-		jp = jmespath.MustCompile(path)
-		getterCache.Add(path, jp)
-	}
-	v, err := jp.Search(r.Metadata)
-	if err != nil {
-		log.Panic(err)
-	}
-	return v
-}
-
-func (r *Rec) GetString(path string) string {
-	val := r.Get(path)
-	if str, ok := val.(string); ok {
-		return str
-	}
-	return ""
-}
-
-func (r *Rec) GetStringSlice(path string) (strs []string) {
-	vals, ok := r.Get(path).([]interface{})
-	if !ok {
-		return
-	}
-	for _, v := range vals {
-		if str, ok := v.(string); ok {
-			strs = append(strs, str)
-		}
-	}
-	return
 }
 
 func (e *engine) GetRec(id string) (*Rec, error) {

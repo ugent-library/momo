@@ -40,7 +40,8 @@ func (Rec) Fields() []ent.Field {
 // Edges of the Rec.
 func (Rec) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("representations", Representation.Type),
+		edge.To("representations", Representation.Type).
+			StorageKey(edge.Column("rec_id")),
 	}
 }
 

@@ -31,7 +31,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "rec" package.
 	RecInverseTable = "recs"
 	// RecColumn is the table column denoting the rec relation/edge.
-	RecColumn = "rec_representations"
+	RecColumn = "rec_id"
 )
 
 // Columns holds all SQL columns for representation fields.
@@ -46,7 +46,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "representations"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"rec_representations",
+	"rec_id",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
