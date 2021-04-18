@@ -59,13 +59,13 @@ func (*Rec) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case rec.FieldMetadata, rec.FieldSource:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case rec.FieldCollection, rec.FieldType:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case rec.FieldCreatedAt, rec.FieldUpdatedAt:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		case rec.FieldID:
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Rec", columns[i])
 		}

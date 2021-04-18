@@ -379,7 +379,7 @@ func (m *RecMutation) ClearRepresentations() {
 	m.clearedrepresentations = true
 }
 
-// RepresentationsCleared returns if the "representations" edge to the Representation entity was cleared.
+// RepresentationsCleared reports if the "representations" edge to the Representation entity was cleared.
 func (m *RecMutation) RepresentationsCleared() bool {
 	return m.clearedrepresentations
 }
@@ -963,7 +963,7 @@ func (m *RepresentationMutation) ClearRec() {
 	m.clearedrec = true
 }
 
-// RecCleared returns if the "rec" edge to the Rec entity was cleared.
+// RecCleared reports if the "rec" edge to the Rec entity was cleared.
 func (m *RepresentationMutation) RecCleared() bool {
 	return m.clearedrec
 }

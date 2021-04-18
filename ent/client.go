@@ -196,7 +196,9 @@ func (c *RecClient) DeleteOneID(id uuid.UUID) *RecDeleteOne {
 
 // Query returns a query builder for Rec.
 func (c *RecClient) Query() *RecQuery {
-	return &RecQuery{config: c.config}
+	return &RecQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Rec entity by its id.
@@ -300,7 +302,9 @@ func (c *RepresentationClient) DeleteOneID(id uuid.UUID) *RepresentationDeleteOn
 
 // Query returns a query builder for Representation.
 func (c *RepresentationClient) Query() *RepresentationQuery {
-	return &RepresentationQuery{config: c.config}
+	return &RepresentationQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Representation entity by its id.

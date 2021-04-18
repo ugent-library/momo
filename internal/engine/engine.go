@@ -3,6 +3,7 @@ package engine
 type Engine interface {
 	CollectionEngine
 	RecEngine
+	RepresentationEngine
 	RecEncoderEngine
 	I18nEngine
 	Reset() error

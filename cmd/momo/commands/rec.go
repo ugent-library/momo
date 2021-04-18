@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tidwall/gjson"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/formats/csljson"
 )
@@ -199,19 +200,32 @@ var recAddCitationsCmd = &cobra.Command{
 			}
 			body.Items = append(body.Items, buf.Bytes())
 			jsonBody, _ := json.Marshal(body)
-			req, err := http.NewRequest("POST", "http://127.0.0.1:8085?style=vancouver", bytes.NewBuffer(jsonBody))
+			req, err := http.NewRequest("POST", "http://127.0.0.1:8085?style=mla", bytes.NewBuffer(jsonBody))
 			req.Header.Set("Content-Type", "application/json")
 			res, err := client.Do(req)
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer res.Body.Close()
+
 			cites, err := ioutil.ReadAll(res.Body)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if err = e.AddRepresentation(rec.ID, "mla", cites); err != nil {
+			cite := gjson.GetBytes(cites, "bibliography.1.0").String()
+
+			if len(cite) == 0 {
+				return true
+			}
+
+			rep := &engine.Representation{
+				RecID:  rec.ID,
+				Format: "mla",
+				Data:   []byte(cite),
+			}
+
+			if err = e.AddRepresentation(rep); err != nil {
 				log.Print(err)
 			}
 

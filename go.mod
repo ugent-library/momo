@@ -3,13 +3,12 @@ module github.com/ugent-library/momo
 go 1.15
 
 require (
-	entgo.io/ent v0.7.0
+	entgo.io/ent v0.8.0
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-chi/chi/v5 v5.0.2
 	github.com/go-playground/form/v4 v4.1.3
 	github.com/google/uuid v1.2.0
-	github.com/gopherjs/gopherjs v0.0.0-20210406100015-1e088ea4ee04 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20210413103415-7d3cbed7d026 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leonelquinteros/gotext v1.4.0
 	github.com/lib/pq v1.10.0
@@ -23,7 +22,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.7.4
-	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
+	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
 	golang.org/x/text v0.3.6
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect

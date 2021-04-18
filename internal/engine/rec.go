@@ -20,8 +20,6 @@ type RecEngine interface {
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
-
-	AddRepresentation(string, string, []byte) error
 }
 
 type Rec struct {
@@ -122,10 +120,6 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 	close(indexC)
 	// wait for indexing to finish
 	indexWG.Wait()
-}
-
-func (e *engine) AddRepresentation(recID, name string, data []byte) error {
-	return e.store.AddRepresentation(recID, name, data)
 }
 
 func (e *engine) IndexRecs() (err error) {

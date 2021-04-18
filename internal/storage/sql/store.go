@@ -109,18 +109,19 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	return nil
 }
 
-func (s *store) GetRepresentation(recID, name string) (*engine.Representation, error) {
+func (s *store) GetRepresentation(recID, format string) (*engine.Representation, error) {
 	r, err := s.client.Representation.
 		Query().
 		Where(
 			entrep.HasRecWith(entrec.ID(uuid.MustParse(recID))),
-			entrep.Format(name)).
+			entrep.Format(format)).
 		Only(context.Background())
 	if err != nil {
 		return nil, err
 	}
 	rep := &engine.Representation{
 		ID:        r.ID.String(),
+		RecID:     recID,
 		Format:    r.Format,
 		Data:      r.Data,
 		CreatedAt: r.CreatedAt,
@@ -129,12 +130,12 @@ func (s *store) GetRepresentation(recID, name string) (*engine.Representation, e
 	return rep, nil
 }
 
-func (s *store) AddRepresentation(recID, name string, data []byte) error {
+func (s *store) AddRepresentation(rep *engine.Representation) error {
 	_, err := s.client.Representation.
 		Create().
-		SetFormat(name).
-		SetData(data).
-		SetRecID(uuid.MustParse(recID)).
+		SetFormat(rep.Format).
+		SetData(rep.Data).
+		SetRecID(uuid.MustParse(rep.RecID)).
 		Save(context.Background())
 	if err != nil {
 		return err

@@ -234,6 +234,7 @@ func (ru *RepresentationUpdate) sqlSave(ctx context.Context) (n int, err error) 
 // RepresentationUpdateOne is the builder for updating a single Representation entity.
 type RepresentationUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *RepresentationMutation
 }
@@ -277,6 +278,13 @@ func (ruo *RepresentationUpdateOne) Mutation() *RepresentationMutation {
 // ClearRec clears the "rec" edge to the Rec entity.
 func (ruo *RepresentationUpdateOne) ClearRec() *RepresentationUpdateOne {
 	ruo.mutation.ClearRec()
+	return ruo
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (ruo *RepresentationUpdateOne) Select(field string, fields ...string) *RepresentationUpdateOne {
+	ruo.fields = append([]string{field}, fields...)
 	return ruo
 }
 
@@ -372,6 +380,18 @@ func (ruo *RepresentationUpdateOne) sqlSave(ctx context.Context) (_node *Represe
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Representation.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := ruo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, representation.FieldID)
+		for _, f := range fields {
+			if !representation.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != representation.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
 	if ps := ruo.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

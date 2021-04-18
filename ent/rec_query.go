@@ -23,6 +23,7 @@ type RecQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Rec
@@ -48,6 +49,13 @@ func (rq *RecQuery) Limit(limit int) *RecQuery {
 // Offset adds an offset step to the query.
 func (rq *RecQuery) Offset(offset int) *RecQuery {
 	rq.offset = &offset
+	return rq
+}
+
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (rq *RecQuery) Unique(unique bool) *RecQuery {
+	rq.unique = &unique
 	return rq
 }
 
@@ -425,6 +433,9 @@ func (rq *RecQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   rq.sql,
 		Unique: true,
 	}
+	if unique := rq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
 	if fields := rq.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, rec.FieldID)
@@ -450,7 +461,7 @@ func (rq *RecQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := rq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, rec.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
@@ -469,7 +480,7 @@ func (rq *RecQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		p(selector)
 	}
 	for _, p := range rq.order {
-		p(selector, rec.ValidColumn)
+		p(selector)
 	}
 	if offset := rq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -735,7 +746,7 @@ func (rgb *RecGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
 	columns = append(columns, rgb.fields...)
 	for _, fn := range rgb.fns {
-		columns = append(columns, fn(selector, rec.ValidColumn))
+		columns = append(columns, fn(selector))
 	}
 	return selector.Select(columns...).GroupBy(rgb.fields...)
 }

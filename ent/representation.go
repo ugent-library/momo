@@ -61,15 +61,15 @@ func (*Representation) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case representation.FieldData:
-			values[i] = &[]byte{}
+			values[i] = new([]byte)
 		case representation.FieldFormat:
-			values[i] = &sql.NullString{}
+			values[i] = new(sql.NullString)
 		case representation.FieldCreatedAt, representation.FieldUpdatedAt:
-			values[i] = &sql.NullTime{}
+			values[i] = new(sql.NullTime)
 		case representation.FieldID:
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		case representation.ForeignKeys[0]: // rec_id
-			values[i] = &uuid.UUID{}
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Representation", columns[i])
 		}
