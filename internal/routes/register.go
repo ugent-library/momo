@@ -12,7 +12,7 @@ import (
 )
 
 func Register(r chi.Router, e engine.Engine) {
-	recs := controller.NewRecs(e)
+	recs := controller.NewRecController(e)
 
 	// general middleware
 	r.Use(chimw.RequestID)

@@ -17,14 +17,14 @@ import (
 	"github.com/ugent-library/momo/internal/render"
 )
 
-type Recs struct {
+type RecController struct {
 	engine   engine.Engine
 	listView *render.View
 	showView *render.View
 }
 
-func NewRecs(e engine.Engine) *Recs {
-	return &Recs{
+func NewRecController(e engine.Engine) *RecController {
+	return &RecController{
 		engine:   e,
 		listView: render.NewView(e, "app", []string{"rec/list"}),
 		showView: render.NewView(e, "app", []string{"rec/show"}, template.FuncMap{
@@ -35,14 +35,14 @@ func NewRecs(e engine.Engine) *Recs {
 	}
 }
 
-func (c *Recs) List(w http.ResponseWriter, r *http.Request) {
+func (c *RecController) List(w http.ResponseWriter, r *http.Request) {
 	type data struct {
 		Title string
 	}
 	c.listView.Render(w, r, data{Title: "Search"})
 }
 
-func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
+func (c *RecController) Show(w http.ResponseWriter, r *http.Request) {
 	type data struct {
 		Rec metadata.Rec
 	}
@@ -58,7 +58,7 @@ func (c *Recs) Show(w http.ResponseWriter, r *http.Request) {
 	c.showView.Render(w, r, data{Rec: metadata.WrapRec(rec)})
 }
 
-func (c *Recs) Search(w http.ResponseWriter, r *http.Request) {
+func (c *RecController) Search(w http.ResponseWriter, r *http.Request) {
 	args := engine.SearchArgs{Facets: []string{"type"}, Highlight: true}
 	err := form.Decode(&args, r.URL.Query())
 	if err != nil {
