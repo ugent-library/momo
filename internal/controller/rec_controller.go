@@ -12,7 +12,6 @@ import (
 	"github.com/ugent-library/momo/internal/ctx"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/form"
-	"github.com/ugent-library/momo/internal/formats/ris"
 	"github.com/ugent-library/momo/internal/metadata"
 	"github.com/ugent-library/momo/internal/render"
 )
@@ -30,7 +29,13 @@ func NewRecController(e engine.Engine) *RecController {
 		showView: render.NewView(e, "app", []string{"rec/show"}, template.FuncMap{
 			"renderSourceView":   renderSourceView,
 			"renderInternalView": renderInternalView,
-			"renderRIS":          renderRIS,
+			"renderRepresentation": func(rec *engine.Rec, format string) template.HTML {
+				rep, err := e.GetRepresentation(rec.ID, format)
+				if err != nil {
+					return template.HTML("")
+				}
+				return template.HTML(string(rep.Data))
+			},
 		}),
 	}
 }
@@ -118,11 +123,4 @@ func renderSourceView(j json.RawMessage) template.HTML {
 func renderInternalView(rec *engine.Rec) template.HTML {
 	b, _ := json.MarshalIndent(rec.Metadata, "", "\t")
 	return template.HTML("<code><pre>" + string(b) + "</pre></code>")
-}
-
-func renderRIS(rec *engine.Rec) (string, error) {
-	var b strings.Builder
-	e := ris.NewEncoder(&b)
-	err := e.Encode(rec)
-	return b.String(), err
 }

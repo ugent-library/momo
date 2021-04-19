@@ -63,8 +63,9 @@
 {{renderInternalView .Yield.Rec.Rec}}
 
 <h3>RIS</h3>
-<code><pre>
-{{renderRIS .Yield.Rec.Rec}}
-</pre></code>
+<code><pre>{{renderRepresentation .Yield.Rec.Rec "ris"}}</pre></code>
+
+<h3>Cite</h3>
+<p>{{renderRepresentation .Yield.Rec.Rec "mla"}}</p>
 
 {{end}}
