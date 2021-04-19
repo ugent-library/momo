@@ -184,6 +184,7 @@ var recAddCitationsCmd = &cobra.Command{
 	Short: "",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
+		p := newProgress(100)
 
 		client := http.Client{
 			Timeout: 10 * time.Second,
@@ -229,7 +230,15 @@ var recAddCitationsCmd = &cobra.Command{
 				log.Print(err)
 			}
 
+			if verbose {
+				p.inc()
+			}
+
 			return true
 		})
+
+		if verbose {
+			p.done()
+		}
 	},
 }
