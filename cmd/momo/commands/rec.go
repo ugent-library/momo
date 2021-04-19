@@ -191,6 +191,10 @@ var recAddCitationsCmd = &cobra.Command{
 		}
 
 		e.EachRec(func(rec *engine.Rec) bool {
+			if rep, _ := e.GetRepresentation(rec.ID, "mla"); rep != nil {
+				return true
+			}
+
 			body := struct {
 				Items []json.RawMessage `json:"items"`
 			}{}
