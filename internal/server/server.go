@@ -63,7 +63,7 @@ func (s *Server) Start() {
 
 	if s.ssl {
 		m := &autocert.Manager{
-			Cache:      autocert.DirCache("golang-autocert"),
+			Cache:      autocert.DirCache("letsencrypt"),
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(s.host),
 		}
