@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -62,11 +63,20 @@ func Register(r chi.Router, e engine.Engine) {
 		log.Panicf("oidc err: %v", err)
 	}
 
+	var redirectURL string
+	if viper.GetBool("ssl") {
+		redirectURL = fmt.Sprintf("https://%s/auth/callback", viper.GetString("host"))
+	} else if viper.GetInt("port") != 80 {
+		redirectURL = fmt.Sprintf("http://%s:%d/auth/callback", viper.GetString("host"), viper.GetInt("port"))
+	} else {
+		redirectURL = fmt.Sprintf("http://%s/auth/callback", viper.GetString("host"))
+	}
+
 	// Configure an OpenID Connect aware OAuth2 client.
 	oauth2Config := oauth2.Config{
 		ClientID:     viper.GetString("oidc_client_id"),
 		ClientSecret: viper.GetString("oidc_client_secret"),
-		RedirectURL:  "http://localhost:3000/auth/callback",
+		RedirectURL:  redirectURL,
 
 		// Discovery returns the OAuth2 endpoints.
 		Endpoint: provider.Endpoint(),

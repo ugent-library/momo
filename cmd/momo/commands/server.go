@@ -15,6 +15,8 @@ func init() {
 	serverStartCmd.Flags().Int("port", defaultPort, "server port")
 	viper.BindPFlag("port", serverStartCmd.Flags().Lookup("port"))
 	viper.SetDefault("port", defaultPort)
+	serverStartCmd.Flags().Bool("ssl", false, "https using Let’s Encrypt")
+	viper.BindPFlag("ssl", serverStartCmd.Flags().Lookup("ssl"))
 
 	serverCmd.AddCommand(serverStartCmd)
 
@@ -35,6 +37,7 @@ var serverStartCmd = &cobra.Command{
 		s := server.New(r,
 			server.WithHost(viper.GetString("host")),
 			server.WithPort(viper.GetInt("port")),
+			server.WithSSL(viper.GetBool("ssl")),
 		)
 		s.Start()
 	},
