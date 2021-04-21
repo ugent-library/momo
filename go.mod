@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	entgo.io/ent v0.8.0
+	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-chi/chi/v5 v5.0.2
 	github.com/go-playground/form/v4 v4.1.3
@@ -22,6 +23,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.7.4
+	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
 	golang.org/x/text v0.3.6
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

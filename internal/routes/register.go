@@ -1,14 +1,20 @@
 package routes
 
 import (
+	"context"
+	"log"
 	"net/http"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/spf13/viper"
 	"github.com/ugent-library/momo/internal/controller"
 	"github.com/ugent-library/momo/internal/ctx"
 	"github.com/ugent-library/momo/internal/engine"
 	mw "github.com/ugent-library/momo/internal/middleware"
+	"github.com/ugent-library/momo/internal/render"
+	"golang.org/x/oauth2"
 )
 
 func Register(r chi.Router, e engine.Engine) {
@@ -48,6 +54,79 @@ func Register(r chi.Router, e engine.Engine) {
 			uiRoutes(r)
 		})
 	}
+
+	// test keycloak oidc -->
+
+	provider, err := oidc.NewProvider(context.Background(), viper.GetString("oidc_url"))
+	if err != nil {
+		log.Panicf("oidc err: %v", err)
+	}
+
+	// Configure an OpenID Connect aware OAuth2 client.
+	oauth2Config := oauth2.Config{
+		ClientID:     viper.GetString("oidc_client_id"),
+		ClientSecret: viper.GetString("oidc_client_secret"),
+		RedirectURL:  "http://localhost:3000/auth/callback",
+
+		// Discovery returns the OAuth2 endpoints.
+		Endpoint: provider.Endpoint(),
+
+		// "openid" is a required scope for OpenID Connect flows.
+		Scopes: []string{oidc.ScopeOpenID, "profile", "email", "phone", "address"},
+	}
+
+	verifier := provider.Verifier(&oidc.Config{ClientID: viper.GetString("oidc_client_id")})
+
+	authRequired := func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, oauth2Config.AuthCodeURL(""), http.StatusFound)
+	}
+
+	r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
+		oauth2Token, err := oauth2Config.Exchange(context.Background(), r.URL.Query().Get("code"))
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// Extract the ID Token from OAuth2 token.
+		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+		if !ok {
+			// handle missing token
+			log.Panic("token missing")
+		}
+
+		// Parse and verify ID Token payload.
+		idToken, err := verifier.Verify(context.Background(), rawIDToken)
+		if err != nil {
+			// handle error
+			log.Panic(err)
+		}
+
+		// Extract custom claims
+		var claims struct {
+			Email                    string `json:"email"`
+			EmailVerified            bool   `json:"email_verified"`
+			Name                     string `json:"name"`
+			FamilyName               string `json:"family_name"`
+			GivenName                string `json:"given_name"`
+			PreferredUsername        string `json:"preferred_username"`
+			IdentityProvider         string `json:"identity_provider"`
+			IdentityProviderIdentity string `json:"identity_provider_identity"`
+		}
+		if err := idToken.Claims(&claims); err != nil {
+			// handle error
+			log.Panic(err)
+		}
+
+		render.JSON(w, r, &claims)
+	})
+
+	r.Route("/admin", func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			authRequired(w, r)
+		})
+	})
+
+	// <-- test keycloak oidc
 
 	uiRoutes(r)
 }
