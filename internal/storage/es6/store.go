@@ -203,7 +203,8 @@ func (s *store) SearchRecs(args engine.SearchArgs) (*engine.RecHits, error) {
 			"pre_tags":            []string{"<mark>"},
 			"post_tags":           []string{"</mark>"},
 			"fields": M{
-				"metadata.title.ngram": M{},
+				"metadata.title.ngram":       M{},
+				"metadata.author.name.ngram": M{},
 			},
 		}
 	}

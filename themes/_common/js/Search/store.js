@@ -50,11 +50,13 @@ const mutations = {
         id: h.id,
         type: h.type
       }
-
       if (h.highlight && h.highlight['metadata.title.ngram']) {
         hit.title = h.highlight['metadata.title.ngram'][0]
       } else {
         hit.title = h.metadata.title
+      }
+      if (h.highlight && h.highlight['metadata.author.name.ngram']) {
+        hit.contributors = h.highlight['metadata.author.name.ngram']
       }
       result.push(hit)
     })

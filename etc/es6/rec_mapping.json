@@ -63,7 +63,14 @@
                         "author": {
                             "properties": {
                                 "name": {
-                                    "type": "text"
+                                    "type": "text",
+                                    "fields": {
+                                        "ngram": {
+                                            "type": "text",
+                                            "analyzer": "ngram",
+                                            "search_analyzer": "lowercase"
+                                        }
+                                    }        
                                 }
                             }
                         },
