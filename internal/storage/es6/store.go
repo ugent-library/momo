@@ -35,7 +35,7 @@ type esRec struct {
 	Metadata   map[string]interface{} `json:"metadata"`
 	CreatedAt  string                 `json:"createdAt"`
 	UpdatedAt  string                 `json:"updatedAt"`
-	RawSource  json.RawMessage        `json:"source"`
+	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
 type resEnvelope struct {
@@ -158,9 +158,10 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 			UpdatedAt:  rec.UpdatedAt.UTC().Format(time.RFC3339),
 			RawSource:  rec.RawSource,
 		}
+
 		payload, err := json.Marshal(&r)
 		if err != nil {
-			log.Fatal(err)
+			log.Panic(err)
 		}
 
 		err = bi.Add(
@@ -172,22 +173,22 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 				Body:         bytes.NewReader(payload),
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
-						log.Printf("ERROR: %s", err)
+						log.Panicf("ERROR: %s", err)
 					} else {
-						log.Printf("ERROR: %s: %s", res.Error.Type, res.Error.Reason)
+						log.Panicf("ERROR: %s: %s", res.Error.Type, res.Error.Reason)
 					}
 				},
 			},
 		)
 
 		if err != nil {
-			log.Fatalf("Unexpected error: %s", err)
+			log.Panicf("Unexpected error: %s", err)
 		}
 	}
 
 	// Close the indexer
 	if err := bi.Close(context.Background()); err != nil {
-		log.Fatalf("Unexpected error: %s", err)
+		log.Panicf("Unexpected error: %s", err)
 	}
 }
 
@@ -326,5 +327,4 @@ func decodeRes(res *esapi.Response) (*engine.RecHits, error) {
 	}
 
 	return &hits, nil
-
 }
