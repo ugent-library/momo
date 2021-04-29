@@ -23,6 +23,15 @@ func (Rec) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("type").
 			NotEmpty(),
+		field.JSON("metadata", map[string]interface{}{}),
+		field.String("source").
+			Optional(),
+		field.String("source_id").
+			Optional(),
+		field.String("source_format").
+			Optional(),
+		field.Bytes("source_metadata").
+			Optional(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -30,9 +39,6 @@ func (Rec) Fields() []ent.Field {
 			Default(time.Now).
 			UpdateDefault(time.Now).
 			Immutable(),
-		field.JSON("metadata", map[string]interface{}{}),
-		field.Bytes("source").
-			Optional(),
 	}
 }
 
@@ -45,6 +51,10 @@ func (Rec) Edges() []ent.Edge {
 
 func (Rec) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("collection"),
+		index.Fields("type"),
+		index.Fields("source"),
+		index.Fields("source_id"),
 		index.Fields("created_at"),
 		index.Fields("updated_at"),
 	}

@@ -22,14 +22,20 @@ type Rec struct {
 	Collection string `json:"collection,omitempty"`
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// Source holds the value of the "source" field.
+	Source string `json:"source,omitempty"`
+	// SourceID holds the value of the "source_id" field.
+	SourceID string `json:"source_id,omitempty"`
+	// SourceFormat holds the value of the "source_format" field.
+	SourceFormat string `json:"source_format,omitempty"`
+	// SourceMetadata holds the value of the "source_metadata" field.
+	SourceMetadata []byte `json:"source_metadata,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Metadata holds the value of the "metadata" field.
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-	// Source holds the value of the "source" field.
-	Source []byte `json:"source,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RecQuery when eager-loading is set.
 	Edges RecEdges `json:"edges"`
@@ -58,9 +64,9 @@ func (*Rec) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case rec.FieldMetadata, rec.FieldSource:
+		case rec.FieldMetadata, rec.FieldSourceMetadata:
 			values[i] = new([]byte)
-		case rec.FieldCollection, rec.FieldType:
+		case rec.FieldCollection, rec.FieldType, rec.FieldSource, rec.FieldSourceID, rec.FieldSourceFormat:
 			values[i] = new(sql.NullString)
 		case rec.FieldCreatedAt, rec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -99,6 +105,39 @@ func (r *Rec) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				r.Type = value.String
 			}
+		case rec.FieldMetadata:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &r.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
+			}
+		case rec.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value.Valid {
+				r.Source = value.String
+			}
+		case rec.FieldSourceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source_id", values[i])
+			} else if value.Valid {
+				r.SourceID = value.String
+			}
+		case rec.FieldSourceFormat:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source_format", values[i])
+			} else if value.Valid {
+				r.SourceFormat = value.String
+			}
+		case rec.FieldSourceMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field source_metadata", values[i])
+			} else if value != nil {
+				r.SourceMetadata = *value
+			}
 		case rec.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -110,21 +149,6 @@ func (r *Rec) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				r.UpdatedAt = value.Time
-			}
-		case rec.FieldMetadata:
-
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field metadata", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &r.Metadata); err != nil {
-					return fmt.Errorf("unmarshal field metadata: %w", err)
-				}
-			}
-		case rec.FieldSource:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
-			} else if value != nil {
-				r.Source = *value
 			}
 		}
 	}
@@ -163,14 +187,20 @@ func (r *Rec) String() string {
 	builder.WriteString(r.Collection)
 	builder.WriteString(", type=")
 	builder.WriteString(r.Type)
+	builder.WriteString(", metadata=")
+	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
+	builder.WriteString(", source=")
+	builder.WriteString(r.Source)
+	builder.WriteString(", source_id=")
+	builder.WriteString(r.SourceID)
+	builder.WriteString(", source_format=")
+	builder.WriteString(r.SourceFormat)
+	builder.WriteString(", source_metadata=")
+	builder.WriteString(fmt.Sprintf("%v", r.SourceMetadata))
 	builder.WriteString(", created_at=")
 	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", metadata=")
-	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
-	builder.WriteString(", source=")
-	builder.WriteString(fmt.Sprintf("%v", r.Source))
 	builder.WriteByte(')')
 	return builder.String()
 }

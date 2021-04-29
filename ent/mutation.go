@@ -37,10 +37,13 @@ type RecMutation struct {
 	id                     *uuid.UUID
 	collection             *string
 	_type                  *string
+	metadata               *map[string]interface{}
+	source                 *string
+	source_id              *string
+	source_format          *string
+	source_metadata        *[]byte
 	created_at             *time.Time
 	updated_at             *time.Time
-	metadata               *map[string]interface{}
-	source                 *[]byte
 	clearedFields          map[string]struct{}
 	representations        map[uuid.UUID]struct{}
 	removedrepresentations map[uuid.UUID]struct{}
@@ -207,6 +210,238 @@ func (m *RecMutation) ResetType() {
 	m._type = nil
 }
 
+// SetMetadata sets the "metadata" field.
+func (m *RecMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *RecMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *RecMutation) ResetMetadata() {
+	m.metadata = nil
+}
+
+// SetSource sets the "source" field.
+func (m *RecMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *RecMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ClearSource clears the value of the "source" field.
+func (m *RecMutation) ClearSource() {
+	m.source = nil
+	m.clearedFields[rec.FieldSource] = struct{}{}
+}
+
+// SourceCleared returns if the "source" field was cleared in this mutation.
+func (m *RecMutation) SourceCleared() bool {
+	_, ok := m.clearedFields[rec.FieldSource]
+	return ok
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *RecMutation) ResetSource() {
+	m.source = nil
+	delete(m.clearedFields, rec.FieldSource)
+}
+
+// SetSourceID sets the "source_id" field.
+func (m *RecMutation) SetSourceID(s string) {
+	m.source_id = &s
+}
+
+// SourceID returns the value of the "source_id" field in the mutation.
+func (m *RecMutation) SourceID() (r string, exists bool) {
+	v := m.source_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceID returns the old "source_id" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldSourceID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSourceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSourceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceID: %w", err)
+	}
+	return oldValue.SourceID, nil
+}
+
+// ClearSourceID clears the value of the "source_id" field.
+func (m *RecMutation) ClearSourceID() {
+	m.source_id = nil
+	m.clearedFields[rec.FieldSourceID] = struct{}{}
+}
+
+// SourceIDCleared returns if the "source_id" field was cleared in this mutation.
+func (m *RecMutation) SourceIDCleared() bool {
+	_, ok := m.clearedFields[rec.FieldSourceID]
+	return ok
+}
+
+// ResetSourceID resets all changes to the "source_id" field.
+func (m *RecMutation) ResetSourceID() {
+	m.source_id = nil
+	delete(m.clearedFields, rec.FieldSourceID)
+}
+
+// SetSourceFormat sets the "source_format" field.
+func (m *RecMutation) SetSourceFormat(s string) {
+	m.source_format = &s
+}
+
+// SourceFormat returns the value of the "source_format" field in the mutation.
+func (m *RecMutation) SourceFormat() (r string, exists bool) {
+	v := m.source_format
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceFormat returns the old "source_format" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldSourceFormat(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSourceFormat is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSourceFormat requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceFormat: %w", err)
+	}
+	return oldValue.SourceFormat, nil
+}
+
+// ClearSourceFormat clears the value of the "source_format" field.
+func (m *RecMutation) ClearSourceFormat() {
+	m.source_format = nil
+	m.clearedFields[rec.FieldSourceFormat] = struct{}{}
+}
+
+// SourceFormatCleared returns if the "source_format" field was cleared in this mutation.
+func (m *RecMutation) SourceFormatCleared() bool {
+	_, ok := m.clearedFields[rec.FieldSourceFormat]
+	return ok
+}
+
+// ResetSourceFormat resets all changes to the "source_format" field.
+func (m *RecMutation) ResetSourceFormat() {
+	m.source_format = nil
+	delete(m.clearedFields, rec.FieldSourceFormat)
+}
+
+// SetSourceMetadata sets the "source_metadata" field.
+func (m *RecMutation) SetSourceMetadata(b []byte) {
+	m.source_metadata = &b
+}
+
+// SourceMetadata returns the value of the "source_metadata" field in the mutation.
+func (m *RecMutation) SourceMetadata() (r []byte, exists bool) {
+	v := m.source_metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceMetadata returns the old "source_metadata" field's value of the Rec entity.
+// If the Rec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RecMutation) OldSourceMetadata(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSourceMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSourceMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceMetadata: %w", err)
+	}
+	return oldValue.SourceMetadata, nil
+}
+
+// ClearSourceMetadata clears the value of the "source_metadata" field.
+func (m *RecMutation) ClearSourceMetadata() {
+	m.source_metadata = nil
+	m.clearedFields[rec.FieldSourceMetadata] = struct{}{}
+}
+
+// SourceMetadataCleared returns if the "source_metadata" field was cleared in this mutation.
+func (m *RecMutation) SourceMetadataCleared() bool {
+	_, ok := m.clearedFields[rec.FieldSourceMetadata]
+	return ok
+}
+
+// ResetSourceMetadata resets all changes to the "source_metadata" field.
+func (m *RecMutation) ResetSourceMetadata() {
+	m.source_metadata = nil
+	delete(m.clearedFields, rec.FieldSourceMetadata)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *RecMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -279,91 +514,6 @@ func (m *RecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetMetadata sets the "metadata" field.
-func (m *RecMutation) SetMetadata(value map[string]interface{}) {
-	m.metadata = &value
-}
-
-// Metadata returns the value of the "metadata" field in the mutation.
-func (m *RecMutation) Metadata() (r map[string]interface{}, exists bool) {
-	v := m.metadata
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMetadata returns the old "metadata" field's value of the Rec entity.
-// If the Rec object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RecMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMetadata is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMetadata requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
-	}
-	return oldValue.Metadata, nil
-}
-
-// ResetMetadata resets all changes to the "metadata" field.
-func (m *RecMutation) ResetMetadata() {
-	m.metadata = nil
-}
-
-// SetSource sets the "source" field.
-func (m *RecMutation) SetSource(b []byte) {
-	m.source = &b
-}
-
-// Source returns the value of the "source" field in the mutation.
-func (m *RecMutation) Source() (r []byte, exists bool) {
-	v := m.source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSource returns the old "source" field's value of the Rec entity.
-// If the Rec object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RecMutation) OldSource(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
-	}
-	return oldValue.Source, nil
-}
-
-// ClearSource clears the value of the "source" field.
-func (m *RecMutation) ClearSource() {
-	m.source = nil
-	m.clearedFields[rec.FieldSource] = struct{}{}
-}
-
-// SourceCleared returns if the "source" field was cleared in this mutation.
-func (m *RecMutation) SourceCleared() bool {
-	_, ok := m.clearedFields[rec.FieldSource]
-	return ok
-}
-
-// ResetSource resets all changes to the "source" field.
-func (m *RecMutation) ResetSource() {
-	m.source = nil
-	delete(m.clearedFields, rec.FieldSource)
-}
-
 // AddRepresentationIDs adds the "representations" edge to the Representation entity by ids.
 func (m *RecMutation) AddRepresentationIDs(ids ...uuid.UUID) {
 	if m.representations == nil {
@@ -431,24 +581,33 @@ func (m *RecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RecMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 9)
 	if m.collection != nil {
 		fields = append(fields, rec.FieldCollection)
 	}
 	if m._type != nil {
 		fields = append(fields, rec.FieldType)
 	}
-	if m.created_at != nil {
-		fields = append(fields, rec.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, rec.FieldUpdatedAt)
-	}
 	if m.metadata != nil {
 		fields = append(fields, rec.FieldMetadata)
 	}
 	if m.source != nil {
 		fields = append(fields, rec.FieldSource)
+	}
+	if m.source_id != nil {
+		fields = append(fields, rec.FieldSourceID)
+	}
+	if m.source_format != nil {
+		fields = append(fields, rec.FieldSourceFormat)
+	}
+	if m.source_metadata != nil {
+		fields = append(fields, rec.FieldSourceMetadata)
+	}
+	if m.created_at != nil {
+		fields = append(fields, rec.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, rec.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -462,14 +621,20 @@ func (m *RecMutation) Field(name string) (ent.Value, bool) {
 		return m.Collection()
 	case rec.FieldType:
 		return m.GetType()
-	case rec.FieldCreatedAt:
-		return m.CreatedAt()
-	case rec.FieldUpdatedAt:
-		return m.UpdatedAt()
 	case rec.FieldMetadata:
 		return m.Metadata()
 	case rec.FieldSource:
 		return m.Source()
+	case rec.FieldSourceID:
+		return m.SourceID()
+	case rec.FieldSourceFormat:
+		return m.SourceFormat()
+	case rec.FieldSourceMetadata:
+		return m.SourceMetadata()
+	case rec.FieldCreatedAt:
+		return m.CreatedAt()
+	case rec.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -483,14 +648,20 @@ func (m *RecMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldCollection(ctx)
 	case rec.FieldType:
 		return m.OldType(ctx)
-	case rec.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case rec.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	case rec.FieldMetadata:
 		return m.OldMetadata(ctx)
 	case rec.FieldSource:
 		return m.OldSource(ctx)
+	case rec.FieldSourceID:
+		return m.OldSourceID(ctx)
+	case rec.FieldSourceFormat:
+		return m.OldSourceFormat(ctx)
+	case rec.FieldSourceMetadata:
+		return m.OldSourceMetadata(ctx)
+	case rec.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case rec.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Rec field %s", name)
 }
@@ -514,6 +685,41 @@ func (m *RecMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetType(v)
 		return nil
+	case rec.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	case rec.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case rec.FieldSourceID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceID(v)
+		return nil
+	case rec.FieldSourceFormat:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceFormat(v)
+		return nil
+	case rec.FieldSourceMetadata:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceMetadata(v)
+		return nil
 	case rec.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -527,20 +733,6 @@ func (m *RecMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
-		return nil
-	case rec.FieldMetadata:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMetadata(v)
-		return nil
-	case rec.FieldSource:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSource(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Rec field %s", name)
@@ -575,6 +767,15 @@ func (m *RecMutation) ClearedFields() []string {
 	if m.FieldCleared(rec.FieldSource) {
 		fields = append(fields, rec.FieldSource)
 	}
+	if m.FieldCleared(rec.FieldSourceID) {
+		fields = append(fields, rec.FieldSourceID)
+	}
+	if m.FieldCleared(rec.FieldSourceFormat) {
+		fields = append(fields, rec.FieldSourceFormat)
+	}
+	if m.FieldCleared(rec.FieldSourceMetadata) {
+		fields = append(fields, rec.FieldSourceMetadata)
+	}
 	return fields
 }
 
@@ -592,6 +793,15 @@ func (m *RecMutation) ClearField(name string) error {
 	case rec.FieldSource:
 		m.ClearSource()
 		return nil
+	case rec.FieldSourceID:
+		m.ClearSourceID()
+		return nil
+	case rec.FieldSourceFormat:
+		m.ClearSourceFormat()
+		return nil
+	case rec.FieldSourceMetadata:
+		m.ClearSourceMetadata()
+		return nil
 	}
 	return fmt.Errorf("unknown Rec nullable field %s", name)
 }
@@ -606,17 +816,26 @@ func (m *RecMutation) ResetField(name string) error {
 	case rec.FieldType:
 		m.ResetType()
 		return nil
-	case rec.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case rec.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	case rec.FieldMetadata:
 		m.ResetMetadata()
 		return nil
 	case rec.FieldSource:
 		m.ResetSource()
+		return nil
+	case rec.FieldSourceID:
+		m.ResetSourceID()
+		return nil
+	case rec.FieldSourceFormat:
+		m.ResetSourceFormat()
+		return nil
+	case rec.FieldSourceMetadata:
+		m.ResetSourceMetadata()
+		return nil
+	case rec.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case rec.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Rec field %s", name)

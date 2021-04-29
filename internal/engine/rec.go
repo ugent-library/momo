@@ -23,13 +23,16 @@ type RecEngine interface {
 }
 
 type Rec struct {
-	ID         string                 `json:"id"`
-	Collection string                 `json:"collection"`
-	Type       string                 `json:"type"`
-	Metadata   map[string]interface{} `json:"metadata"`
-	CreatedAt  time.Time              `json:"createdAt"`
-	UpdatedAt  time.Time              `json:"updatedAt"`
-	RawSource  json.RawMessage        `json:"source,omitempty"`
+	ID             string                 `json:"id"`
+	Collection     string                 `json:"collection"`
+	Type           string                 `json:"type"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	Source         string                 `json:"source,omitempty"`
+	SourceID       string                 `json:"source_id,omitempty"`
+	SourceFormat   string                 `json:"source_format,omitempty"`
+	SourceMetadata []byte                 `json:"source_metadata,omitempty"`
+	CreatedAt      time.Time              `json:"createdAt"`
+	UpdatedAt      time.Time              `json:"updatedAt"`
 }
 
 type RecHits struct {

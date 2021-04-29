@@ -33,9 +33,10 @@ type esRec struct {
 	Collection string                 `json:"collection"`
 	Type       string                 `json:"type"`
 	Metadata   map[string]interface{} `json:"metadata"`
+	Source     string                 `json:"source,omitempty"`
+	SourceID   string                 `json:"source_id,omitempty"`
 	CreatedAt  string                 `json:"createdAt"`
 	UpdatedAt  string                 `json:"updatedAt"`
-	RawSource  json.RawMessage        `json:"source,omitempty"`
 }
 
 type resEnvelope struct {
@@ -154,9 +155,10 @@ func (s *store) AddRecs(c <-chan *engine.Rec) {
 			Collection: rec.Collection,
 			Type:       rec.Type,
 			Metadata:   rec.Metadata,
+			Source:     rec.Source,
+			SourceID:   rec.SourceID,
 			CreatedAt:  rec.CreatedAt.UTC().Format(time.RFC3339),
 			UpdatedAt:  rec.UpdatedAt.UTC().Format(time.RFC3339),
-			RawSource:  rec.RawSource,
 		}
 
 		payload, err := json.Marshal(&r)

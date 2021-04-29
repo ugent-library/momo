@@ -13,10 +13,13 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "collection", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
+		{Name: "metadata", Type: field.TypeJSON},
+		{Name: "source", Type: field.TypeString, Nullable: true},
+		{Name: "source_id", Type: field.TypeString, Nullable: true},
+		{Name: "source_format", Type: field.TypeString, Nullable: true},
+		{Name: "source_metadata", Type: field.TypeBytes, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "metadata", Type: field.TypeJSON},
-		{Name: "source", Type: field.TypeBytes, Nullable: true},
 	}
 	// RecsTable holds the schema information for the "recs" table.
 	RecsTable = &schema.Table{
@@ -26,14 +29,34 @@ var (
 		ForeignKeys: []*schema.ForeignKey{},
 		Indexes: []*schema.Index{
 			{
+				Name:    "rec_collection",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[1]},
+			},
+			{
+				Name:    "rec_type",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[2]},
+			},
+			{
+				Name:    "rec_source",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[4]},
+			},
+			{
+				Name:    "rec_source_id",
+				Unique:  false,
+				Columns: []*schema.Column{RecsColumns[5]},
+			},
+			{
 				Name:    "rec_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{RecsColumns[3]},
+				Columns: []*schema.Column{RecsColumns[8]},
 			},
 			{
 				Name:    "rec_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{RecsColumns[4]},
+				Columns: []*schema.Column{RecsColumns[9]},
 			},
 		},
 	}

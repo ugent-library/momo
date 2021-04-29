@@ -46,20 +46,23 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 		return nil, err
 	}
 	rec := &engine.Rec{
-		ID:         r.ID.String(),
-		Collection: r.Collection,
-		Type:       r.Type,
-		Metadata:   r.Metadata,
-		CreatedAt:  r.CreatedAt,
-		UpdatedAt:  r.UpdatedAt,
-		RawSource:  r.Source,
+		ID:             r.ID.String(),
+		Collection:     r.Collection,
+		Type:           r.Type,
+		Metadata:       r.Metadata,
+		Source:         r.Source,
+		SourceID:       r.SourceID,
+		SourceFormat:   r.SourceFormat,
+		SourceMetadata: r.SourceMetadata,
+		CreatedAt:      r.CreatedAt,
+		UpdatedAt:      r.UpdatedAt,
 	}
 	return rec, nil
 }
 
 // ent: https://github.com/ent/ent/issues/215
 func (s *store) EachRec(fn func(*engine.Rec) bool) error {
-	rows, err := s.db.Query("SELECT id, collection, type, metadata, created_at, updated_at, source FROM recs")
+	rows, err := s.db.Query("SELECT id, collection, type, metadata, source, source_id, source_format, source_metadata, created_at, updated_at FROM recs")
 
 	defer rows.Close()
 
@@ -71,9 +74,12 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 			&rec.Collection,
 			&rec.Type,
 			&rawMetadata,
+			&rec.Source,
+			&rec.SourceID,
+			&rec.SourceFormat,
+			&rec.SourceMetadata,
 			&rec.CreatedAt,
 			&rec.UpdatedAt,
-			&rec.RawSource,
 		)
 		if err != nil {
 			return err
@@ -97,7 +103,10 @@ func (s *store) AddRec(rec *engine.Rec) error {
 		SetCollection(rec.Collection).
 		SetType(rec.Type).
 		SetMetadata(rec.Metadata).
-		SetSource(rec.RawSource).
+		SetSource(rec.Source).
+		SetSourceID(rec.SourceID).
+		SetSourceFormat(rec.SourceFormat).
+		SetSourceMetadata(rec.SourceMetadata).
 		Save(context.Background())
 	if err != nil {
 		return err

@@ -54,9 +54,9 @@
     {{end}}
 </dl>
 
-{{if .Yield.Rec.RawSource }}
+{{if .Yield.Rec.Source }}
 <h3>{{.Locale.Get "Librarian view"}}</h3>
-{{renderSourceView .Yield.Rec.RawSource}}
+{{renderSourceView .Yield.Rec.Rec}}
 {{end}}
 
 <h3>{{.Locale.Get "Developer view"}}</h3>

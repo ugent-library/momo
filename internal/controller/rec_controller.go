@@ -84,11 +84,12 @@ func (c *RecController) Search(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, hits)
 }
 
-func renderSourceView(j json.RawMessage) template.HTML {
+func renderSourceView(rec *engine.Rec) template.HTML {
 	var b strings.Builder
-	m := gjson.ParseBytes(j)
-	marc := m.Get(`@this.#(metadata_format=="marc-in-json").metadata`)
-	if marc.Exists() {
+
+	if rec.SourceFormat == "marcinjson" && rec.SourceMetadata != nil {
+		marc := gjson.ParseBytes([]byte(rec.SourceMetadata))
+
 		b.WriteString(`<table class="table table-sm table-striped">`)
 		b.WriteString(`<tr><th colspan="4">` + marc.Get(`leader`).String() + `</th></tr>`)
 		marc.Get(`fields`).ForEach(func(_, field gjson.Result) bool {
@@ -117,6 +118,7 @@ func renderSourceView(j json.RawMessage) template.HTML {
 
 		b.WriteString(`</table>`)
 	}
+
 	return template.HTML(b.String())
 }
 

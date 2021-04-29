@@ -47,14 +47,74 @@ func (ru *RecUpdate) SetMetadata(m map[string]interface{}) *RecUpdate {
 }
 
 // SetSource sets the "source" field.
-func (ru *RecUpdate) SetSource(b []byte) *RecUpdate {
-	ru.mutation.SetSource(b)
+func (ru *RecUpdate) SetSource(s string) *RecUpdate {
+	ru.mutation.SetSource(s)
+	return ru
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (ru *RecUpdate) SetNillableSource(s *string) *RecUpdate {
+	if s != nil {
+		ru.SetSource(*s)
+	}
 	return ru
 }
 
 // ClearSource clears the value of the "source" field.
 func (ru *RecUpdate) ClearSource() *RecUpdate {
 	ru.mutation.ClearSource()
+	return ru
+}
+
+// SetSourceID sets the "source_id" field.
+func (ru *RecUpdate) SetSourceID(s string) *RecUpdate {
+	ru.mutation.SetSourceID(s)
+	return ru
+}
+
+// SetNillableSourceID sets the "source_id" field if the given value is not nil.
+func (ru *RecUpdate) SetNillableSourceID(s *string) *RecUpdate {
+	if s != nil {
+		ru.SetSourceID(*s)
+	}
+	return ru
+}
+
+// ClearSourceID clears the value of the "source_id" field.
+func (ru *RecUpdate) ClearSourceID() *RecUpdate {
+	ru.mutation.ClearSourceID()
+	return ru
+}
+
+// SetSourceFormat sets the "source_format" field.
+func (ru *RecUpdate) SetSourceFormat(s string) *RecUpdate {
+	ru.mutation.SetSourceFormat(s)
+	return ru
+}
+
+// SetNillableSourceFormat sets the "source_format" field if the given value is not nil.
+func (ru *RecUpdate) SetNillableSourceFormat(s *string) *RecUpdate {
+	if s != nil {
+		ru.SetSourceFormat(*s)
+	}
+	return ru
+}
+
+// ClearSourceFormat clears the value of the "source_format" field.
+func (ru *RecUpdate) ClearSourceFormat() *RecUpdate {
+	ru.mutation.ClearSourceFormat()
+	return ru
+}
+
+// SetSourceMetadata sets the "source_metadata" field.
+func (ru *RecUpdate) SetSourceMetadata(b []byte) *RecUpdate {
+	ru.mutation.SetSourceMetadata(b)
+	return ru
+}
+
+// ClearSourceMetadata clears the value of the "source_metadata" field.
+func (ru *RecUpdate) ClearSourceMetadata() *RecUpdate {
+	ru.mutation.ClearSourceMetadata()
 	return ru
 }
 
@@ -212,13 +272,6 @@ func (ru *RecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: rec.FieldType,
 		})
 	}
-	if value, ok := ru.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: rec.FieldUpdatedAt,
-		})
-	}
 	if value, ok := ru.mutation.Metadata(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
@@ -228,15 +281,61 @@ func (ru *RecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.Source(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: rec.FieldSource,
 		})
 	}
 	if ru.mutation.SourceCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
+			Type:   field.TypeString,
 			Column: rec.FieldSource,
+		})
+	}
+	if value, ok := ru.mutation.SourceID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceID,
+		})
+	}
+	if ru.mutation.SourceIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: rec.FieldSourceID,
+		})
+	}
+	if value, ok := ru.mutation.SourceFormat(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceFormat,
+		})
+	}
+	if ru.mutation.SourceFormatCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: rec.FieldSourceFormat,
+		})
+	}
+	if value, ok := ru.mutation.SourceMetadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSourceMetadata,
+		})
+	}
+	if ru.mutation.SourceMetadataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Column: rec.FieldSourceMetadata,
+		})
+	}
+	if value, ok := ru.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: rec.FieldUpdatedAt,
 		})
 	}
 	if ru.mutation.RepresentationsCleared() {
@@ -331,14 +430,74 @@ func (ruo *RecUpdateOne) SetMetadata(m map[string]interface{}) *RecUpdateOne {
 }
 
 // SetSource sets the "source" field.
-func (ruo *RecUpdateOne) SetSource(b []byte) *RecUpdateOne {
-	ruo.mutation.SetSource(b)
+func (ruo *RecUpdateOne) SetSource(s string) *RecUpdateOne {
+	ruo.mutation.SetSource(s)
+	return ruo
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (ruo *RecUpdateOne) SetNillableSource(s *string) *RecUpdateOne {
+	if s != nil {
+		ruo.SetSource(*s)
+	}
 	return ruo
 }
 
 // ClearSource clears the value of the "source" field.
 func (ruo *RecUpdateOne) ClearSource() *RecUpdateOne {
 	ruo.mutation.ClearSource()
+	return ruo
+}
+
+// SetSourceID sets the "source_id" field.
+func (ruo *RecUpdateOne) SetSourceID(s string) *RecUpdateOne {
+	ruo.mutation.SetSourceID(s)
+	return ruo
+}
+
+// SetNillableSourceID sets the "source_id" field if the given value is not nil.
+func (ruo *RecUpdateOne) SetNillableSourceID(s *string) *RecUpdateOne {
+	if s != nil {
+		ruo.SetSourceID(*s)
+	}
+	return ruo
+}
+
+// ClearSourceID clears the value of the "source_id" field.
+func (ruo *RecUpdateOne) ClearSourceID() *RecUpdateOne {
+	ruo.mutation.ClearSourceID()
+	return ruo
+}
+
+// SetSourceFormat sets the "source_format" field.
+func (ruo *RecUpdateOne) SetSourceFormat(s string) *RecUpdateOne {
+	ruo.mutation.SetSourceFormat(s)
+	return ruo
+}
+
+// SetNillableSourceFormat sets the "source_format" field if the given value is not nil.
+func (ruo *RecUpdateOne) SetNillableSourceFormat(s *string) *RecUpdateOne {
+	if s != nil {
+		ruo.SetSourceFormat(*s)
+	}
+	return ruo
+}
+
+// ClearSourceFormat clears the value of the "source_format" field.
+func (ruo *RecUpdateOne) ClearSourceFormat() *RecUpdateOne {
+	ruo.mutation.ClearSourceFormat()
+	return ruo
+}
+
+// SetSourceMetadata sets the "source_metadata" field.
+func (ruo *RecUpdateOne) SetSourceMetadata(b []byte) *RecUpdateOne {
+	ruo.mutation.SetSourceMetadata(b)
+	return ruo
+}
+
+// ClearSourceMetadata clears the value of the "source_metadata" field.
+func (ruo *RecUpdateOne) ClearSourceMetadata() *RecUpdateOne {
+	ruo.mutation.ClearSourceMetadata()
 	return ruo
 }
 
@@ -520,13 +679,6 @@ func (ruo *RecUpdateOne) sqlSave(ctx context.Context) (_node *Rec, err error) {
 			Column: rec.FieldType,
 		})
 	}
-	if value, ok := ruo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: rec.FieldUpdatedAt,
-		})
-	}
 	if value, ok := ruo.mutation.Metadata(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
@@ -536,15 +688,61 @@ func (ruo *RecUpdateOne) sqlSave(ctx context.Context) (_node *Rec, err error) {
 	}
 	if value, ok := ruo.mutation.Source(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: rec.FieldSource,
 		})
 	}
 	if ruo.mutation.SourceCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
+			Type:   field.TypeString,
 			Column: rec.FieldSource,
+		})
+	}
+	if value, ok := ruo.mutation.SourceID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceID,
+		})
+	}
+	if ruo.mutation.SourceIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: rec.FieldSourceID,
+		})
+	}
+	if value, ok := ruo.mutation.SourceFormat(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceFormat,
+		})
+	}
+	if ruo.mutation.SourceFormatCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: rec.FieldSourceFormat,
+		})
+	}
+	if value, ok := ruo.mutation.SourceMetadata(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSourceMetadata,
+		})
+	}
+	if ruo.mutation.SourceMetadataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Column: rec.FieldSourceMetadata,
+		})
+	}
+	if value, ok := ruo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: rec.FieldUpdatedAt,
 		})
 	}
 	if ruo.mutation.RepresentationsCleared() {

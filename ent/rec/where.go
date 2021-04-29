@@ -108,6 +108,34 @@ func Type(v string) predicate.Rec {
 	})
 }
 
+// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
+func Source(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSource), v))
+	})
+}
+
+// SourceID applies equality check predicate on the "source_id" field. It's identical to SourceIDEQ.
+func SourceID(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceFormat applies equality check predicate on the "source_format" field. It's identical to SourceFormatEQ.
+func SourceFormat(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceMetadata applies equality check predicate on the "source_metadata" field. It's identical to SourceMetadataEQ.
+func SourceMetadata(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceMetadata), v))
+	})
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
@@ -119,13 +147,6 @@ func CreatedAt(v time.Time) predicate.Rec {
 func UpdatedAt(v time.Time) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
-	})
-}
-
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSource), v))
 	})
 }
 
@@ -351,6 +372,471 @@ func TypeContainsFold(v string) predicate.Rec {
 	})
 }
 
+// SourceEQ applies the EQ predicate on the "source" field.
+func SourceEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSource), v))
+	})
+}
+
+// SourceNEQ applies the NEQ predicate on the "source" field.
+func SourceNEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSource), v))
+	})
+}
+
+// SourceIn applies the In predicate on the "source" field.
+func SourceIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldSource), v...))
+	})
+}
+
+// SourceNotIn applies the NotIn predicate on the "source" field.
+func SourceNotIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldSource), v...))
+	})
+}
+
+// SourceGT applies the GT predicate on the "source" field.
+func SourceGT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSource), v))
+	})
+}
+
+// SourceGTE applies the GTE predicate on the "source" field.
+func SourceGTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSource), v))
+	})
+}
+
+// SourceLT applies the LT predicate on the "source" field.
+func SourceLT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSource), v))
+	})
+}
+
+// SourceLTE applies the LTE predicate on the "source" field.
+func SourceLTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSource), v))
+	})
+}
+
+// SourceContains applies the Contains predicate on the "source" field.
+func SourceContains(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSource), v))
+	})
+}
+
+// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
+func SourceHasPrefix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSource), v))
+	})
+}
+
+// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
+func SourceHasSuffix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSource), v))
+	})
+}
+
+// SourceIsNil applies the IsNil predicate on the "source" field.
+func SourceIsNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSource)))
+	})
+}
+
+// SourceNotNil applies the NotNil predicate on the "source" field.
+func SourceNotNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSource)))
+	})
+}
+
+// SourceEqualFold applies the EqualFold predicate on the "source" field.
+func SourceEqualFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSource), v))
+	})
+}
+
+// SourceContainsFold applies the ContainsFold predicate on the "source" field.
+func SourceContainsFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSource), v))
+	})
+}
+
+// SourceIDEQ applies the EQ predicate on the "source_id" field.
+func SourceIDEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDNEQ applies the NEQ predicate on the "source_id" field.
+func SourceIDNEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDIn applies the In predicate on the "source_id" field.
+func SourceIDIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldSourceID), v...))
+	})
+}
+
+// SourceIDNotIn applies the NotIn predicate on the "source_id" field.
+func SourceIDNotIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldSourceID), v...))
+	})
+}
+
+// SourceIDGT applies the GT predicate on the "source_id" field.
+func SourceIDGT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDGTE applies the GTE predicate on the "source_id" field.
+func SourceIDGTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDLT applies the LT predicate on the "source_id" field.
+func SourceIDLT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDLTE applies the LTE predicate on the "source_id" field.
+func SourceIDLTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDContains applies the Contains predicate on the "source_id" field.
+func SourceIDContains(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDHasPrefix applies the HasPrefix predicate on the "source_id" field.
+func SourceIDHasPrefix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDHasSuffix applies the HasSuffix predicate on the "source_id" field.
+func SourceIDHasSuffix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDIsNil applies the IsNil predicate on the "source_id" field.
+func SourceIDIsNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSourceID)))
+	})
+}
+
+// SourceIDNotNil applies the NotNil predicate on the "source_id" field.
+func SourceIDNotNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSourceID)))
+	})
+}
+
+// SourceIDEqualFold applies the EqualFold predicate on the "source_id" field.
+func SourceIDEqualFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceIDContainsFold applies the ContainsFold predicate on the "source_id" field.
+func SourceIDContainsFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSourceID), v))
+	})
+}
+
+// SourceFormatEQ applies the EQ predicate on the "source_format" field.
+func SourceFormatEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatNEQ applies the NEQ predicate on the "source_format" field.
+func SourceFormatNEQ(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatIn applies the In predicate on the "source_format" field.
+func SourceFormatIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldSourceFormat), v...))
+	})
+}
+
+// SourceFormatNotIn applies the NotIn predicate on the "source_format" field.
+func SourceFormatNotIn(vs ...string) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldSourceFormat), v...))
+	})
+}
+
+// SourceFormatGT applies the GT predicate on the "source_format" field.
+func SourceFormatGT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatGTE applies the GTE predicate on the "source_format" field.
+func SourceFormatGTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatLT applies the LT predicate on the "source_format" field.
+func SourceFormatLT(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatLTE applies the LTE predicate on the "source_format" field.
+func SourceFormatLTE(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatContains applies the Contains predicate on the "source_format" field.
+func SourceFormatContains(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatHasPrefix applies the HasPrefix predicate on the "source_format" field.
+func SourceFormatHasPrefix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatHasSuffix applies the HasSuffix predicate on the "source_format" field.
+func SourceFormatHasSuffix(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatIsNil applies the IsNil predicate on the "source_format" field.
+func SourceFormatIsNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSourceFormat)))
+	})
+}
+
+// SourceFormatNotNil applies the NotNil predicate on the "source_format" field.
+func SourceFormatNotNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSourceFormat)))
+	})
+}
+
+// SourceFormatEqualFold applies the EqualFold predicate on the "source_format" field.
+func SourceFormatEqualFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceFormatContainsFold applies the ContainsFold predicate on the "source_format" field.
+func SourceFormatContainsFold(v string) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSourceFormat), v))
+	})
+}
+
+// SourceMetadataEQ applies the EQ predicate on the "source_metadata" field.
+func SourceMetadataEQ(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataNEQ applies the NEQ predicate on the "source_metadata" field.
+func SourceMetadataNEQ(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataIn applies the In predicate on the "source_metadata" field.
+func SourceMetadataIn(vs ...[]byte) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldSourceMetadata), v...))
+	})
+}
+
+// SourceMetadataNotIn applies the NotIn predicate on the "source_metadata" field.
+func SourceMetadataNotIn(vs ...[]byte) predicate.Rec {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Rec(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldSourceMetadata), v...))
+	})
+}
+
+// SourceMetadataGT applies the GT predicate on the "source_metadata" field.
+func SourceMetadataGT(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataGTE applies the GTE predicate on the "source_metadata" field.
+func SourceMetadataGTE(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataLT applies the LT predicate on the "source_metadata" field.
+func SourceMetadataLT(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataLTE applies the LTE predicate on the "source_metadata" field.
+func SourceMetadataLTE(v []byte) predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSourceMetadata), v))
+	})
+}
+
+// SourceMetadataIsNil applies the IsNil predicate on the "source_metadata" field.
+func SourceMetadataIsNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSourceMetadata)))
+	})
+}
+
+// SourceMetadataNotNil applies the NotNil predicate on the "source_metadata" field.
+func SourceMetadataNotNil() predicate.Rec {
+	return predicate.Rec(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSourceMetadata)))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
@@ -500,96 +986,6 @@ func UpdatedAtLT(v time.Time) predicate.Rec {
 func UpdatedAtLTE(v time.Time) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
-	})
-}
-
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSource), v))
-	})
-}
-
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldSource), v))
-	})
-}
-
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...[]byte) predicate.Rec {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Rec(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldSource), v...))
-	})
-}
-
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...[]byte) predicate.Rec {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Rec(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldSource), v...))
-	})
-}
-
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldSource), v))
-	})
-}
-
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldSource), v))
-	})
-}
-
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldSource), v))
-	})
-}
-
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v []byte) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldSource), v))
-	})
-}
-
-// SourceIsNil applies the IsNil predicate on the "source" field.
-func SourceIsNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSource)))
-	})
-}
-
-// SourceNotNil applies the NotNil predicate on the "source" field.
-func SourceNotNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSource)))
 	})
 }
 

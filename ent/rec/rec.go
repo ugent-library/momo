@@ -17,14 +17,20 @@ const (
 	FieldCollection = "collection"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
 	// FieldSource holds the string denoting the source field in the database.
 	FieldSource = "source"
+	// FieldSourceID holds the string denoting the source_id field in the database.
+	FieldSourceID = "source_id"
+	// FieldSourceFormat holds the string denoting the source_format field in the database.
+	FieldSourceFormat = "source_format"
+	// FieldSourceMetadata holds the string denoting the source_metadata field in the database.
+	FieldSourceMetadata = "source_metadata"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeRepresentations holds the string denoting the representations edge name in mutations.
 	EdgeRepresentations = "representations"
 	// Table holds the table name of the rec in the database.
@@ -43,10 +49,13 @@ var Columns = []string{
 	FieldID,
 	FieldCollection,
 	FieldType,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 	FieldMetadata,
 	FieldSource,
+	FieldSourceID,
+	FieldSourceFormat,
+	FieldSourceMetadata,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

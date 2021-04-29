@@ -34,6 +34,60 @@ func (rc *RecCreate) SetType(s string) *RecCreate {
 	return rc
 }
 
+// SetMetadata sets the "metadata" field.
+func (rc *RecCreate) SetMetadata(m map[string]interface{}) *RecCreate {
+	rc.mutation.SetMetadata(m)
+	return rc
+}
+
+// SetSource sets the "source" field.
+func (rc *RecCreate) SetSource(s string) *RecCreate {
+	rc.mutation.SetSource(s)
+	return rc
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (rc *RecCreate) SetNillableSource(s *string) *RecCreate {
+	if s != nil {
+		rc.SetSource(*s)
+	}
+	return rc
+}
+
+// SetSourceID sets the "source_id" field.
+func (rc *RecCreate) SetSourceID(s string) *RecCreate {
+	rc.mutation.SetSourceID(s)
+	return rc
+}
+
+// SetNillableSourceID sets the "source_id" field if the given value is not nil.
+func (rc *RecCreate) SetNillableSourceID(s *string) *RecCreate {
+	if s != nil {
+		rc.SetSourceID(*s)
+	}
+	return rc
+}
+
+// SetSourceFormat sets the "source_format" field.
+func (rc *RecCreate) SetSourceFormat(s string) *RecCreate {
+	rc.mutation.SetSourceFormat(s)
+	return rc
+}
+
+// SetNillableSourceFormat sets the "source_format" field if the given value is not nil.
+func (rc *RecCreate) SetNillableSourceFormat(s *string) *RecCreate {
+	if s != nil {
+		rc.SetSourceFormat(*s)
+	}
+	return rc
+}
+
+// SetSourceMetadata sets the "source_metadata" field.
+func (rc *RecCreate) SetSourceMetadata(b []byte) *RecCreate {
+	rc.mutation.SetSourceMetadata(b)
+	return rc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (rc *RecCreate) SetCreatedAt(t time.Time) *RecCreate {
 	rc.mutation.SetCreatedAt(t)
@@ -59,18 +113,6 @@ func (rc *RecCreate) SetNillableUpdatedAt(t *time.Time) *RecCreate {
 	if t != nil {
 		rc.SetUpdatedAt(*t)
 	}
-	return rc
-}
-
-// SetMetadata sets the "metadata" field.
-func (rc *RecCreate) SetMetadata(m map[string]interface{}) *RecCreate {
-	rc.mutation.SetMetadata(m)
-	return rc
-}
-
-// SetSource sets the "source" field.
-func (rc *RecCreate) SetSource(b []byte) *RecCreate {
-	rc.mutation.SetSource(b)
 	return rc
 }
 
@@ -179,14 +221,14 @@ func (rc *RecCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
 	}
+	if _, ok := rc.mutation.Metadata(); !ok {
+		return &ValidationError{Name: "metadata", err: errors.New("ent: missing required field \"metadata\"")}
+	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
 	}
 	if _, ok := rc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New("ent: missing required field \"updated_at\"")}
-	}
-	if _, ok := rc.mutation.Metadata(); !ok {
-		return &ValidationError{Name: "metadata", err: errors.New("ent: missing required field \"metadata\"")}
 	}
 	return nil
 }
@@ -233,6 +275,46 @@ func (rc *RecCreate) createSpec() (*Rec, *sqlgraph.CreateSpec) {
 		})
 		_node.Type = value
 	}
+	if value, ok := rc.mutation.Metadata(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: rec.FieldMetadata,
+		})
+		_node.Metadata = value
+	}
+	if value, ok := rc.mutation.Source(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSource,
+		})
+		_node.Source = value
+	}
+	if value, ok := rc.mutation.SourceID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceID,
+		})
+		_node.SourceID = value
+	}
+	if value, ok := rc.mutation.SourceFormat(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: rec.FieldSourceFormat,
+		})
+		_node.SourceFormat = value
+	}
+	if value, ok := rc.mutation.SourceMetadata(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: rec.FieldSourceMetadata,
+		})
+		_node.SourceMetadata = value
+	}
 	if value, ok := rc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -248,22 +330,6 @@ func (rc *RecCreate) createSpec() (*Rec, *sqlgraph.CreateSpec) {
 			Column: rec.FieldUpdatedAt,
 		})
 		_node.UpdatedAt = value
-	}
-	if value, ok := rc.mutation.Metadata(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: rec.FieldMetadata,
-		})
-		_node.Metadata = value
-	}
-	if value, ok := rc.mutation.Source(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBytes,
-			Value:  value,
-			Column: rec.FieldSource,
-		})
-		_node.Source = value
 	}
 	if nodes := rc.mutation.RepresentationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
