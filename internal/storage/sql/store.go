@@ -11,6 +11,7 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/ugent-library/momo/ent"
 	"github.com/ugent-library/momo/ent/migrate"
 	entrec "github.com/ugent-library/momo/ent/rec"
@@ -42,6 +43,9 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 		Query().
 		Where(entrec.ID(uuid.MustParse(id))).
 		Only(context.Background())
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -97,25 +101,77 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 
 // ent: support upsert
 func (s *store) AddRec(rec *engine.Rec) error {
-	r, err := s.client.Rec.
-		Create().
-		SetID(uuid.MustParse(rec.ID)).
-		SetCollection(rec.Collection).
-		SetType(rec.Type).
-		SetMetadata(rec.Metadata).
-		SetSource(rec.Source).
-		SetSourceID(rec.SourceID).
-		SetSourceFormat(rec.SourceFormat).
-		SetSourceMetadata(rec.SourceMetadata).
-		Save(context.Background())
-	if err != nil {
-		return err
-	}
+	ctx := context.Background()
 
-	rec.CreatedAt = r.CreatedAt
-	rec.UpdatedAt = r.UpdatedAt
+	return s.withTx(ctx, func(tx *ent.Tx) error {
+		client := tx.Client()
 
-	return nil
+		r, err := s.client.Rec.UpdateOneID(uuid.MustParse(rec.ID)).
+			SetCollection(rec.Collection).
+			SetType(rec.Type).
+			SetMetadata(rec.Metadata).
+			SetSource(rec.Source).
+			SetSourceID(rec.SourceID).
+			SetSourceFormat(rec.SourceFormat).
+			SetSourceMetadata(rec.SourceMetadata).
+			Save(ctx)
+
+		if err == nil {
+			rec.CreatedAt = r.CreatedAt
+			rec.UpdatedAt = r.UpdatedAt
+			return nil
+		}
+
+		if !ent.IsNotFound(err) {
+			return err
+		}
+
+		if rec.Source != "" && rec.SourceID != "" {
+			r, err = client.Rec.Query().
+				Where(
+					entrec.Source(rec.Source),
+					entrec.SourceID(rec.SourceID),
+				).Only(ctx)
+
+			if err == nil {
+				r, err = r.Update().
+					SetCollection(rec.Collection).
+					SetType(rec.Type).
+					SetMetadata(rec.Metadata).
+					SetSourceFormat(rec.SourceFormat).
+					SetSourceMetadata(rec.SourceMetadata).
+					Save(ctx)
+
+				rec.CreatedAt = r.CreatedAt
+				rec.UpdatedAt = r.UpdatedAt
+				return nil
+			}
+
+			if !ent.IsNotFound(err) {
+				return err
+			}
+		}
+
+		r, err = client.Rec.Create().
+			SetID(uuid.MustParse(rec.ID)).
+			SetCollection(rec.Collection).
+			SetType(rec.Type).
+			SetMetadata(rec.Metadata).
+			SetSource(rec.Source).
+			SetSourceID(rec.SourceID).
+			SetSourceFormat(rec.SourceFormat).
+			SetSourceMetadata(rec.SourceMetadata).
+			Save(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		rec.CreatedAt = r.CreatedAt
+		rec.UpdatedAt = r.UpdatedAt
+
+		return nil
+	})
 }
 
 func (s *store) GetRepresentation(recID, format string) (*engine.Representation, error) {
@@ -161,4 +217,27 @@ func (s *store) Reset() error {
 		}
 	}
 	return s.client.Schema.Create(context.Background())
+}
+
+func (s *store) withTx(ctx context.Context, fn func(tx *ent.Tx) error) error {
+	tx, err := s.client.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if v := recover(); v != nil {
+			tx.Rollback()
+			panic(v)
+		}
+	}()
+	if err := fn(tx); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			err = errors.Wrapf(err, "rolling back transaction: %v", rerr)
+		}
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return errors.Wrapf(err, "committing transaction: %v", err)
+	}
+	return nil
 }
