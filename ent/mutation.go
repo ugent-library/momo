@@ -38,7 +38,6 @@ type RecMutation struct {
 	collection             *string
 	_type                  *string
 	metadata               *map[string]interface{}
-	source                 *string
 	source_id              *string
 	source_format          *string
 	source_metadata        *[]byte
@@ -246,55 +245,6 @@ func (m *RecMutation) ResetMetadata() {
 	m.metadata = nil
 }
 
-// SetSource sets the "source" field.
-func (m *RecMutation) SetSource(s string) {
-	m.source = &s
-}
-
-// Source returns the value of the "source" field in the mutation.
-func (m *RecMutation) Source() (r string, exists bool) {
-	v := m.source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSource returns the old "source" field's value of the Rec entity.
-// If the Rec object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RecMutation) OldSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
-	}
-	return oldValue.Source, nil
-}
-
-// ClearSource clears the value of the "source" field.
-func (m *RecMutation) ClearSource() {
-	m.source = nil
-	m.clearedFields[rec.FieldSource] = struct{}{}
-}
-
-// SourceCleared returns if the "source" field was cleared in this mutation.
-func (m *RecMutation) SourceCleared() bool {
-	_, ok := m.clearedFields[rec.FieldSource]
-	return ok
-}
-
-// ResetSource resets all changes to the "source" field.
-func (m *RecMutation) ResetSource() {
-	m.source = nil
-	delete(m.clearedFields, rec.FieldSource)
-}
-
 // SetSourceID sets the "source_id" field.
 func (m *RecMutation) SetSourceID(s string) {
 	m.source_id = &s
@@ -326,22 +276,9 @@ func (m *RecMutation) OldSourceID(ctx context.Context) (v string, err error) {
 	return oldValue.SourceID, nil
 }
 
-// ClearSourceID clears the value of the "source_id" field.
-func (m *RecMutation) ClearSourceID() {
-	m.source_id = nil
-	m.clearedFields[rec.FieldSourceID] = struct{}{}
-}
-
-// SourceIDCleared returns if the "source_id" field was cleared in this mutation.
-func (m *RecMutation) SourceIDCleared() bool {
-	_, ok := m.clearedFields[rec.FieldSourceID]
-	return ok
-}
-
 // ResetSourceID resets all changes to the "source_id" field.
 func (m *RecMutation) ResetSourceID() {
 	m.source_id = nil
-	delete(m.clearedFields, rec.FieldSourceID)
 }
 
 // SetSourceFormat sets the "source_format" field.
@@ -581,7 +518,7 @@ func (m *RecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RecMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.collection != nil {
 		fields = append(fields, rec.FieldCollection)
 	}
@@ -590,9 +527,6 @@ func (m *RecMutation) Fields() []string {
 	}
 	if m.metadata != nil {
 		fields = append(fields, rec.FieldMetadata)
-	}
-	if m.source != nil {
-		fields = append(fields, rec.FieldSource)
 	}
 	if m.source_id != nil {
 		fields = append(fields, rec.FieldSourceID)
@@ -623,8 +557,6 @@ func (m *RecMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case rec.FieldMetadata:
 		return m.Metadata()
-	case rec.FieldSource:
-		return m.Source()
 	case rec.FieldSourceID:
 		return m.SourceID()
 	case rec.FieldSourceFormat:
@@ -650,8 +582,6 @@ func (m *RecMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldType(ctx)
 	case rec.FieldMetadata:
 		return m.OldMetadata(ctx)
-	case rec.FieldSource:
-		return m.OldSource(ctx)
 	case rec.FieldSourceID:
 		return m.OldSourceID(ctx)
 	case rec.FieldSourceFormat:
@@ -691,13 +621,6 @@ func (m *RecMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMetadata(v)
-		return nil
-	case rec.FieldSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSource(v)
 		return nil
 	case rec.FieldSourceID:
 		v, ok := value.(string)
@@ -764,12 +687,6 @@ func (m *RecMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *RecMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(rec.FieldSource) {
-		fields = append(fields, rec.FieldSource)
-	}
-	if m.FieldCleared(rec.FieldSourceID) {
-		fields = append(fields, rec.FieldSourceID)
-	}
 	if m.FieldCleared(rec.FieldSourceFormat) {
 		fields = append(fields, rec.FieldSourceFormat)
 	}
@@ -790,12 +707,6 @@ func (m *RecMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *RecMutation) ClearField(name string) error {
 	switch name {
-	case rec.FieldSource:
-		m.ClearSource()
-		return nil
-	case rec.FieldSourceID:
-		m.ClearSourceID()
-		return nil
 	case rec.FieldSourceFormat:
 		m.ClearSourceFormat()
 		return nil
@@ -818,9 +729,6 @@ func (m *RecMutation) ResetField(name string) error {
 		return nil
 	case rec.FieldMetadata:
 		m.ResetMetadata()
-		return nil
-	case rec.FieldSource:
-		m.ResetSource()
 		return nil
 	case rec.FieldSourceID:
 		m.ResetSourceID()

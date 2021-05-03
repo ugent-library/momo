@@ -108,13 +108,6 @@ func Type(v string) predicate.Rec {
 	})
 }
 
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSource), v))
-	})
-}
-
 // SourceID applies equality check predicate on the "source_id" field. It's identical to SourceIDEQ.
 func SourceID(v string) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
@@ -372,131 +365,6 @@ func TypeContainsFold(v string) predicate.Rec {
 	})
 }
 
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSource), v))
-	})
-}
-
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldSource), v))
-	})
-}
-
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.Rec {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Rec(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldSource), v...))
-	})
-}
-
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.Rec {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Rec(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldSource), v...))
-	})
-}
-
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldSource), v))
-	})
-}
-
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldSource), v))
-	})
-}
-
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldSource), v))
-	})
-}
-
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldSource), v))
-	})
-}
-
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldSource), v))
-	})
-}
-
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldSource), v))
-	})
-}
-
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldSource), v))
-	})
-}
-
-// SourceIsNil applies the IsNil predicate on the "source" field.
-func SourceIsNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSource)))
-	})
-}
-
-// SourceNotNil applies the NotNil predicate on the "source" field.
-func SourceNotNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSource)))
-	})
-}
-
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldSource), v))
-	})
-}
-
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldSource), v))
-	})
-}
-
 // SourceIDEQ applies the EQ predicate on the "source_id" field.
 func SourceIDEQ(v string) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
@@ -591,20 +459,6 @@ func SourceIDHasPrefix(v string) predicate.Rec {
 func SourceIDHasSuffix(v string) predicate.Rec {
 	return predicate.Rec(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldSourceID), v))
-	})
-}
-
-// SourceIDIsNil applies the IsNil predicate on the "source_id" field.
-func SourceIDIsNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSourceID)))
-	})
-}
-
-// SourceIDNotNil applies the NotNil predicate on the "source_id" field.
-func SourceIDNotNil() predicate.Rec {
-	return predicate.Rec(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSourceID)))
 	})
 }
 

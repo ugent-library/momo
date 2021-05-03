@@ -130,7 +130,7 @@ var recAddCmd = &cobra.Command{
 			go addFile(f)
 		}
 
-		e.AddRecs(c)
+		e.AddRecsBySourceID(c)
 
 		if verbose {
 			p.done()

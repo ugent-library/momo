@@ -19,8 +19,6 @@ const (
 	FieldType = "type"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
 	// FieldSourceID holds the string denoting the source_id field in the database.
 	FieldSourceID = "source_id"
 	// FieldSourceFormat holds the string denoting the source_format field in the database.
@@ -50,7 +48,6 @@ var Columns = []string{
 	FieldCollection,
 	FieldType,
 	FieldMetadata,
-	FieldSource,
 	FieldSourceID,
 	FieldSourceFormat,
 	FieldSourceMetadata,
@@ -73,6 +70,8 @@ var (
 	CollectionValidator func(string) error
 	// TypeValidator is a validator for the "type" field. It is called by the builders before save.
 	TypeValidator func(string) error
+	// SourceIDValidator is a validator for the "source_id" field. It is called by the builders before save.
+	SourceIDValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

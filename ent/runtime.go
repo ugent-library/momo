@@ -25,12 +25,16 @@ func init() {
 	recDescType := recFields[2].Descriptor()
 	// rec.TypeValidator is a validator for the "type" field. It is called by the builders before save.
 	rec.TypeValidator = recDescType.Validators[0].(func(string) error)
+	// recDescSourceID is the schema descriptor for source_id field.
+	recDescSourceID := recFields[4].Descriptor()
+	// rec.SourceIDValidator is a validator for the "source_id" field. It is called by the builders before save.
+	rec.SourceIDValidator = recDescSourceID.Validators[0].(func(string) error)
 	// recDescCreatedAt is the schema descriptor for created_at field.
-	recDescCreatedAt := recFields[8].Descriptor()
+	recDescCreatedAt := recFields[7].Descriptor()
 	// rec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	rec.DefaultCreatedAt = recDescCreatedAt.Default.(func() time.Time)
 	// recDescUpdatedAt is the schema descriptor for updated_at field.
-	recDescUpdatedAt := recFields[9].Descriptor()
+	recDescUpdatedAt := recFields[8].Descriptor()
 	// rec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	rec.DefaultUpdatedAt = recDescUpdatedAt.Default.(func() time.Time)
 	// rec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

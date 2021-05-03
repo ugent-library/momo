@@ -41,6 +41,9 @@
                 "type": {
                     "type": "keyword"
                 },
+                "source_id": {
+                    "type": "keyword"
+                },
                 "createdAt": {
                     "type": "date"
                 },

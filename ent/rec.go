@@ -24,8 +24,6 @@ type Rec struct {
 	Type string `json:"type,omitempty"`
 	// Metadata holds the value of the "metadata" field.
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
 	// SourceID holds the value of the "source_id" field.
 	SourceID string `json:"source_id,omitempty"`
 	// SourceFormat holds the value of the "source_format" field.
@@ -66,7 +64,7 @@ func (*Rec) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case rec.FieldMetadata, rec.FieldSourceMetadata:
 			values[i] = new([]byte)
-		case rec.FieldCollection, rec.FieldType, rec.FieldSource, rec.FieldSourceID, rec.FieldSourceFormat:
+		case rec.FieldCollection, rec.FieldType, rec.FieldSourceID, rec.FieldSourceFormat:
 			values[i] = new(sql.NullString)
 		case rec.FieldCreatedAt, rec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -113,12 +111,6 @@ func (r *Rec) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &r.Metadata); err != nil {
 					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
-			}
-		case rec.FieldSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
-			} else if value.Valid {
-				r.Source = value.String
 			}
 		case rec.FieldSourceID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,8 +181,6 @@ func (r *Rec) String() string {
 	builder.WriteString(r.Type)
 	builder.WriteString(", metadata=")
 	builder.WriteString(fmt.Sprintf("%v", r.Metadata))
-	builder.WriteString(", source=")
-	builder.WriteString(r.Source)
 	builder.WriteString(", source_id=")
 	builder.WriteString(r.SourceID)
 	builder.WriteString(", source_format=")

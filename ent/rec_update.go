@@ -46,43 +46,9 @@ func (ru *RecUpdate) SetMetadata(m map[string]interface{}) *RecUpdate {
 	return ru
 }
 
-// SetSource sets the "source" field.
-func (ru *RecUpdate) SetSource(s string) *RecUpdate {
-	ru.mutation.SetSource(s)
-	return ru
-}
-
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (ru *RecUpdate) SetNillableSource(s *string) *RecUpdate {
-	if s != nil {
-		ru.SetSource(*s)
-	}
-	return ru
-}
-
-// ClearSource clears the value of the "source" field.
-func (ru *RecUpdate) ClearSource() *RecUpdate {
-	ru.mutation.ClearSource()
-	return ru
-}
-
 // SetSourceID sets the "source_id" field.
 func (ru *RecUpdate) SetSourceID(s string) *RecUpdate {
 	ru.mutation.SetSourceID(s)
-	return ru
-}
-
-// SetNillableSourceID sets the "source_id" field if the given value is not nil.
-func (ru *RecUpdate) SetNillableSourceID(s *string) *RecUpdate {
-	if s != nil {
-		ru.SetSourceID(*s)
-	}
-	return ru
-}
-
-// ClearSourceID clears the value of the "source_id" field.
-func (ru *RecUpdate) ClearSourceID() *RecUpdate {
-	ru.mutation.ClearSourceID()
 	return ru
 }
 
@@ -237,6 +203,11 @@ func (ru *RecUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
 	}
+	if v, ok := ru.mutation.SourceID(); ok {
+		if err := rec.SourceIDValidator(v); err != nil {
+			return &ValidationError{Name: "source_id", err: fmt.Errorf("ent: validator failed for field \"source_id\": %w", err)}
+		}
+	}
 	return nil
 }
 
@@ -279,29 +250,10 @@ func (ru *RecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: rec.FieldMetadata,
 		})
 	}
-	if value, ok := ru.mutation.Source(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: rec.FieldSource,
-		})
-	}
-	if ru.mutation.SourceCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: rec.FieldSource,
-		})
-	}
 	if value, ok := ru.mutation.SourceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: rec.FieldSourceID,
-		})
-	}
-	if ru.mutation.SourceIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
 			Column: rec.FieldSourceID,
 		})
 	}
@@ -429,43 +381,9 @@ func (ruo *RecUpdateOne) SetMetadata(m map[string]interface{}) *RecUpdateOne {
 	return ruo
 }
 
-// SetSource sets the "source" field.
-func (ruo *RecUpdateOne) SetSource(s string) *RecUpdateOne {
-	ruo.mutation.SetSource(s)
-	return ruo
-}
-
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (ruo *RecUpdateOne) SetNillableSource(s *string) *RecUpdateOne {
-	if s != nil {
-		ruo.SetSource(*s)
-	}
-	return ruo
-}
-
-// ClearSource clears the value of the "source" field.
-func (ruo *RecUpdateOne) ClearSource() *RecUpdateOne {
-	ruo.mutation.ClearSource()
-	return ruo
-}
-
 // SetSourceID sets the "source_id" field.
 func (ruo *RecUpdateOne) SetSourceID(s string) *RecUpdateOne {
 	ruo.mutation.SetSourceID(s)
-	return ruo
-}
-
-// SetNillableSourceID sets the "source_id" field if the given value is not nil.
-func (ruo *RecUpdateOne) SetNillableSourceID(s *string) *RecUpdateOne {
-	if s != nil {
-		ruo.SetSourceID(*s)
-	}
-	return ruo
-}
-
-// ClearSourceID clears the value of the "source_id" field.
-func (ruo *RecUpdateOne) ClearSourceID() *RecUpdateOne {
-	ruo.mutation.ClearSourceID()
 	return ruo
 }
 
@@ -627,6 +545,11 @@ func (ruo *RecUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
 		}
 	}
+	if v, ok := ruo.mutation.SourceID(); ok {
+		if err := rec.SourceIDValidator(v); err != nil {
+			return &ValidationError{Name: "source_id", err: fmt.Errorf("ent: validator failed for field \"source_id\": %w", err)}
+		}
+	}
 	return nil
 }
 
@@ -686,29 +609,10 @@ func (ruo *RecUpdateOne) sqlSave(ctx context.Context) (_node *Rec, err error) {
 			Column: rec.FieldMetadata,
 		})
 	}
-	if value, ok := ruo.mutation.Source(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: rec.FieldSource,
-		})
-	}
-	if ruo.mutation.SourceCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: rec.FieldSource,
-		})
-	}
 	if value, ok := ruo.mutation.SourceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: rec.FieldSourceID,
-		})
-	}
-	if ruo.mutation.SourceIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
 			Column: rec.FieldSourceID,
 		})
 	}

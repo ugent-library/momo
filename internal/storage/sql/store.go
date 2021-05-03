@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -50,7 +51,6 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 		Collection:     r.Collection,
 		Type:           r.Type,
 		Metadata:       r.Metadata,
-		Source:         r.Source,
 		SourceID:       r.SourceID,
 		SourceFormat:   r.SourceFormat,
 		SourceMetadata: r.SourceMetadata,
@@ -62,7 +62,7 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 
 // ent: https://github.com/ent/ent/issues/215
 func (s *store) EachRec(fn func(*engine.Rec) bool) error {
-	rows, err := s.db.Query("SELECT id, collection, type, metadata, source, source_id, source_format, source_metadata, created_at, updated_at FROM recs")
+	rows, err := s.db.Query("SELECT id, collection, type, metadata, source_id, source_format, source_metadata, created_at, updated_at FROM recs")
 
 	defer rows.Close()
 
@@ -74,7 +74,6 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 			&rec.Collection,
 			&rec.Type,
 			&rawMetadata,
-			&rec.Source,
 			&rec.SourceID,
 			&rec.SourceFormat,
 			&rec.SourceMetadata,
@@ -95,6 +94,38 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 	return rows.Err()
 }
 
+func (s *store) AddRecBySourceID(rec *engine.Rec) error {
+	stmt := `INSERT INTO recs (id, collection, type, metadata, source_id, source_format, source_metadata, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	ON CONFLICT (source_id) DO
+   	UPDATE SET collection = $2, type = $3, metadata = $4, source_format = $6, source_metadata = $7, updated_at = $9
+	RETURNING id, created_at, updated_at`
+
+	metadata, err := json.Marshal(rec.Metadata)
+	if err != nil {
+		return err
+	}
+
+	var (
+		now       = time.Now()
+		id        string
+		createdAt time.Time
+		updatedAt time.Time
+	)
+
+	err = s.db.QueryRow(stmt, rec.ID, rec.Collection, rec.Type, metadata, rec.SourceID, rec.SourceFormat,
+		rec.SourceMetadata, now, now).Scan(&id, &createdAt, &updatedAt)
+	if err != nil {
+		return err
+	}
+
+	rec.ID = id
+	rec.CreatedAt = createdAt
+	rec.UpdatedAt = updatedAt
+
+	return nil
+}
+
 // ent: support upsert
 func (s *store) AddRec(rec *engine.Rec) error {
 	r, err := s.client.Rec.
@@ -103,7 +134,6 @@ func (s *store) AddRec(rec *engine.Rec) error {
 		SetCollection(rec.Collection).
 		SetType(rec.Type).
 		SetMetadata(rec.Metadata).
-		SetSource(rec.Source).
 		SetSourceID(rec.SourceID).
 		SetSourceFormat(rec.SourceFormat).
 		SetSourceMetadata(rec.SourceMetadata).

@@ -40,31 +40,9 @@ func (rc *RecCreate) SetMetadata(m map[string]interface{}) *RecCreate {
 	return rc
 }
 
-// SetSource sets the "source" field.
-func (rc *RecCreate) SetSource(s string) *RecCreate {
-	rc.mutation.SetSource(s)
-	return rc
-}
-
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (rc *RecCreate) SetNillableSource(s *string) *RecCreate {
-	if s != nil {
-		rc.SetSource(*s)
-	}
-	return rc
-}
-
 // SetSourceID sets the "source_id" field.
 func (rc *RecCreate) SetSourceID(s string) *RecCreate {
 	rc.mutation.SetSourceID(s)
-	return rc
-}
-
-// SetNillableSourceID sets the "source_id" field if the given value is not nil.
-func (rc *RecCreate) SetNillableSourceID(s *string) *RecCreate {
-	if s != nil {
-		rc.SetSourceID(*s)
-	}
 	return rc
 }
 
@@ -224,6 +202,14 @@ func (rc *RecCreate) check() error {
 	if _, ok := rc.mutation.Metadata(); !ok {
 		return &ValidationError{Name: "metadata", err: errors.New("ent: missing required field \"metadata\"")}
 	}
+	if _, ok := rc.mutation.SourceID(); !ok {
+		return &ValidationError{Name: "source_id", err: errors.New("ent: missing required field \"source_id\"")}
+	}
+	if v, ok := rc.mutation.SourceID(); ok {
+		if err := rec.SourceIDValidator(v); err != nil {
+			return &ValidationError{Name: "source_id", err: fmt.Errorf("ent: validator failed for field \"source_id\": %w", err)}
+		}
+	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
 	}
@@ -282,14 +268,6 @@ func (rc *RecCreate) createSpec() (*Rec, *sqlgraph.CreateSpec) {
 			Column: rec.FieldMetadata,
 		})
 		_node.Metadata = value
-	}
-	if value, ok := rc.mutation.Source(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: rec.FieldSource,
-		})
-		_node.Source = value
 	}
 	if value, ok := rc.mutation.SourceID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

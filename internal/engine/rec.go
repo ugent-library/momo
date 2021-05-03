@@ -6,8 +6,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type RecEngine interface {
@@ -16,7 +14,7 @@ type RecEngine interface {
 	SearchRecs(SearchArgs) (*RecHits, error)
 	SearchMoreRecs(string) (*RecHits, error)
 	SearchEachRec(SearchArgs, func(*Rec) bool) error
-	AddRecs(<-chan *Rec)
+	AddRecsBySourceID(<-chan *Rec)
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
@@ -27,8 +25,7 @@ type Rec struct {
 	Collection     string                 `json:"collection"`
 	Type           string                 `json:"type"`
 	Metadata       map[string]interface{} `json:"metadata"`
-	Source         string                 `json:"source,omitempty"`
-	SourceID       string                 `json:"source_id,omitempty"`
+	SourceID       string                 `json:"source_id"`
 	SourceFormat   string                 `json:"source_format,omitempty"`
 	SourceMetadata []byte                 `json:"source_metadata,omitempty"`
 	CreatedAt      time.Time              `json:"createdAt"`
@@ -85,7 +82,7 @@ func (e *engine) SearchEachRec(args SearchArgs, fn func(*Rec) bool) error {
 	return nil
 }
 
-func (e *engine) AddRecs(storeC <-chan *Rec) {
+func (e *engine) AddRecsBySourceID(storeC <-chan *Rec) {
 	var storeWG sync.WaitGroup
 	var indexWG sync.WaitGroup
 
@@ -105,10 +102,7 @@ func (e *engine) AddRecs(storeC <-chan *Rec) {
 		go func() {
 			defer storeWG.Done()
 			for r := range storeC {
-				if r.ID == "" {
-					r.ID = uuid.NewString()
-				}
-				err := e.store.AddRec(r)
+				err := e.store.AddRecBySourceID(r)
 				if err != nil {
 					log.Fatal(err)
 				}
