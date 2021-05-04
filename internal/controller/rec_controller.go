@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/json"
 	"html/template"
 	"log"
@@ -85,9 +86,15 @@ func (c *RecController) Search(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderSourceView(rec *engine.Rec) template.HTML {
-	var b strings.Builder
+	var out string
 
-	if rec.SourceFormat == "marcinjson" && rec.SourceMetadata != nil {
+	if rec.SourceMetadata == nil {
+		return template.HTML(out)
+	}
+
+	switch rec.SourceFormat {
+	case "marcinjson":
+		var b strings.Builder
 		marc := gjson.ParseBytes([]byte(rec.SourceMetadata))
 
 		b.WriteString(`<table class="table table-sm table-striped">`)
@@ -117,9 +124,17 @@ func renderSourceView(rec *engine.Rec) template.HTML {
 		})
 
 		b.WriteString(`</table>`)
+
+		out = b.String()
+	case "json":
+		var b bytes.Buffer
+		json.Indent(&b, rec.SourceMetadata, "", "\t")
+		out = "<code><pre>" + b.String() + "</pre></code>"
+	default:
+		out = "<code><pre>" + string(rec.SourceMetadata) + "</pre></code>"
 	}
 
-	return template.HTML(b.String())
+	return template.HTML(out)
 }
 
 func renderInternalView(rec *engine.Rec) template.HTML {
