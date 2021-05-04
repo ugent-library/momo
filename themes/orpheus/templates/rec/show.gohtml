@@ -63,7 +63,7 @@
         {{end}}
     </dl>
 
-    {{if .Yield.Rec.Source }}
+    {{if .Yield.Rec.SourceMetadata }}
     <h3>{{.Locale.Get "Librarian view"}}</h3>
     {{renderSourceView .Yield.Rec.Rec}}
     {{end}}
