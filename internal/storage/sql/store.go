@@ -62,30 +62,25 @@ func (s *store) GetRec(id string) (*engine.Rec, error) {
 
 // ent: https://github.com/ent/ent/issues/215
 func (s *store) EachRec(fn func(*engine.Rec) bool) error {
-	rows, err := s.db.Query("SELECT id, collection, type, metadata, source_id, source_format, source_metadata, created_at, updated_at FROM recs")
+	rows, err := s.db.Query(`SELECT id, collection, type, metadata, source_id, source_format, source_metadata, created_at, updated_at
+	FROM recs`)
 
 	defer rows.Close()
 
 	for rows.Next() {
 		var rec engine.Rec
 		var rawMetadata json.RawMessage
-		err = rows.Scan(
-			&rec.ID,
-			&rec.Collection,
-			&rec.Type,
-			&rawMetadata,
-			&rec.SourceID,
-			&rec.SourceFormat,
-			&rec.SourceMetadata,
-			&rec.CreatedAt,
-			&rec.UpdatedAt,
-		)
+
+		err = rows.Scan(&rec.ID, &rec.Collection, &rec.Type, &rawMetadata, &rec.SourceID, &rec.SourceFormat,
+			&rec.SourceMetadata, &rec.CreatedAt, &rec.UpdatedAt)
 		if err != nil {
 			return err
 		}
+
 		if err = json.Unmarshal(rawMetadata, &rec.Metadata); err != nil {
 			return err
 		}
+
 		if ok := fn(&rec); !ok {
 			return nil
 		}
@@ -94,6 +89,7 @@ func (s *store) EachRec(fn func(*engine.Rec) bool) error {
 	return rows.Err()
 }
 
+// ent: support upsert
 func (s *store) AddRecBySourceID(rec *engine.Rec) error {
 	stmt := `INSERT INTO recs (id, collection, type, metadata, source_id, source_format, source_metadata, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)

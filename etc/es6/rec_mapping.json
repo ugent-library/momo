@@ -41,7 +41,7 @@
                 "type": {
                     "type": "keyword"
                 },
-                "source_id": {
+                "sourceID": {
                     "type": "keyword"
                 },
                 "createdAt": {

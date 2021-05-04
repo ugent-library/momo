@@ -33,7 +33,7 @@ type esRec struct {
 	Collection string                 `json:"collection"`
 	Type       string                 `json:"type"`
 	Metadata   map[string]interface{} `json:"metadata"`
-	SourceID   string                 `json:"source_id,omitempty"`
+	SourceID   string                 `json:"sourceID,omitempty"`
 	CreatedAt  string                 `json:"createdAt"`
 	UpdatedAt  string                 `json:"updatedAt"`
 }

@@ -25,9 +25,9 @@ type Rec struct {
 	Collection     string                 `json:"collection"`
 	Type           string                 `json:"type"`
 	Metadata       map[string]interface{} `json:"metadata"`
-	SourceID       string                 `json:"source_id"`
-	SourceFormat   string                 `json:"source_format,omitempty"`
-	SourceMetadata []byte                 `json:"source_metadata,omitempty"`
+	SourceID       string                 `json:"sourceID"`
+	SourceFormat   string                 `json:"sourceFormat,omitempty"`
+	SourceMetadata []byte                 `json:"sourceMetadata,omitempty"`
 	CreatedAt      time.Time              `json:"createdAt"`
 	UpdatedAt      time.Time              `json:"updatedAt"`
 }
