@@ -16,7 +16,8 @@ func SetLocale(e engine.Engine) func(next http.Handler) http.Handler {
 			// skip if already set
 			if r.Context().Value(ctx.LocaleKey) == nil {
 				loc := e.GetLocale(r.Header.Get("Accept-Language"))
-				r = r.WithContext(context.WithValue(r.Context(), ctx.LocaleKey, loc))
+				c := context.WithValue(r.Context(), ctx.LocaleKey, loc)
+				r = r.WithContext(c)
 			}
 			next.ServeHTTP(w, r)
 		}
