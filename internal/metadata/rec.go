@@ -103,7 +103,9 @@ func (r Rec) Title() string {
 
 func (r Rec) string(field string) string {
 	if val, ok := r.Metadata[field]; ok {
-		return val.(string)
+		if s, ok := val.(string); ok {
+			return s
+		}
 	}
 	return ""
 }
