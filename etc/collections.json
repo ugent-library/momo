@@ -18,5 +18,13 @@
     {
         "name": "gum",
         "theme" : "ugent"
+    },
+    {
+        "name": "hogent",
+        "theme" : "ugent"
+    },
+    {
+        "name": "howest",
+        "theme" : "ugent"
     }
 ]

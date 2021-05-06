@@ -29,7 +29,6 @@ func newEngine() engine.Engine {
 }
 
 func newStore() engine.Storage {
-	// store, err := pg.New(viper.GetString("pg-conn"))
 	store, err := sql.New("postgres", viper.GetString("pg-conn"))
 	if err != nil {
 		log.Fatal(err)
