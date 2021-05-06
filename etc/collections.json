@@ -26,5 +26,9 @@
     {
         "name": "howest",
         "theme" : "ugent"
+    },
+    {
+        "name": "orpheus-ar",
+        "theme" : "ugent"
     }
 ]
