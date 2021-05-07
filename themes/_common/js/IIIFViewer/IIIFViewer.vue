@@ -1,14 +1,15 @@
 <template>
-  <div class="iiif-example">
+  <div id="iiif-leaflet-viewer">
     <l-map :zoom="zoom" :center="location">
-      <l-iiif :url="infoUrl" :options="opts" />
+      <l-iiif :url="manifestUrl" :options="opts" />
     </l-map>
   </div>
 </template>
 
 <script>
-import * as L from 'leaflet'
+import L from 'leaflet'
 import { LMap } from 'vue2-leaflet'
+import 'leaflet-iiif'
 import LIiif from './LeafletIIIF'
 
 export default {
@@ -19,21 +20,21 @@ export default {
   props: [
     'initialZoom',
     'initialOptions',
-    'initialInfoUrl'
+    'initialInfoUrl',
+    'manifestUrl'
   ],
   data () {
     return {
       location: L.latLng(0, 0),
       zoom: this.initialZoom,
-      opts: this.initialOptions,
-      infoUrl: this.initialInfoUrl
+      opts: this.initialOptions
     }
   }
 }
 </script>
 
 <style>
-.iiif-example {
+#iiif-leaflet-viewer {
     height: 600px;
     width: 800px;
 }
