@@ -18,9 +18,10 @@ import (
 )
 
 type RecController struct {
-	engine   engine.Engine
-	listView *render.View
-	showView *render.View
+	engine     engine.Engine
+	listView   *render.View
+	showView   *render.View
+	viewerView *render.View
 }
 
 func NewRecController(e engine.Engine) *RecController {
@@ -38,6 +39,7 @@ func NewRecController(e engine.Engine) *RecController {
 				return template.HTML(string(rep.Data))
 			},
 		}),
+		viewerView: render.NewView(e, "app", []string{"rec/viewer"}),
 	}
 }
 
@@ -64,17 +66,36 @@ func (c *RecController) Show(w http.ResponseWriter, r *http.Request) {
 	c.showView.Render(w, r, data{Rec: metadata.WrapRec(rec)})
 }
 
+func (c *RecController) Viewer(w http.ResponseWriter, r *http.Request) {
+	type data struct {
+		Rec metadata.Rec
+	}
+
+	id := chi.URLParam(r, "id")
+	rec, err := c.engine.GetRec(id)
+	if err != nil || rec.Collection != ctx.GetCollection(r) {
+		log.Println(err)
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	mrec := metadata.WrapRec(rec)
+
+	c.viewerView.Render(w, r, data{Rec: mrec})
+}
+
 func (c *RecController) Search(w http.ResponseWriter, r *http.Request) {
 	args := engine.SearchArgs{Facets: []string{"type"}, Highlight: true}
-	err := form.Decode(&args, r.URL.Query())
-	if err != nil {
+	if err := form.Decode(&args, r.URL.Query()); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if args.Size == 0 {
 		args.Size = 10
 	}
+
 	hits, err := c.engine.SearchRecs(args.WithFilter("collection", ctx.GetCollection(r)))
 	if err != nil {
 		log.Println(err)
