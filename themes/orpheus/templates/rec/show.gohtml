@@ -6,7 +6,7 @@
     </h1>
 
     {{if .Yield.Rec.IIIFManifest}}
-    <div id="iiif-viewer"></div>
+    <div id="iiif-viewer" data-manifest-url="{{.Yield.Rec.IIIFManifest}}"></div>
     {{end}}
     {{if .Yield.Rec.IIIFViewer "mirador"}}
     <p>
@@ -76,30 +76,5 @@
 
     <h3>Cite</h3>
     <p>{{renderRepresentation .Yield.Rec.Rec "mla"}}</p>
-
-    {{if .Yield.Rec.IIIFManifest}}
-    <script type="text/javascript">
-        window.addEventListener('DOMContentLoaded', () => {
-            var request = new XMLHttpRequest();
-            request.onload = function() {
-                if (request.status == 200) {
-                    var data = JSON.parse(request.responseText);
-                    var infoUrl = data.sequences[0].canvases[0].images[0].resource.service["@id"]+"/info.json";
-                    IIIFViewer.init('#iiif-viewer', {
-                        initialZoom: 2,
-                        initialOptions: {
-                            tileFormat: 'jpg',
-                            tileSize: 512
-                        },
-                        initialInfoUrl: infoUrl
-                    });
-                } else {
-                }
-            };
-            request.open("get", {{.Yield.Rec.IIIFManifest}}, true);
-            request.send();
-        });
-    </script>
-    {{end}}
 </div>
 {{end}}
