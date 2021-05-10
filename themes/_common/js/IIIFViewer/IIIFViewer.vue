@@ -1,41 +1,46 @@
 <template>
-  <div id="iiif-leaflet-viewer">
-    <l-map :zoom="zoom" :center="location">
-      <l-iiif :url="manifestUrl" :options="opts" />
-    </l-map>
+  <div id="iiif-openseadragon-viewer" class="mt-2 mb-2">
   </div>
 </template>
 
 <script>
-import L from 'leaflet'
-import { LMap } from 'vue2-leaflet'
-import 'leaflet-iiif'
-import LIiif from './LeafletIIIF'
+
+import OpenSeadragon from 'openseadragon'
+import { mapState } from 'vuex'
 
 export default {
-  components: {
-    LMap,
-    LIiif
-  },
   props: [
-    'initialZoom',
-    'initialOptions',
-    'initialInfoUrl',
     'manifestUrl'
   ],
-  data () {
-    return {
-      location: L.latLng(0, 0),
-      zoom: this.initialZoom,
-      opts: this.initialOptions
+  computed: {
+    ...mapState([
+      'manifest',
+    ])
+  },
+  watch: {
+    manifest: function (manifest) {
+        const layers = []
+        manifest.sequences[0].canvases.forEach(val => {
+          layers.push(val.images[0].resource.service['@id'] + '/info.json')
+        })
+        OpenSeadragon({
+            id:                 "iiif-openseadragon-viewer",
+            prefixUrl:          "https://openseadragon.github.io/openseadragon/images/",
+            preserveViewport:   true,
+            sequenceMode:  true,
+            showReferenceStrip: true,
+            tileSources: layers
+        });
     }
+  },
+  mounted () {
+    this.$store.dispatch('loadManifest', this.manifestUrl)
   }
 }
 </script>
 
 <style>
-#iiif-leaflet-viewer {
-    height: 600px;
-    width: 800px;
+#iiif-openseadragon-viewer {
+    height: 800px;
 }
 </style>

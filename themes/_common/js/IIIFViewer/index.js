@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import { BootstrapVue } from 'bootstrap-vue'
 
-import 'leaflet/dist/leaflet.css'
 import IIIFViewer from './IIIFViewer'
+import store from './store'
 
 export class IIIFViewerApp {
   static create (element, props) {
@@ -12,12 +12,12 @@ export class IIIFViewerApp {
     for (const match of matches) {
       if (document.body.contains(match)) {
         const App = Vue.extend(IIIFViewer)
-        const vm = new App({
+        new App({ // eslint-disable-line no-new
+          store,
           el: match,
           props: props,
           propsData: { ...match.dataset }
         })
-        vm.$mount(match)
       }
     }
   }
