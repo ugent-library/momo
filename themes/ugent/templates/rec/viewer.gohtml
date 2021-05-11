@@ -1,1 +1,3 @@
-<div id="iiif-viewer"></div>
+{{define "content"}}
+<div id="iiif-viewer" data-manifest-url="{{.Yield.Rec.IIIFManifest}}"></div>
+{{end}}

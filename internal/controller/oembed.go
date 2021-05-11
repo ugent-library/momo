@@ -45,7 +45,7 @@ func OEmbed() http.HandlerFunc {
 			return
 		}
 
-		html := "<iframe></iframe>"
+		html := `<iframe src="` + req.URL + `/viewer" width="480" height="320"></iframe>`
 
 		if req.Format == "xml" {
 			var b bytes.Buffer
