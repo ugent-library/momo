@@ -12,32 +12,25 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 	"github.com/ugent-library/momo/internal/engine"
 	"github.com/ugent-library/momo/internal/formats/csljson"
 )
 
-var (
-	formatF string
-	queryF  string
-)
-
 func init() {
-	recGetCmd.Flags().StringVarP(&formatF, "format", "f", defaultRecformat, "export format")
-
-	recSearchCmd.Flags().StringVarP(&formatF, "format", "f", defaultRecformat, "export format")
-	recSearchCmd.Flags().StringVarP(&queryF, "query", "q", "", "search query")
+	recGetCmd.Flags().StringP("format", "f", defaultRecformat, "export format")
+	recSearchCmd.Flags().StringP("format", "f", defaultRecformat, "export format")
+	recSearchCmd.Flags().StringP("query", "q", "", "search query")
 
 	recIndexCmd.AddCommand(recIndexAllCmd)
 	recIndexCmd.AddCommand(recIndexCreateCmd)
 	recIndexCmd.AddCommand(recIndexDeleteCmd)
-
 	recCmd.AddCommand(recGetCmd)
 	recCmd.AddCommand(recSearchCmd)
 	recCmd.AddCommand(recAddCmd)
 	recCmd.AddCommand(recIndexCmd)
 	recCmd.AddCommand(recAddCitationsCmd)
-
 	rootCmd.AddCommand(recCmd)
 }
 
@@ -51,9 +44,10 @@ var recGetCmd = &cobra.Command{
 	Short: "get stored records",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		encoder := e.NewRecEncoder(os.Stdout, formatF)
+		format := viper.GetString("format")
+		encoder := e.NewRecEncoder(os.Stdout, format)
 		if encoder == nil {
-			log.Fatalf("Unknown format %s", formatF)
+			log.Fatalf("Unknown format %s", format)
 		}
 
 		e.EachRec(func(rec *engine.Rec) bool {
@@ -70,12 +64,14 @@ var recSearchCmd = &cobra.Command{
 	Short: "search records",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		encoder := e.NewRecEncoder(os.Stdout, formatF)
+		query := viper.GetString("query")
+		format := viper.GetString("format")
+		encoder := e.NewRecEncoder(os.Stdout, format)
 		if encoder == nil {
-			log.Fatalf("Unknown format %s", formatF)
+			log.Fatalf("Unknown format %s", format)
 		}
 
-		e.SearchEachRec(engine.SearchArgs{Query: queryF}, func(rec *engine.Rec) bool {
+		e.SearchEachRec(engine.SearchArgs{Query: query}, func(rec *engine.Rec) bool {
 			if err := encoder.Encode(rec); err != nil {
 				log.Fatal(err)
 			}
@@ -89,6 +85,7 @@ var recAddCmd = &cobra.Command{
 	Short: "store and index recs",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := viper.GetBool("verbose")
 		e := newEngine()
 		p := newProgress(100)
 		c := make(chan *engine.Rec)
@@ -183,6 +180,7 @@ var recAddCitationsCmd = &cobra.Command{
 	Use:   "add-citations",
 	Short: "",
 	Run: func(cmd *cobra.Command, args []string) {
+		verbose := viper.GetBool("verbose")
 		e := newEngine()
 		p := newProgress(100)
 

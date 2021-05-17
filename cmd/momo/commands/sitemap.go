@@ -11,11 +11,7 @@ import (
 
 func init() {
 	sitemapGenerateCmd.Flags().String("host", defaultHost, "server host")
-	viper.BindPFlag("host", sitemapGenerateCmd.Flags().Lookup("host"))
-	viper.SetDefault("host", defaultHost)
 	sitemapGenerateCmd.Flags().Int("port", defaultPort, "server port")
-	viper.BindPFlag("port", sitemapGenerateCmd.Flags().Lookup("port"))
-	viper.SetDefault("port", defaultPort)
 
 	sitemapCmd.AddCommand(sitemapGenerateCmd)
 	rootCmd.AddCommand(sitemapCmd)

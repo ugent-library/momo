@@ -10,16 +10,10 @@ import (
 
 func init() {
 	serverStartCmd.Flags().String("host", defaultHost, "server host")
-	viper.BindPFlag("host", serverStartCmd.Flags().Lookup("host"))
-	viper.SetDefault("host", defaultHost)
 	serverStartCmd.Flags().Int("port", defaultPort, "server port")
-	viper.BindPFlag("port", serverStartCmd.Flags().Lookup("port"))
-	viper.SetDefault("port", defaultPort)
 	serverStartCmd.Flags().Bool("ssl", false, "https using Let’s Encrypt")
-	viper.BindPFlag("ssl", serverStartCmd.Flags().Lookup("ssl"))
 
 	serverCmd.AddCommand(serverStartCmd)
-
 	rootCmd.AddCommand(serverCmd)
 }
 
