@@ -183,6 +183,7 @@ var recAddCitationsCmd = &cobra.Command{
 		verbose := viper.GetBool("verbose")
 		e := newEngine()
 		p := newProgress(100)
+		citeprocURL := viper.GetString("citeproc-url")
 
 		client := http.Client{
 			Timeout: 10 * time.Second,
@@ -203,7 +204,7 @@ var recAddCitationsCmd = &cobra.Command{
 			}
 			body.Items = append(body.Items, buf.Bytes())
 			jsonBody, _ := json.Marshal(body)
-			req, err := http.NewRequest("POST", "http://127.0.0.1:8085?style=mla", bytes.NewBuffer(jsonBody))
+			req, err := http.NewRequest("POST", citeprocURL+"?style=mla", bytes.NewBuffer(jsonBody))
 			req.Header.Set("Content-Type", "application/json")
 			res, err := client.Do(req)
 			if err != nil {

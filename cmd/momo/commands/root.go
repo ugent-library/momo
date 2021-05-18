@@ -30,6 +30,7 @@ func init() {
 	viper.SetDefault("pg-conn", defaultPgConn)
 	viper.SetDefault("es6-url", defaultEs6URL)
 	viper.SetDefault("es6-index-prefix", defaultEs6IndexPrefix)
+	viper.SetDefault("citeproc-url", defaultCiteprocURL)
 	viper.SetDefault("host", defaultHost)
 	viper.SetDefault("port", defaultPort)
 
@@ -37,6 +38,7 @@ func init() {
 	rootCmd.PersistentFlags().String("pg-conn", defaultPgConn, "postgres connection string")
 	rootCmd.PersistentFlags().String("es6-url", defaultEs6URL, "elasticsearch 6.x url, separate multiple with comma")
 	rootCmd.PersistentFlags().String("es6-index-prefix", defaultEs6IndexPrefix, "elasticsearch 6.x index prefix")
+	rootCmd.PersistentFlags().String("citeproc-url", defaultCiteprocURL, "citeproc url")
 }
 
 // Execute the momo CLI
