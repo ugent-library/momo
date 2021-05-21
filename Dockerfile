@@ -12,5 +12,4 @@ COPY --from=build /build .
 EXPOSE 3000
 EXPOSE 80
 EXPOSE 443
-ENTRYPOINT ["/dist/app"]
-CMD ["server", "start"]
+CMD ["/dist/app", "server", "start"]
