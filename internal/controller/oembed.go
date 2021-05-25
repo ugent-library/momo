@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"encoding/xml"
+	"html"
 	"log"
 	"net/http"
 
@@ -45,20 +46,18 @@ func OEmbed() http.HandlerFunc {
 			return
 		}
 
-		viewerURL := req.URL + `/viewer`
+		iframe := `<iframe src="` + html.EscapeString(req.URL+`/viewer`) + `" width="480" height="320"></iframe>`
 
 		if req.Format == "xml" {
 			var b bytes.Buffer
-			xml.EscapeText(&b, []byte(viewerURL))
-			viewerURL = b.String()
+			xml.EscapeText(&b, []byte(iframe))
+			iframe = b.String()
 		}
-
-		html := `<iframe src="` + viewerURL + `" width="480" height="320"></iframe>`
 
 		res := oEmbedResponse{
 			Type:    "rich",
 			Version: "1.0",
-			HTML:    html,
+			HTML:    iframe,
 		}
 
 		if req.Format == "xml" {
