@@ -45,13 +45,15 @@ func OEmbed() http.HandlerFunc {
 			return
 		}
 
-		html := `<iframe src="` + req.URL + `/viewer" width="480" height="320"></iframe>`
+		viewerURL := req.URL + `/viewer`
 
 		if req.Format == "xml" {
 			var b bytes.Buffer
-			xml.EscapeText(&b, []byte(html))
-			html = b.String()
+			xml.EscapeText(&b, []byte(viewerURL))
+			viewerURL = b.String()
 		}
+
+		html := `<iframe src="` + viewerURL + `" width="480" height="320"></iframe>`
 
 		res := oEmbedResponse{
 			Type:    "rich",
