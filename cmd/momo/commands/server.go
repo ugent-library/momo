@@ -9,9 +9,8 @@ import (
 )
 
 func init() {
-	serverStartCmd.Flags().String("host", defaultHost, "server host")
+	serverStartCmd.Flags().String("base-url", defaultBaseURL, "base url")
 	serverStartCmd.Flags().Int("port", defaultPort, "server port")
-	serverStartCmd.Flags().Bool("ssl", false, "https using Let’s Encrypt")
 
 	serverCmd.AddCommand(serverStartCmd)
 	rootCmd.AddCommand(serverCmd)
@@ -29,9 +28,7 @@ var serverStartCmd = &cobra.Command{
 		r := chi.NewRouter()
 		routes.Register(r, newEngine())
 		s := server.New(r,
-			server.WithHost(viper.GetString("host")),
 			server.WithPort(viper.GetInt("port")),
-			server.WithSSL(viper.GetBool("ssl")),
 		)
 		s.Start()
 	},

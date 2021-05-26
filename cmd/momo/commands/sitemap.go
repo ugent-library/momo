@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -10,8 +9,7 @@ import (
 )
 
 func init() {
-	sitemapGenerateCmd.Flags().String("host", defaultHost, "server host")
-	sitemapGenerateCmd.Flags().Int("port", defaultPort, "server port")
+	sitemapCmd.Flags().String("base-url", defaultBaseURL, "base url")
 
 	sitemapCmd.AddCommand(sitemapGenerateCmd)
 	rootCmd.AddCommand(sitemapCmd)
@@ -27,8 +25,7 @@ var sitemapGenerateCmd = &cobra.Command{
 	Short: "generate a new sitemap",
 	Run: func(cmd *cobra.Command, args []string) {
 		e := newEngine()
-		url := fmt.Sprintf("http://%s:%d", viper.GetString("host"), viper.GetInt("port"))
-		if err := sitemap.Generate(e, url); err != nil {
+		if err := sitemap.Generate(e, viper.GetString("base-url")); err != nil {
 			log.Fatal(err)
 		}
 	},

@@ -31,7 +31,7 @@ func init() {
 	viper.SetDefault("es6-url", defaultEs6URL)
 	viper.SetDefault("es6-index-prefix", defaultEs6IndexPrefix)
 	viper.SetDefault("citeproc-url", defaultCiteprocURL)
-	viper.SetDefault("host", defaultHost)
+	viper.SetDefault("base-url", defaultBaseURL)
 	viper.SetDefault("port", defaultPort)
 
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
