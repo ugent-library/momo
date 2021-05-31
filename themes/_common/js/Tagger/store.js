@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 const state = {
   form: {
-    tags: ['foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar', 'foo', 'barfoobarfoobar']
+    tags: []
   }
 }
 
