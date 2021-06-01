@@ -1,6 +1,6 @@
 module github.com/ugent-library/momo
 
-go 1.15
+go 1.16
 
 require (
 	entgo.io/ent v0.8.0
