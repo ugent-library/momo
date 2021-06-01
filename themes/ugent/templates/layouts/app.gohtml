@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{{assetPath "/css/screen.css"}}">
+    {{template "head" .}}
   </head>
   <body>
 
@@ -81,4 +82,7 @@
     <script type="application/javascript" src="{{assetPath "/js/app.js"}}"></script>
   </body>
 </html>
+{{end}}
+
+{{define "head"}}
 {{end}}

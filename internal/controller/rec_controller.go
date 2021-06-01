@@ -52,18 +52,23 @@ func (c *RecController) List(w http.ResponseWriter, r *http.Request) {
 
 func (c *RecController) Show(w http.ResponseWriter, r *http.Request) {
 	type data struct {
-		Rec metadata.Rec
+		Collection string
+		Rec        metadata.Rec
 	}
 
 	id := chi.URLParam(r, "id")
+	collection := ctx.GetCollection(r)
 	rec, err := c.engine.GetRec(id)
-	if err != nil || rec.Collection != ctx.GetCollection(r) {
+	if err != nil || rec.Collection != collection {
 		log.Println(err)
 		http.Error(w, err.Error(), 404)
 		return
 	}
 
-	c.showView.Render(w, r, data{Rec: metadata.WrapRec(rec)})
+	c.showView.Render(w, r, data{
+		Collection: collection,
+		Rec:        metadata.WrapRec(rec),
+	})
 }
 
 func (c *RecController) Viewer(w http.ResponseWriter, r *http.Request) {

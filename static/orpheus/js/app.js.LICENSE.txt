@@ -1,8 +1,3 @@
-/* @preserve
- * Leaflet 1.7.1, a JS library for interactive maps. http://leafletjs.com
- * (c) 2010-2019 Vladimir Agafonkin, (c) 2010-2011 CloudMade
- */
-
 /*!
  * Vue.js v2.6.12
  * (c) 2014-2020 Evan You
@@ -14,3 +9,13 @@
  * (c) 2021 Evan You
  * @license MIT
  */
+
+//! Built on 2020-03-05
+
+//! Git commit: v2.4.2-0-c450749
+
+//! License: http://openseadragon.github.io/license/
+
+//! http://openseadragon.github.io
+
+//! openseadragon 2.4.2
