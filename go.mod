@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	entgo.io/ent v0.8.0
+	github.com/99designs/gqlgen v0.13.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-chi/chi/v5 v5.0.2
@@ -24,6 +25,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.7.5
+	github.com/urfave/cli v1.20.0 // indirect
+	github.com/vektah/gqlparser v1.2.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	golang.org/x/sys v0.0.0-20210420205809-ac73e9fd8988 // indirect
