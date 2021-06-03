@@ -1,9 +1,26 @@
+{{define "head"}}
+    {{if .Yield.Rec.IIIFManifest}}
+    <link rel="alternate" type="application/json+oembed"
+    href="https://eliot1.ugent.be/oembed?url=https://eliot1.ugent.be/collection/{{.Yield.Collection}}/{{.Yield.Rec.ID}}"
+    title="oEmbed IIIF viewer">
+    {{end}}
+{{end}}
+
 {{define "content"}}
 
 <h1>
     {{.Yield.Rec.Title}}
     {{if .Yield.Rec.Type}}<span class="badge badge-secondary">{{.Yield.Rec.Type}}</span>{{end}}
 </h1>
+
+{{if .Yield.Rec.IIIFManifest}}
+<div id="iiif-viewer" data-manifest-url="{{.Yield.Rec.IIIFManifest}}"></div>
+{{end}}
+{{if .Yield.Rec.IIIFViewer "mirador"}}
+<p>
+    <a href={{.Yield.Rec.IIIFViewer "mirador"}}>Mirador viewer</a>
+</p>
+{{end}}
 
 <dl>
     {{if .Yield.Rec.Author}}

@@ -1,7 +1,7 @@
 {{define "head"}}
     {{if .Yield.Rec.IIIFManifest}}
     <link rel="alternate" type="application/json+oembed"
-    href="https://eliot1.ugent.be/oembed?url=https://eliot1.ugent.be/collection/orpheus/{{.Yield.Rec.ID}}"
+    href="https://eliot1.ugent.be/oembed?url=https://eliot1.ugent.be/collection/{{.Yield.Collection}}/{{.Yield.Rec.ID}}"
     title="oEmbed IIIF viewer">
     {{end}}
 {{end}}
