@@ -5,9 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
+	gqlplayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/spf13/viper"
+	gqlgraph "github.com/ugent-library/momo/graph"
+	gqlgenerated "github.com/ugent-library/momo/graph/generated"
 	"github.com/ugent-library/momo/internal/auth/oidc"
 	"github.com/ugent-library/momo/internal/controller"
 	"github.com/ugent-library/momo/internal/ctx"
@@ -17,14 +21,7 @@ import (
 )
 
 func Register(r chi.Router, e engine.Engine) {
-	var redirectURL string
-	if viper.GetBool("ssl") {
-		redirectURL = fmt.Sprintf("https://%s/auth/callback", viper.GetString("host"))
-	} else if viper.GetInt("port") != 80 {
-		redirectURL = fmt.Sprintf("http://%s:%d/auth/callback", viper.GetString("host"), viper.GetInt("port"))
-	} else {
-		redirectURL = fmt.Sprintf("http://%s/auth/callback", viper.GetString("host"))
-	}
+	redirectURL := fmt.Sprintf("https://%s/auth/callback", viper.GetString("base-url"))
 
 	auth, err := oidc.NewProvider(redirectURL)
 	if err != nil {
@@ -49,10 +46,15 @@ func Register(r chi.Router, e engine.Engine) {
 	// robots.txt
 	r.Get("/robots.txt", controller.Robots(e))
 
+	// graphql endpoint
+	gqlserver := gqlhandler.NewDefaultServer(gqlgenerated.NewExecutableSchema(gqlgenerated.Config{Resolvers: &gqlgraph.Resolver{}}))
+	r.Mount("/graphql", gqlserver)
+	r.Mount("/graphql/playground", gqlplayground.Handler("GraphQL playground", "/graphql"))
+
 	// OAI-PMH provider
 	r.Mount("/oai", controller.OAI(e))
 
-	// oEmbed protocol
+	// oEmbed endpoint
 	r.Mount("/oembed", controller.OEmbed())
 
 	// logout
