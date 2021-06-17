@@ -22,6 +22,10 @@
 </p>
 {{end}}
 
+{{if eq .Yield.Collection "booktower-images"}}
+<div id="tagger" data-initial-tags="{{toJSON .Yield.Rec.Tag}}"></div>
+{{end}}
+
 <dl>
     {{if .Yield.Rec.Author}}
     <dt>Authors</dt>

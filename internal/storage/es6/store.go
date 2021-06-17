@@ -109,12 +109,26 @@ func (s *store) Reset() error {
 }
 
 func (s *store) AddRec(rec *engine.Rec) error {
-	payload, err := json.Marshal(rec)
+	// esRec not needed anymore in es7 with date nano type
+	body := M{
+		"doc": esRec{
+			ID:         rec.ID,
+			Collection: rec.Collection,
+			Type:       rec.Type,
+			Metadata:   rec.Metadata,
+			SourceID:   rec.SourceID,
+			CreatedAt:  rec.CreatedAt.UTC().Format(time.RFC3339),
+			UpdatedAt:  rec.UpdatedAt.UTC().Format(time.RFC3339),
+		},
+		"doc_as_upsert": true,
+	}
+
+	payload, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
 	ctx := context.Background()
-	res, err := esapi.CreateRequest{
+	res, err := esapi.UpdateRequest{
 		Index:      s.indexName("rec"),
 		DocumentID: rec.ID,
 		Body:       bytes.NewReader(payload),
@@ -125,11 +139,11 @@ func (s *store) AddRec(rec *engine.Rec) error {
 	defer res.Body.Close()
 
 	if res.IsError() {
-		var e map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
+		buf := new(strings.Builder)
+		if _, err := io.Copy(buf, res.Body); err != nil {
 			return err
 		}
-		return fmt.Errorf("[%s] %s: %s", res.Status(), e["error"].(map[string]interface{})["type"], e["error"].(map[string]interface{})["reason"])
+		return errors.New("Es6 error response: " + buf.String())
 	}
 
 	return nil

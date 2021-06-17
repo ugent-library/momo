@@ -97,6 +97,8 @@ func Register(r chi.Router, e engine.Engine) {
 				r.Get("/", recs.List)
 				r.Get("/search", recs.Search)
 				r.Get("/{id}", recs.Show)
+				// r.With(requireUser).Put("/{id}", recs.Update)
+				r.Put("/{id}", recs.Update)
 				r.Get("/{id}/viewer", recs.Viewer)
 			})
 		}

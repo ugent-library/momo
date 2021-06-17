@@ -97,6 +97,10 @@ func (r Rec) Publisher() string {
 	return r.string("publisher")
 }
 
+func (r Rec) Tag() []string {
+	return r.stringSlice("tag")
+}
+
 func (r Rec) Title() string {
 	return r.string("title")
 }

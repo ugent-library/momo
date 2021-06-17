@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -31,6 +32,11 @@ const actions = {
   },
   removeTag ({ commit }, tag) {
     commit('removeFromTags', tag)
+  },
+  saveTags () {
+    axios.put(window.location, { tag: this.state.form.tags })
+      .then(function (response) {
+      })
   }
 }
 

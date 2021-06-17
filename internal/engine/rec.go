@@ -15,6 +15,7 @@ type RecEngine interface {
 	SearchMoreRecs(string) (*RecHits, error)
 	SearchEachRec(SearchArgs, func(*Rec) bool) error
 	AddRecsBySourceID(<-chan *Rec)
+	UpdateRecMetadata(string, map[string]interface{}) (*Rec, error)
 	IndexRecs() error
 	CreateRecIndex() error
 	DeleteRecIndex() error
@@ -117,6 +118,17 @@ func (e *engine) AddRecsBySourceID(storeC <-chan *Rec) {
 	close(indexC)
 	// wait for indexing to finish
 	indexWG.Wait()
+}
+
+func (e *engine) UpdateRecMetadata(id string, m map[string]interface{}) (*Rec, error) {
+	rec, err := e.store.UpdateRecMetadata(id, m)
+	if err != nil {
+		return nil, err
+	}
+	if err = e.searchStore.AddRec(rec); err != nil {
+		return nil, err
+	}
+	return rec, nil
 }
 
 func (e *engine) IndexRecs() (err error) {

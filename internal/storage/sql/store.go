@@ -122,26 +122,26 @@ func (s *store) AddRecBySourceID(rec *engine.Rec) error {
 	return nil
 }
 
-// ent: support upsert
-func (s *store) AddRec(rec *engine.Rec) error {
+func (s *store) UpdateRecMetadata(id string, m map[string]interface{}) (*engine.Rec, error) {
 	r, err := s.client.Rec.
-		Create().
-		SetID(uuid.MustParse(rec.ID)).
-		SetCollection(rec.Collection).
-		SetType(rec.Type).
-		SetMetadata(rec.Metadata).
-		SetSourceID(rec.SourceID).
-		SetSourceFormat(rec.SourceFormat).
-		SetSourceMetadata(rec.SourceMetadata).
+		UpdateOneID(uuid.MustParse(id)).
+		SetMetadata(m).
 		Save(context.Background())
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	rec.CreatedAt = r.CreatedAt
-	rec.UpdatedAt = r.UpdatedAt
-
-	return nil
+	rec := &engine.Rec{
+		ID:             r.ID.String(),
+		Collection:     r.Collection,
+		Type:           r.Type,
+		Metadata:       r.Metadata,
+		SourceID:       r.SourceID,
+		SourceFormat:   r.SourceFormat,
+		SourceMetadata: r.SourceMetadata,
+		CreatedAt:      r.CreatedAt,
+		UpdatedAt:      r.UpdatedAt,
+	}
+	return rec, nil
 }
 
 func (s *store) GetRepresentation(recID, format string) (*engine.Representation, error) {

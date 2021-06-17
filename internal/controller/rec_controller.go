@@ -38,6 +38,10 @@ func NewRecController(e engine.Engine) *RecController {
 				}
 				return template.HTML(string(rep.Data))
 			},
+			"toJSON": func(v interface{}) template.JS {
+				a, _ := json.Marshal(v)
+				return template.JS(a)
+			},
 		}),
 		viewerView: render.NewView(e, "app", []string{"rec/viewer"}),
 	}
@@ -61,7 +65,7 @@ func (c *RecController) Show(w http.ResponseWriter, r *http.Request) {
 	rec, err := c.engine.GetRec(id)
 	if err != nil || rec.Collection != collection {
 		log.Println(err)
-		http.Error(w, err.Error(), 404)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -69,6 +73,32 @@ func (c *RecController) Show(w http.ResponseWriter, r *http.Request) {
 		Collection: collection,
 		Rec:        metadata.WrapRec(rec),
 	})
+}
+
+func (c *RecController) Update(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	rec, err := c.engine.GetRec(id)
+	if err != nil || rec.Collection != ctx.GetCollection(r) {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&rec.Metadata)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err = c.engine.UpdateRecMetadata(id, rec.Metadata)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, map[string]bool{"ok": true})
 }
 
 func (c *RecController) Viewer(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +110,7 @@ func (c *RecController) Viewer(w http.ResponseWriter, r *http.Request) {
 	rec, err := c.engine.GetRec(id)
 	if err != nil || rec.Collection != ctx.GetCollection(r) {
 		log.Println(err)
-		http.Error(w, err.Error(), 404)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 

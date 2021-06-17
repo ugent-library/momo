@@ -53,13 +53,13 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "title": {
-                            "type": "text",
-                            "fields": {
-                                "ngram": {
-                                    "type": "text",
-                                    "analyzer": "ngram",
-                                    "search_analyzer": "lowercase"
+                        "abstract": {
+                            "properties": {
+                                "lang": {
+                                    "type": "keyword"
+                                },
+                                "text": {
+                                    "type": "text"
                                 }
                             }
                         },
@@ -77,32 +77,13 @@
                                 }
                             }
                         },
-                        "abstract": {
-                            "properties": {
-                                "lang": {
-                                    "type": "keyword"
-                                },
-                                "text": {
-                                    "type": "text"
-                                }
-                            }
+                        "doi": {
+                            "type": "keyword"
                         },
                         "edition": {
                             "type": "text"
                         },
-                        "publisher": {
-                            "type": "text"
-                        },
-                        "placeOfPublication": {
-                            "type": "text"
-                        },
-                        "publicationDate": {
-                            "type": "text"
-                        },
                         "identifier": {
-                            "type": "keyword"
-                        },
-                        "doi": {
                             "type": "keyword"
                         },
                         "isbn": {
@@ -117,8 +98,30 @@
                                     "type": "text"
                                 }
                             }
+                        },
+                        "placeOfPublication": {
+                            "type": "text"
+                        },
+                        "publicationDate": {
+                            "type": "text"
+                        },
+                        "publisher": {
+                            "type": "text"
+                        },
+                        "tag": {
+                            "type": "keyword"
+                        },
+                        "title": {
+                            "type": "text",
+                            "fields": {
+                                "ngram": {
+                                    "type": "text",
+                                    "analyzer": "ngram",
+                                    "search_analyzer": "lowercase"
+                                }
+                            }
                         }
-                    }
+                   }
                 }
             }
         }

@@ -30,14 +30,12 @@
                 </li>
             </ul>
             </b-form-group>
-            <b-button type="submit" variant="primary">Save</b-button>
+            <b-button type="submit" variant="primary" @click.prevent="saveTags">Save</b-button>
         </b-form>
     </div>
 </template>
 
-
 <script>
-
 import { mapState } from 'vuex'
 
 export default {
@@ -46,6 +44,9 @@ export default {
       tag: ''
     }
   },
+    props: [
+    'initialTags'
+  ],
   computed: {
     ...mapState([
       'form'
@@ -59,6 +60,15 @@ export default {
     removeTag(tag) {
       this.$store.dispatch('removeTag', { tag: tag })
     },
+    saveTags() {
+      this.$store.dispatch('saveTags')
+    },
+  },
+  mounted () {
+    var tags = JSON.parse(this.initialTags) || []
+    tags.forEach(tag => {
+      this.$store.dispatch('addTag', { tag: tag })
+    })
   }
 }
 </script>
