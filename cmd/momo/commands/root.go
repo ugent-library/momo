@@ -41,7 +41,6 @@ func init() {
 	rootCmd.PersistentFlags().String("citeproc-url", defaultCiteprocURL, "citeproc url")
 }
 
-// Execute the momo CLI
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)

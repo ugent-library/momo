@@ -4,8 +4,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ugent-library/go-graceful/server"
 	"github.com/ugent-library/momo/internal/routes"
-	"github.com/ugent-library/momo/internal/server"
 )
 
 func init() {

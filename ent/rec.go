@@ -47,7 +47,7 @@ type RecEdges struct {
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
-
+	
 // RepresentationsOrErr returns the Representations value or an error if the edge
 // was not loaded in eager-loading.
 func (e RecEdges) RepresentationsOrErr() ([]*Representation, error) {

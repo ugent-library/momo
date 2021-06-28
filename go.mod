@@ -25,6 +25,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/tidwall/gjson v1.7.5
+	github.com/ugent-library/go-graceful v0.0.0-20210628141515-66c4e64c6949
 	github.com/vektah/gqlparser/v2 v2.1.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
