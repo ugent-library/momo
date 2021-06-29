@@ -34,7 +34,7 @@
         "vuex": "^3.6.2"
     },
     "nodemonConfig": {
-        "exec": "go run cmd/momo/main.go server start || exit 1",
+        "exec": "go run cmd/momo/main.go server start --host localhost || exit 1",
         "signal": "SIGTERM",
         "ext": "go,gohtml,json,po",
         "delay": "1500",

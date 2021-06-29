@@ -10,6 +10,7 @@ import (
 
 func init() {
 	serverStartCmd.Flags().String("base-url", defaultBaseURL, "base url")
+	serverStartCmd.Flags().String("host", defaultHost, "server host")
 	serverStartCmd.Flags().Int("port", defaultPort, "server port")
 
 	serverCmd.AddCommand(serverStartCmd)
@@ -28,6 +29,7 @@ var serverStartCmd = &cobra.Command{
 		r := chi.NewRouter()
 		routes.Register(r, newEngine())
 		s := server.New(r,
+			server.WithHost(viper.GetString("host")),
 			server.WithPort(viper.GetInt("port")),
 		)
 		s.Start()
