@@ -1,12 +1,10 @@
 package theme
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
-	"log"
-	"path"
+
+	"github.com/ugent-library/go-mix/mix"
 )
 
 var (
@@ -19,9 +17,8 @@ type Theme interface {
 }
 
 type theme struct {
-	name          string
-	funcs         template.FuncMap
-	assetManifest map[string]string
+	name  string
+	funcs template.FuncMap
 }
 
 func Register(t Theme) {
@@ -48,12 +45,13 @@ func Themes() []Theme {
 
 func New(name string) Theme {
 	t := &theme{
-		name:          name,
-		assetManifest: loadAssetManifest(name),
+		name: name,
 	}
-	t.funcs = template.FuncMap{
-		"assetPath": t.assetPath,
-	}
+	t.funcs = mix.FuncMap(mix.Config{
+		ManifestFile: fmt.Sprintf("static/%s/mix-manifest.json", name),
+		PublicPath:   fmt.Sprintf("/s/%s/", name),
+	})
+
 	return t
 }
 
@@ -63,27 +61,4 @@ func (t *theme) Name() string {
 
 func (t *theme) Funcs() template.FuncMap {
 	return t.funcs
-}
-
-func (t *theme) assetPath(asset string) (string, error) {
-	p, ok := t.assetManifest[asset]
-	if !ok {
-		err := fmt.Errorf("Asset %s not found in manifest %s", asset, t.assetManifest)
-		log.Println(err)
-		return "", err
-	}
-	return path.Join("/s/", t.name, p), nil
-}
-
-func loadAssetManifest(name string) (manifest map[string]string) {
-	path := fmt.Sprintf("static/%s/mix-manifest.json", name)
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatalf("Couldn't read %s: %s", path, err)
-	}
-	manifest = make(map[string]string)
-	if err = json.Unmarshal(data, &manifest); err != nil {
-		log.Fatalf("Couldn't parse %s: %s", path, err)
-	}
-	return
 }

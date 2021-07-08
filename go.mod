@@ -14,24 +14,18 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leonelquinteros/gotext v1.5.0
 	github.com/lib/pq v1.10.2
-	github.com/magiconair/properties v1.8.5 // indirect
-	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/assertions v1.2.0 // indirect
-	github.com/spf13/afero v1.6.0 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.1.3
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/tidwall/gjson v1.8.0
 	github.com/ugent-library/go-graceful v0.0.0-20210629084951-cc0426be60e8
+	github.com/ugent-library/go-mix v0.0.0-20210708100045-bdb8d255d2e1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	golang.org/x/text v0.3.6
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/ini.v1 v1.62.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
